@@ -8,7 +8,7 @@ Our project contributes to this mission by researching and designing solutions f
 
 ---
 
-## 🎯 Objective  
+## Objective  
 The primary objective is to develop a **digital maintenance monitoring system** that:  
 - 📊 Analyzes turbine data (real or synthetic).  
 - 🔎 Detects early signals of component deterioration.  
@@ -18,7 +18,7 @@ The primary objective is to develop a **digital maintenance monitoring system** 
 
 ---
 
-## 🔬 Methodology  
+## Methodology  
 We apply an **agile approach** combined with applied research methods, including:  
 - Market research on control rooms  
 - Expert and stakeholder interviews  
@@ -27,7 +27,7 @@ We apply an **agile approach** combined with applied research methods, including
 
 ---
 
-## 🔑 Key Context  
+## Key Context  
 - **Client**: World Class Maintenance (Fieldlab Zephyros)  
 - **Focus Area**: T-shore project (training and maintenance for offshore wind)  
 - **Duration**: Ongoing research within the project window (2022–2026)  
@@ -35,7 +35,7 @@ We apply an **agile approach** combined with applied research methods, including
 
 ---
 
-## 🌍 Related Initiatives at Fieldlab Zephyros  
+## Related Initiatives at Fieldlab Zephyros  
 - **AIRTuB** – Automated inspection and repair of turbine blades  
 - **New Waves** – Climate resilience and innovation collaboration  
 - **T-shore** – Training and maintenance for offshore wind *(our focus)*  
@@ -43,9 +43,266 @@ We apply an **agile approach** combined with applied research methods, including
 
 ---
 
+# 🚀 HZ FieldLab Project
 
-New Waves – Climate resilience and innovation collaboration.
+> **University project with Vue.js frontend and Laravel backend**
 
-T-shore – Training and maintenance for offshore wind (our focus).
+## 📋 Prerequisites
 
-Offshore For Sure – Integrating wind, tide, wave, and solar energy sources.
+Before starting, make sure you have these installed on your machine:
+
+| Tool | Version | Download Link |
+|------|---------|---------------|
+| **PHP** | 8.1+ | [Download](https://www.php.net/downloads) |
+| **Composer** | Latest | [Download](https://getcomposer.org/download/) |
+| **Node.js** | 16+ | [Download](https://nodejs.org/) |
+| **Git** | Latest | [Download](https://git-scm.com/) |
+| **Database** | MySQL/PostgreSQL/SQLite | Optional for development |
+
+### ✅ Verify Installation
+```bash
+php --version
+composer --version
+node --version
+npm --version
+git --version
+```
+
+## 🚀 Quick Start
+
+### 1️⃣ Clone Repository
+```bash
+git clone https://github.com/netas369/HZ-FieldLab-Project.git
+cd HZ-FieldLab-Project
+```
+
+### 2️⃣ Backend Setup (Laravel)
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan serve
+```
+🌐 **Backend running at:** `http://localhost:8000`
+
+### 3️⃣ Frontend Setup (Vue.js)
+> **Open a new terminal window**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+🌐 **Frontend running at:** `http://localhost:5173`
+
+### 4️⃣ Test Everything
+- **API Test:** Open `http://localhost:8000/api/test` in browser
+- **Frontend:** Open `http://localhost:5173` in browser
+
+---
+
+## ⚙️ Detailed Setup
+
+<details>
+<summary><strong>🗄️ Database Configuration</strong></summary>
+
+Edit the `.env` file in the `backend/` folder:
+
+**Option 1: SQLite (Easiest for development)**
+```env
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/your/project/backend/database/database.sqlite
+```
+Create the database file:
+```bash
+touch database/database.sqlite
+```
+
+**Option 2: MySQL**
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database_name
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+</details>
+
+<details>
+<summary><strong>🔧 Development Workflow</strong></summary>
+
+You need **both servers running** during development:
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+php artisan serve
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+</details>
+
+<details>
+<summary><strong>📁 Project Structure</strong></summary>
+
+```
+HZ-FieldLab-Project/
+├── 🖥️ backend/          # Laravel API
+│   ├── app/             # Application logic
+│   ├── routes/          # API routes (api.php)
+│   ├── database/        # Migrations, models
+│   └── .env             # Environment settings
+├── 🎨 frontend/         # Vue.js application
+│   ├── src/             # Source code
+│   ├── public/          # Static files
+│   └── package.json     # Dependencies
+└── 📖 README.md
+```
+</details>
+
+## 🚨 Troubleshooting
+
+<details>
+<summary><strong>❌ "composer: command not found"</strong></summary>
+
+**Solution:** Install Composer from https://getcomposer.org/download/
+</details>
+
+<details>
+<summary><strong>❌ "npm: command not found"</strong></summary>
+
+**Solution:** Install Node.js from https://nodejs.org/
+</details>
+
+<details>
+<summary><strong>❌ Laravel returns 500 error</strong></summary>
+
+```bash
+cd backend
+php artisan config:clear
+php artisan cache:clear
+php artisan key:generate
+```
+</details>
+
+<details>
+<summary><strong>❌ Database connection error</strong></summary>
+
+- Check your `.env` file database settings
+- Make sure your database server is running  
+- For SQLite, ensure the database file exists
+</details>
+
+<details>
+<summary><strong>❌ Port already in use</strong></summary>
+
+```bash
+# Laravel (use different port)
+php artisan serve --port=8001
+
+# Vue.js will automatically suggest a different port
+npm run dev
+```
+</details>
+
+<details>
+<summary><strong>❌ CORS errors</strong></summary>
+
+This should be configured already, but if you get CORS errors, contact the team.
+</details>
+
+## 🔄 Git Workflow
+
+### 📥 Before making changes:
+```bash
+git pull origin main
+```
+
+### 📤 After making changes:
+```bash
+git add .
+git commit -m "Description of your changes"
+git push origin main
+```
+
+### 🌿 Working with branches (recommended):
+```bash
+# Create new branch
+git checkout -b feature/your-feature-name
+
+# Make changes, then commit
+git add .
+git commit -m "Add your feature"
+git push origin feature/your-feature-name
+
+# Create pull request on GitHub
+```
+
+---
+
+## 🛠️ Useful Commands
+
+<details>
+<summary><strong>⚡ Laravel Commands</strong> (run from <code>backend/</code>)</summary>
+
+```bash
+php artisan route:list          # Show all API routes
+php artisan migrate:fresh       # Reset database
+php artisan tinker              # Laravel console
+php artisan config:clear        # Clear config cache
+php artisan make:controller     # Create new controller
+php artisan make:model          # Create new model
+```
+</details>
+
+<details>
+<summary><strong>⚡ Vue.js Commands</strong> (run from <code>frontend/</code>)</summary>
+
+```bash
+npm run build                   # Build for production
+npm run preview                 # Preview production build
+npm install package-name        # Add new package
+npm run lint                    # Check code style
+```
+</details>
+
+---
+
+## 🧪 API Testing
+
+Test the API connection:
+
+| Method | URL | Expected Response |
+|--------|-----|-------------------|
+| **Browser** | `http://localhost:8000/api/test` | `{"message": "API is working!"}` |
+| **Postman** | GET `http://localhost:8000/api/test` | JSON response |
+| **Frontend** | Automatic via Axios | Data displayed in Vue app |
+
+---
+
+## 🆘 Need Help?
+
+1. 📖 Check this README first
+2. 💬 Ask in our project group chat  
+3. 📚 Check documentation:
+   - [Laravel Docs](https://laravel.com/docs)
+   - [Vue.js Guide](https://vuejs.org/guide/)
+4. 🐛 Create an issue on GitHub
+
+---
+
+<div align="center">
+
+### 🎉 Ready to code!
+
+**Backend:** `http://localhost:8000` | **Frontend:** `http://localhost:5173`
+
+Made with ❤️ by the HZ FieldLab Team
+
+</div>
