@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Prototype from '@/views/Prototype.vue'
+import Poc from '@/views/Poc.vue'
 
 const routes = [
     // {
@@ -11,6 +12,11 @@ const routes = [
         path: '/prototype',
         name: 'Prototype',
         component: Prototype
+    },
+    {
+        path: '/poc',
+        name: 'Poc',
+        component: Poc
     }
 ]
 
