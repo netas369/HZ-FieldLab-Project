@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div class="min-h-screen bg-slate-100">
     <NavigationBar />
     <router-view />
   </div>
@@ -14,6 +14,7 @@ const showNotifications = ref(false);
 const selectedAlarmFilter = ref('all');
 const weatherView = ref(false);
 
+// Provide state to child components
 provide('selectedTurbine', selectedTurbine);
 provide('showNotifications', showNotifications);
 provide('selectedAlarmFilter', selectedAlarmFilter);
