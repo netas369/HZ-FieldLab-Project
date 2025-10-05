@@ -10,6 +10,6 @@ Route::get('/test', function () {
     return response()->json([
         'message' => 'API is working!',
         'timestamp' => now(),
-        'route' => 'api/test'
+        'route' => 'api/test',
     ]);
 });
