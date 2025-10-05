@@ -1,4 +1,4 @@
-name: Lint Monorepo
+name: CI/CD
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   frontend-lint:
-    name: Lint Frontend
+    name: Frontend
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -33,7 +33,7 @@ jobs:
         run: npm run format -- --check
 
   backend-lint:
-    name: Lint Backend
+    name: Backend
     runs-on: ubuntu-latest
     defaults:
       run:
