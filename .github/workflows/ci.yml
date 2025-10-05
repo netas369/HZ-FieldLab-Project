@@ -9,10 +9,16 @@ jobs:
   frontend-lint:
     name: Frontend
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: List frontend files
+        run: ls -la frontend
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,15 +28,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: frontend
 
       - name: Run ESLint
         run: npm run lint
-        working-directory: frontend
 
       - name: Run Prettier check
         run: npm run format -- --check
-        working-directory: frontend
 
   backend-lint:
     name: Backend
