@@ -2,22 +2,26 @@
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
     <div class="h-screen flex flex-col">
       <!-- Header -->
-      <AppHeader
+      <HeaderBar
           :user="state.currentUser"
           :active-alarms-count="criticalAlarmsCount"
+          @open-maintenance-form="state.showMaintenanceForm = true"
           @toggle-theme="toggleTheme"
       />
 
       <div class="flex-1 flex overflow-hidden">
         <!-- Sidebar Navigation -->
-        <AppSidebar
-            :active-route="state.activeRoute"
-            :nav-items="navItems"
-            @navigate="handleNavigation"
+        <SidebarNav
+            :active-tab="state.activeRoute"
+            :tabs="navItems"
+            :search-query="state.searchQuery"
+            @update:active-tab="handleNavigation"
+            @update:search-query="state.searchQuery = $event"
+            @quick-link="handleQuickLink"
         />
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-auto">
+        <main class="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900">
           <div class="max-w-[1600px] mx-auto p-6">
             <transition name="slide-fade" mode="out-in">
               <component
@@ -26,6 +30,7 @@
                   @select-turbine="handleTurbineSelect"
                   @show-alarm="handleShowAlarm"
                   @acknowledge-alarm="handleAcknowledgeAlarm"
+                  @add-log="state.showMaintenanceForm = true"
                   @add-maintenance="handleAddMaintenance"
                   :key="state.activeRoute"
               />
@@ -33,7 +38,7 @@
           </div>
         </main>
 
-        <!-- Right Sidebar - Notifications & Quick Actions -->
+        <!-- Right Sidebar - Quick Actions (conditional) -->
         <aside
             v-if="showRightSidebar"
             class="w-80 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 overflow-auto"
@@ -50,55 +55,195 @@
 
     <!-- Modal System -->
     <Teleport to="body">
-      <AlarmDetailModal
+      <!-- Alarm Detail Modal -->
+      <div
           v-if="state.selectedAlarm"
-          :alarm="state.selectedAlarm"
-          @close="state.selectedAlarm = null"
-          @acknowledge="handleAcknowledgeAlarm"
-      />
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          @click.self="state.selectedAlarm = null"
+      >
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h3 class="text-2xl font-bold text-slate-900 dark:text-white">
+                  {{ state.selectedAlarm.title }}
+                </h3>
+                <span :class="['inline-block mt-2 px-3 py-1 rounded-full text-sm font-bold', getPriorityClass(state.selectedAlarm.priority)]">
+                  {{ state.selectedAlarm.priority }}
+                </span>
+              </div>
+              <button
+                  @click="state.selectedAlarm = null"
+                  class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
-      <MaintenanceFormModal
+            <div class="space-y-4">
+              <div>
+                <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Description</h4>
+                <p class="text-slate-600 dark:text-slate-400">{{ state.selectedAlarm.description }}</p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Turbine</h4>
+                  <p class="text-slate-900 dark:text-white font-medium">{{ state.selectedAlarm.turbine }}</p>
+                </div>
+                <div>
+                  <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Time</h4>
+                  <p class="text-slate-900 dark:text-white font-medium">{{ state.selectedAlarm.time }}</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 pt-4">
+                <button
+                    v-if="!state.selectedAlarm.acknowledged"
+                    @click="handleAcknowledgeAlarm(state.selectedAlarm)"
+                    class="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Acknowledge Alarm
+                </button>
+                <button
+                    @click="state.selectedAlarm = null"
+                    class="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Maintenance Form Modal -->
+      <div
           v-if="state.showMaintenanceForm"
-          :turbine="state.selectedTurbine"
-          @close="state.showMaintenanceForm = false"
-          @submit="handleMaintenanceSubmit"
-      />
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          @click.self="state.showMaintenanceForm = false"
+      >
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Log Maintenance</h3>
+              <button
+                  @click="state.showMaintenanceForm = false"
+                  class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form @submit.prevent="handleMaintenanceSubmit" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Turbine
+                </label>
+                <select
+                    v-model="maintenanceForm.turbine"
+                    class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    required
+                >
+                  <option value="">Select a turbine</option>
+                  <option v-for="turbine in turbineStore.turbines" :key="turbine.id" :value="turbine.id">
+                    {{ turbine.id }} - {{ turbine.location }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Type
+                </label>
+                <select
+                    v-model="maintenanceForm.type"
+                    class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    required
+                >
+                  <option value="Preventive">Preventive</option>
+                  <option value="Corrective">Corrective</option>
+                  <option value="Emergency">Emergency</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Description
+                </label>
+                <textarea
+                    v-model="maintenanceForm.description"
+                    rows="4"
+                    class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Describe the maintenance work..."
+                    required
+                ></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Technician
+                </label>
+                <input
+                    v-model="maintenanceForm.technician"
+                    type="text"
+                    class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Technician name"
+                    required
+                />
+              </div>
+
+              <div class="flex gap-3 pt-4">
+                <button
+                    type="submit"
+                    class="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Save Log
+                </button>
+                <button
+                    type="button"
+                    @click="state.showMaintenanceForm = false"
+                    class="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </Teleport>
   </div>
 </template>
 
 <script setup>
-import { reactive, computed, provide, onMounted, watch } from 'vue'
-import { useTurbineStore } from '../stores/useTurbineStore.js'
-import { useAlarmStore } from '../stores/useAlarmStore.js'
-import { useMaintenanceStore } from '../stores/useMaintenanceStore.js'
+import { reactive, computed, onMounted, watch, ref } from 'vue'
 
-// Component imports (placeholder - implement these separately)
-import AppHeader from './components/AppHeader.vue'
-import AppSidebar from './components/AppSidebar.vue'
-import QuickActionsPanel from './components/QuickActionsPanel.vue'
-import AlarmDetailModal from './components/AlarmDetailModal.vue'
-import MaintenanceFormModal from './components/MaintenanceFormModal.vue'
+// Import our redesigned components
+import HeaderBar from './HeaderBar.vue'
+import SidebarNav from './SidebarNav.vue'
 
-// View imports
-import DashboardView from './views/DashboardView.vue'
-import PerformanceView from './views/PerformanceView.vue'
-import AlarmsView from './views/AlarmsView.vue'
-import MaintenanceView from './views/MaintenanceView.vue'
-import AnalyticsView from './views/AnalyticsView.vue'
-import ReportsView from './views/ReportsView.vue'
-import SettingsView from './views/SettingsView.vue'
+// Import tab/view components
+import OverviewTab from './OverviewTab.vue'
+import AnalyticsTab from './AnalyticsTab.vue'
+import AlarmTab from './AlarmTab.vue'
+import MaintenanceTab from './MaintenanceTab.vue'
+import ReportsTab from "@/components/ReportsTab.vue";
+import SettingsTab from "@/components/SettingsTab.vue";
+
+// Placeholder components (create these as needed)
+const QuickActionsPanel = { template: '<div class="p-4"><h3 class="font-bold mb-4">Quick Actions</h3><p class="text-sm text-slate-600">Recent activity will appear here</p></div>' }
 
 // ============================================================================
-// STATE MANAGEMENT with Composables
+// STATE MANAGEMENT
 // ============================================================================
-
-const turbineStore = useTurbineStore()
-const alarmStore = useAlarmStore()
-const maintenanceStore = useMaintenanceStore()
 
 const state = reactive({
-  activeRoute: 'dashboard',
+  activeRoute: 'overview',
   currentUser: {
     name: 'John Smith',
     role: 'Supervisor',
@@ -107,19 +252,67 @@ const state = reactive({
   selectedTurbine: null,
   selectedAlarm: null,
   showMaintenanceForm: false,
+  searchQuery: '',
   theme: 'light'
 })
 
-// Navigation configuration
-const navItems = [
-  { id: 'dashboard', icon: 'LayoutDashboard', label: 'Dashboard', badge: null },
-  { id: 'performance', icon: 'Zap', label: 'Performance', badge: null },
-  { id: 'alarms', icon: 'AlertTriangle', label: 'Alarms', badge: computed(() => criticalAlarmsCount.value) },
-  { id: 'maintenance', icon: 'Wrench', label: 'Maintenance', badge: null },
-  { id: 'analytics', icon: 'TrendingUp', label: 'Analytics', badge: null },
-  { id: 'reports', icon: 'FileText', label: 'Reports', badge: null },
-  { id: 'settings', icon: 'Settings', label: 'Settings', badge: null }
-]
+// Simulated stores (replace with real composables)
+const turbineStore = reactive({
+  turbines: [
+    { id: 'WT-001', location: 'North Field', status: 'running', metrics: { power: '2.8 MW', wind: '14 m/s', availability: '98.5%' } },
+    { id: 'WT-002', location: 'North Field', status: 'running', metrics: { power: '2.6 MW', wind: '13 m/s', availability: '97.2%' } },
+    { id: 'WT-003', location: 'East Field', status: 'maintenance', metrics: { power: '0 MW', wind: '12 m/s', availability: '85.3%' } },
+    { id: 'WT-004', location: 'East Field', status: 'running', metrics: { power: '2.9 MW', wind: '15 m/s', availability: '99.1%' } },
+    { id: 'WT-005', location: 'South Field', status: 'stopped', metrics: { power: '0 MW', wind: '11 m/s', availability: '92.8%' } },
+    { id: 'WT-006', location: 'West Field', status: 'running', metrics: { power: '2.7 MW', wind: '13.5 m/s', availability: '96.4%' } }
+  ],
+  selectTurbine: (id) => console.log('Selected turbine:', id)
+})
+
+const alarmStore = reactive({
+  alarms: [
+    { id: 101, title: 'BLADE_IMBALANCE', priority: 'Critical', description: 'Tower vibration: 3.1 mm amplitude — immediate stop & inspection required.', turbine: 'WT-005', time: '2025-10-02 17:42', acknowledged: false },
+    { id: 102, title: 'GENERATOR_OVERHEAT', priority: 'Major', description: 'Winding temp: 92°C (Warning: 85°C, Fault: 95°C). Reduce load and inspect cooling.', turbine: 'WT-003', time: '2025-10-02 16:05', acknowledged: false },
+    { id: 103, title: 'GEARBOX_VIBRATION_HIGH', priority: 'Warning', description: 'Vibration RMS: 4.2 mm/s (Threshold: 4.5) — monitor trend.', turbine: 'WT-004', time: '2025-10-02 15:10', acknowledged: false }
+  ],
+  activeAlarms: computed(() => alarmStore.alarms.filter(a => !a.acknowledged)),
+  criticalCount: computed(() => alarmStore.alarms.filter(a => a.priority === 'Critical' && !a.acknowledged).length),
+  acknowledgeAlarm: (id) => {
+    const alarm = alarmStore.alarms.find(a => a.id === id)
+    if (alarm) alarm.acknowledged = true
+  },
+  recentAlarms: (count) => alarmStore.alarms.slice(0, count)
+})
+
+const maintenanceStore = reactive({
+  logs: [],
+  addLog: (log) => {
+    maintenanceStore.logs.unshift({
+      ...log,
+      id: Date.now(),
+      date: new Date().toISOString(),
+      status: 'completed'
+    })
+  }
+})
+
+// Maintenance form
+const maintenanceForm = reactive({
+  turbine: '',
+  type: 'Preventive',
+  description: '',
+  technician: state.currentUser.name
+})
+
+// Navigation items
+const navItems = computed(() => [
+  { id: 'overview', label: 'Overview', icon: 'dashboard', badge: null },
+  { id: 'alarms', label: 'Alarms', icon: 'alert', badge: criticalAlarmsCount.value },
+  { id: 'maintenance', label: 'Maintenance', icon: 'wrench', badge: null },
+  { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
+  { id: 'reports', label: 'Reports', icon: 'file', badge: null },
+  { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
+])
 
 // ============================================================================
 // COMPUTED PROPERTIES
@@ -127,100 +320,80 @@ const navItems = [
 
 const currentView = computed(() => {
   const viewMap = {
-    dashboard: DashboardView,
-    performance: PerformanceView,
-    alarms: AlarmsView,
-    maintenance: MaintenanceView,
-    analytics: AnalyticsView,
-    reports: ReportsView,
-    settings: SettingsView
+    overview: OverviewTab,
+    performance: OverviewTab, // Reuse for now
+    alarms: AlarmTab,
+    maintenance: MaintenanceTab,
+    analytics: AnalyticsTab,
+    reports: ReportsTab, // Placeholder
+    settings: SettingsTab // Placeholder
   }
-  return viewMap[state.activeRoute] || DashboardView
+  return viewMap[state.activeRoute] || OverviewTab
 })
 
 const currentViewProps = computed(() => {
-  const baseProps = {
-    turbines: turbineStore.turbines,
-    selectedTurbine: state.selectedTurbine
-  }
-
   switch (state.activeRoute) {
-    case 'dashboard':
-      return {
-        ...baseProps,
-        metrics: turbineStore.aggregateMetrics,
-        recentAlarms: alarmStore.recentAlarms(5)
-      }
-
+    case 'overview':
     case 'performance':
       return {
-        ...baseProps,
-        kpis: turbineStore.kpis,
-        historicalData: turbineStore.historicalData
+        turbines: filteredTurbines.value,
+        selectedTurbine: state.selectedTurbine,
+        searchQuery: state.searchQuery
       }
 
     case 'alarms':
       return {
         alarms: alarmStore.alarms,
-        filters: alarmStore.availableFilters
+        filters: ['All', 'Critical', 'Major', 'Warning', 'Minor'],
+        initialFilter: 'All'
       }
 
     case 'maintenance':
       return {
-        logs: maintenanceStore.logs,
-        scheduled: maintenanceStore.scheduled,
-        predictions: maintenanceStore.predictions
+        maintenanceLogs: maintenanceStore.logs,
+        predictiveInsights: [],
+        maintenanceTabs: ['Recent', 'Scheduled', 'Predictive', 'Component History'],
+        activeMaintenanceTab: 'Recent'
       }
 
     case 'analytics':
       return {
-        ...baseProps,
-        analyticsData: turbineStore.analyticsData
-      }
-
-    case 'reports':
-      return {
-        reports: [] // Implement report generation
-      }
-
-    case 'settings':
-      return {
-        user: state.currentUser,
-        preferences: {} // User preferences
+        kpis: [],
+        charts: []
       }
 
     default:
-      return baseProps
+      return {}
   }
+})
+
+const filteredTurbines = computed(() => {
+  if (!state.searchQuery) return turbineStore.turbines
+  const query = state.searchQuery.toLowerCase()
+  return turbineStore.turbines.filter(t =>
+      t.id.toLowerCase().includes(query) || t.location.toLowerCase().includes(query)
+  )
 })
 
 const activeAlarms = computed(() => alarmStore.activeAlarms)
 const criticalAlarmsCount = computed(() => alarmStore.criticalCount)
-const showRightSidebar = computed(() => ['dashboard', 'performance'].includes(state.activeRoute))
+const showRightSidebar = computed(() => ['overview', 'performance'].includes(state.activeRoute))
 
 const recentActivity = computed(() => {
-  // Combine recent alarms and maintenance into activity feed
-  const activities = []
-
-  alarmStore.recentAlarms(3).forEach(alarm => {
-    activities.push({
-      type: 'alarm',
-      timestamp: alarm.time,
-      message: `${alarm.title} on ${alarm.turbine}`,
-      severity: alarm.priority
-    })
-  })
-
-  return activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  return alarmStore.recentAlarms(3).map(alarm => ({
+    type: 'alarm',
+    timestamp: alarm.time,
+    message: `${alarm.title} on ${alarm.turbine}`,
+    severity: alarm.priority
+  }))
 })
 
 // ============================================================================
-// METHODS & EVENT HANDLERS
+// METHODS
 // ============================================================================
 
 const handleNavigation = (routeId) => {
   state.activeRoute = routeId
-  // Could integrate with Vue Router here
 }
 
 const handleTurbineSelect = (turbine) => {
@@ -235,9 +408,7 @@ const handleShowAlarm = (alarm) => {
 const handleAcknowledgeAlarm = (alarm) => {
   alarmStore.acknowledgeAlarm(alarm.id)
   state.selectedAlarm = null
-
-  // Show success notification
-  showNotification('Alarm acknowledged successfully', 'success')
+  console.log('✓ Alarm acknowledged')
 }
 
 const handleAddMaintenance = (turbine) => {
@@ -245,63 +416,57 @@ const handleAddMaintenance = (turbine) => {
   state.showMaintenanceForm = true
 }
 
-const handleMaintenanceSubmit = (maintenanceData) => {
-  maintenanceStore.addLog(maintenanceData)
+const handleMaintenanceSubmit = () => {
+  maintenanceStore.addLog({ ...maintenanceForm })
   state.showMaintenanceForm = false
 
-  showNotification('Maintenance log added', 'success')
+  // Reset form
+  maintenanceForm.turbine = ''
+  maintenanceForm.type = 'Preventive'
+  maintenanceForm.description = ''
+  maintenanceForm.technician = state.currentUser.name
+
+  console.log('✓ Maintenance log saved')
 }
 
 const handleQuickAction = (action) => {
-  // Handle quick actions from right sidebar
   console.log('Quick action:', action)
+}
+
+const handleQuickLink = (action) => {
+  console.log('Quick link:', action)
 }
 
 const toggleTheme = () => {
   state.theme = state.theme === 'light' ? 'dark' : 'light'
-  // Implement theme switching logic
+  document.documentElement.classList.toggle('dark')
 }
 
-const showNotification = (message, type = 'info') => {
-  // Implement notification system
-  console.log(`[${type}] ${message}`)
+const getPriorityClass = (priority) => {
+  const classes = {
+    Critical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    Major: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    Warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    Minor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+  }
+  return classes[priority] || 'bg-slate-100 text-slate-700'
 }
 
 // ============================================================================
-// LIFECYCLE & INITIALIZATION
+// LIFECYCLE
 // ============================================================================
 
-onMounted(async () => {
-  // Initialize stores
-  await turbineStore.fetchTurbines()
-  await alarmStore.fetchAlarms()
-  await maintenanceStore.fetchLogs()
-
+onMounted(() => {
   // Select first turbine by default
   if (turbineStore.turbines.length > 0) {
     handleTurbineSelect(turbineStore.turbines[0])
   }
-
-  // Setup real-time updates (WebSocket, polling, etc.)
-  setupRealTimeUpdates()
 })
 
-const setupRealTimeUpdates = () => {
-  // Implement WebSocket or polling for real-time data
-  // Example: setInterval(() => alarmStore.fetchAlarms(), 30000)
-}
-
-// Provide state to child components if needed
-provide('app', {
-  state,
-  handleNavigation,
-  handleTurbineSelect
-})
-
-// Watch for critical alarms and show notifications
+// Watch for new critical alarms
 watch(() => alarmStore.criticalCount, (newCount, oldCount) => {
   if (newCount > oldCount) {
-    showNotification('New critical alarm detected!', 'error')
+    console.log('⚠️ New critical alarm!')
   }
 })
 </script>
@@ -323,10 +488,5 @@ watch(() => alarmStore.criticalCount, (newCount, oldCount) => {
 .slide-fade-leave-to {
   transform: translateX(-10px);
   opacity: 0;
-}
-
-/* Dark mode styles */
-:deep(.dark) {
-  color-scheme: dark;
 }
 </style>

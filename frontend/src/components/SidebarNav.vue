@@ -146,7 +146,6 @@ const props = defineProps({
     type: Array,
     default: () => [
       { id: 'overview', label: 'Overview', icon: 'dashboard', badge: null },
-      { id: 'performance', label: 'Performance', icon: 'zap', badge: null },
       { id: 'alarms', label: 'Alarms', icon: 'alert', badge: 3 },
       { id: 'maintenance', label: 'Maintenance', icon: 'wrench', badge: null },
       { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },

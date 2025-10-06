@@ -18,7 +18,6 @@ export default {
 
 <style scoped>
 .poc-view {
-    padding: 2rem;
     text-align: center;
 }
 </style>
