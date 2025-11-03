@@ -21,9 +21,9 @@
           </router-link>
 
           <router-link
-              to="/history"
+              to="/historical"
               class="px-6 py-2 rounded-lg font-semibold transition-all duration-200"
-              :class="isActive('/history') ? 'bg-white text-blue-600' : 'bg-blue-700 text-white hover:bg-blue-800'"
+              :class="isActive('/historical') ? 'bg-white text-blue-600' : 'bg-blue-700 text-white hover:bg-blue-800'"
           >
             History
           </router-link>
