@@ -40,37 +40,25 @@
         </div>
       </div>
 
-      <!-- Selected Turbine Details Section (appears below when turbine is clicked) -->
-      <div v-if="selectedTurbine" class="bg-white border-2 border-blue-500 rounded-lg p-8 mt-8">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-800">
-            Selected Turbine: {{ selectedTurbine.turbine_id }}
-          </h2>
-          <button
-              @click="clearSelection"
-              class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-          >
-            Close
-          </button>
-        </div>
-
-        <!-- Placeholder for turbine details/history -->
-        <div class="text-center py-12 bg-gray-50 rounded-lg">
-          <p class="text-gray-600 text-lg mb-2">
-            History data for turbine <strong>{{ selectedTurbine.turbine_id }}</strong>
-          </p>
-          <p class="text-gray-400">
-            Content coming soon...
-          </p>
-        </div>
-      </div>
+      <!-- Use the separate detail component -->
+      <TurbineHistoryDetails
+          v-if="selectedTurbine"
+          :turbine="selectedTurbine"
+          @close="clearSelection"
+      />
     </div>
   </div>
 </template>
 
 <script>
+import TurbineHistoryDetails from './TurbineHistoryDetails.vue';
+
 export default {
   name: 'HistoryPage',
+
+  components: {
+    TurbineHistoryDetails  // Register the child component
+  },
 
   data() {
     return {
@@ -113,10 +101,10 @@ export default {
       return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
     },
 
-    // Select a turbine to show details
     selectTurbine(turbine) {
       this.selectedTurbine = turbine;
 
+      // Smooth scroll to details
       this.$nextTick(() => {
         const element = document.querySelector('.border-blue-500');
         if (element) {
@@ -125,7 +113,6 @@ export default {
       });
     },
 
-    // Clear selection
     clearSelection() {
       this.selectedTurbine = null;
     }
