@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\HydraulicReading;
 use App\Models\ScadaReading;
 use App\Models\Turbine;
 use Illuminate\Http\Request;
@@ -34,6 +35,107 @@ class LiveDataController extends Controller
             'alarm_severity' => $this->getAlarmSeverity($scadaData->alarm_code),
         ]);
     }
+
+    public function getTurbineLatestHydraulicData($turbineId) {
+        $turbine = Turbine::findOrFail($turbineId);
+        $hydraulic_readings = HydraulicReading::where('turbine_id', $turbine->id)->latest('reading_timestamp')->first();
+
+        return response()->json([
+           'turbine_id' => $turbine->id,
+           'latest_reading' => $hydraulic_readings->reading_timestamp,
+           'gearbox_oil_pressure_bar' => $hydraulic_readings->gearbox_oil_pressure_bar,
+            'gearbox_oil_pressure_status' => $this->getGearboxPressureStatus($hydraulic_readings->gearbox_oil_pressure_bar, $turbine->id),
+           'hydraulic_pressure_bar' => $hydraulic_readings->hydraulic_pressure_bar,
+            'hydraulic_pressure_status' => $this->getHydraulicPressureStatus($hydraulic_readings->hydraulic_pressure_bar),
+        ]);
+    }
+
+    /**
+     * Get gearbox oil pressure status
+     * Based on documentation hints and industry standards
+     */
+    private function getGearboxPressureStatus($pressure, $turbineId)
+    {
+        // Based on documentation: 2.0-2.3 bar is warning level (low)
+        // Normal should be higher
+        $scadaData = ScadaReading::where('turbine_id', $turbineId)->latest('reading_timestamp')->first();
+        if ($scadaData->status_code !== 100) {
+            return 'Turbine is not running';
+        }
+        if ($pressure >= 2.5) {
+            return [
+                'status' => 'normal',
+                'label' => 'Normal',
+                'color' => 'green'
+            ];
+        } elseif ($pressure >= 2.0 && $pressure < 2.5) {
+            return [
+                'status' => 'warning',
+                'label' => 'Low Pressure',
+                'color' => 'yellow'
+            ];
+        } elseif ($pressure >= 1.5 && $pressure < 2.0) {
+            return [
+                'status' => 'critical',
+                'label' => 'Very Low Pressure',
+                'color' => 'orange'
+            ];
+        } else {
+            return [
+                'status' => 'failed',
+                'label' => 'Critically Low',
+                'color' => 'red'
+            ];
+        }
+    }
+
+    /**
+     * Get hydraulic pressure status
+     * Based on documentation: ~160 bar is maintained/normal
+     */
+    private function getHydraulicPressureStatus($pressure)
+    {
+        // Documentation states: "Hydraulic Pressure: Maintained (~160 bar)"
+
+        if ($pressure >= 150 && $pressure <= 170) {
+            return [
+                'status' => 'normal',
+                'label' => 'Normal',
+                'color' => 'green'
+            ];
+        } elseif ($pressure >= 140 && $pressure < 150) {
+            return [
+                'status' => 'warning',
+                'label' => 'Below Normal',
+                'color' => 'yellow'
+            ];
+        } elseif ($pressure > 170 && $pressure <= 180) {
+            return [
+                'status' => 'warning',
+                'label' => 'Above Normal',
+                'color' => 'yellow'
+            ];
+        } elseif ($pressure >= 120 && $pressure < 140) {
+            return [
+                'status' => 'critical',
+                'label' => 'Low Pressure',
+                'color' => 'orange'
+            ];
+        } elseif ($pressure > 180 && $pressure <= 200) {
+            return [
+                'status' => 'critical',
+                'label' => 'High Pressure',
+                'color' => 'orange'
+            ];
+        } else {
+            return [
+                'status' => 'failed',
+                'label' => 'Pressure Out of Range',
+                'color' => 'red'
+            ];
+        }
+    }
+
 
     /**
      * Get status severity for UI coloring

@@ -195,7 +195,7 @@ export default {
 
       const promises = this.turbines.map(async (turbine) => {
         try {
-          const response = await fetch(`${apiUrl}/turbine/${turbine.id}/latest`);
+          const response = await fetch(`${apiUrl}/turbine/${turbine.id}/latestScadaData`);
 
           if (response.ok) {
             const liveData = await response.json();
