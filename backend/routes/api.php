@@ -11,4 +11,4 @@ Route::get('/test', function () {
 
 Route::get('turbines', [TurbineController::class, 'all_turbines']);
 
-Route::get('turbine/{turbineId}/latest', [LiveDataController::class, 'getTurbineLatest']);
+Route::get('turbine/{turbineId}/latest', [LiveDataController::class, 'getTurbineLatestScadaData']);
