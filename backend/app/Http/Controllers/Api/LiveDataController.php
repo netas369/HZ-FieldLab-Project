@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\HydraulicReading;
 use App\Models\ScadaReading;
+use App\Models\TemperatureReading;
 use App\Models\Turbine;
 use App\Models\VibrationReading;
 use App\Services\TurbineDataService;
@@ -61,7 +62,7 @@ class LiveDataController extends Controller
 
     public function getTurbineLatestVibrationReadings($turbineId) {
         $turbine = Turbine::findOrFail($turbineId);
-        $vibration = VibrationReading::where('turbine_id', $turbine->id)->latest()->first();
+        $vibration = VibrationReading::where('turbine_id', $turbine->id)->latest('reading_timestamp')->first();
 
         return response()->json([
             'turbine_id' => $turbine->id,
@@ -103,6 +104,66 @@ class LiveDataController extends Controller
 
             // Overall Assessment
             'overall_vibration_status' => $this->service->getOverallVibrationStatus($vibration)
+        ]);
+    }
+
+    /**
+     * Get latest temperature readings for a turbine
+     */
+    public function getTurbineLatestTemperatureReadings($turbineId) {
+        $turbine = Turbine::findOrFail($turbineId);
+        $temperature = TemperatureReading::where('turbine_id', $turbine->id)->latest('reading_timestamp')->first();
+
+        if(!$temperature) {
+            return response()->json([
+                'error' => 'No temperature data found for this turbine'
+            ], 404);
+        }
+
+        $scada = ScadaReading::where('turbine_id', $turbine->id)->latest('reading_timestamp')->first();
+
+        // calculate load factor (0-1) based on rated power (2500 kw assumingly)
+        $loadFactor = $scada ? min($scada->power_kw / 2500, 1.0) : 0;
+
+        return response()->json([
+            'turbine_id' => $turbine->id,
+            'latest_reading' => $temperature->reading_timestamp,
+            'load_factor' => round($loadFactor, 2),
+
+            // Nacelle Temperature
+            'nacelle_temp' => $temperature->nacelle_temp_c,
+            'nacelle_status' => $this->service->getNacelleTemperatureStatus($temperature->nacelle_temp_c),
+
+            // Gearbox Temperatures
+            'gearbox_bearing_temp' => $temperature->gearbox_bearing_temp_c,
+            'gearbox_bearing_status' => $this->service->getGearboxBearingTempStatus(
+                $temperature->gearbox_bearing_temp_c,
+                $temperature->gearbox_oil_temp_c,
+                $loadFactor
+            ),
+            'gearbox_oil_temp' => $temperature->gearbox_oil_temp_c,
+            'gearbox_oil_status' => $this->service->getGearboxOilTempStatus($temperature->gearbox_oil_temp_c),
+
+            // Generator Temperatures
+            'generator_bearing1_temp' => $temperature->generator_bearing1_temp_c,
+            'generator_bearing2_temp' => $temperature->generator_bearing2_temp_c,
+            'generator_stator_temp' => $temperature->generator_stator_temp_c,
+            'generator_status' => $this->service->getGeneratorTemperatureStatus(
+                $temperature->generator_stator_temp_c,
+                $temperature->gearbox_oil_temp_c, // ambient proxy
+                $loadFactor
+            ),
+
+            // Main Bearing Temperature
+            'main_bearing_temp' => $temperature->main_bearing_temp_c,
+            'main_bearing_status' => $this->service->getMainBearingTempStatus(
+                $temperature->main_bearing_temp_c,
+                $temperature->gearbox_oil_temp_c,
+                $loadFactor
+            ),
+
+            // Overall Temperature Assessment
+            'overall_temperature_status' => $this->service->getOverallTemperatureStatus($temperature, $loadFactor)
         ]);
     }
 }

@@ -379,4 +379,201 @@ class TurbineDataService
             ];
         }
     }
+
+    /**
+     * Get nacelle temperature status
+     */
+    public function getNacelleTemperatureStatus($temp)
+    {
+        if ($temp === null) {
+            return $this->getStatusStructure('unknown', 'No Data', 'gray');
+        }
+
+        // Nacelle should be slightly above ambient (equipment heat)
+        if ($temp < 0) {
+            return $this->getStatusStructure('critical', 'Very Cold', 'orange', 'Below operating temperature');
+        } elseif ($temp >= 0 && $temp < 50) {
+            return $this->getStatusStructure('good', 'Normal', 'green', 'Acceptable nacelle temperature');
+        } elseif ($temp >= 50 && $temp < 70) {
+            return $this->getStatusStructure('warning', 'Warm', 'yellow', 'Higher than typical');
+        } else {
+            return $this->getStatusStructure('critical', 'Hot', 'red', 'Excessive nacelle heat');
+        }
+    }
+
+    /**
+     * Get gearbox bearing temperature status
+     */
+    public function getGearboxBearingTempStatus($temp, $ambient, $loadFactor)
+    {
+        if ($temp === null) {
+            return $this->getStatusStructure('unknown', 'No Data', 'gray');
+        }
+
+        // Expected: ambient + load factor effect
+        $expectedTemp = $ambient + (30 * $loadFactor);
+        $deviation = $temp - $expectedTemp;
+
+        // From docs: +5 to +15°C above expected is warning
+        if ($deviation < 5) {
+            return $this->getStatusStructure('good', 'Normal', 'green', 'Within expected range');
+        } elseif ($deviation >= 5 && $deviation < 15) {
+            return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Monitor - trending warm');
+        } elseif ($deviation >= 15 && $deviation < 25) {
+            return $this->getStatusStructure('critical', 'High', 'orange', 'Urgent - plan maintenance');
+        } else {
+            return $this->getStatusStructure('failed', 'Very High', 'red', 'Critical overheating');
+        }
+    }
+
+    /**
+     * Get gearbox oil temperature status
+     */
+    public function getGearboxOilTempStatus($temp)
+    {
+        if ($temp === null) {
+            return $this->getStatusStructure('unknown', 'No Data', 'gray');
+        }
+
+        // Typical gearbox oil operating temperature
+        if ($temp < 40) {
+            return $this->getStatusStructure('good', 'Cold', 'green', 'Starting up or low load');
+        } elseif ($temp >= 40 && $temp < 70) {
+            return $this->getStatusStructure('good', 'Normal', 'green', 'Optimal operating temperature');
+        } elseif ($temp >= 70 && $temp < 80) {
+            return $this->getStatusStructure('warning', 'Warm', 'yellow', 'Higher than optimal');
+        } elseif ($temp >= 80 && $temp < 90) {
+            return $this->getStatusStructure('critical', 'Hot', 'orange', 'Check cooling system');
+        } else {
+            return $this->getStatusStructure('failed', 'Very Hot', 'red', 'Oil degradation risk');
+        }
+    }
+
+    /**
+     * Get generator temperature status (from documentation)
+     */
+    public function getGeneratorTemperatureStatus($statorTemp, $ambient, $loadFactor)
+    {
+        if ($statorTemp === null) {
+            return $this->getStatusStructure('unknown', 'No Data', 'gray');
+        }
+
+        // From docs: Expected = Ambient + (55 × load_factor)
+        $expectedTemp = $ambient + (55 * $loadFactor);
+        $deviation = $expectedTemp - $statorTemp;
+
+        // From documentation thresholds
+        if ($statorTemp < 100) {
+            if ($deviation > -10) {
+                return $this->getStatusStructure('good', 'Normal', 'green', 'Within expected range');
+            } else {
+                return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Above expected by ' . abs(round($deviation)) . '°C');
+            }
+        } elseif ($statorTemp >= 100 && $statorTemp < 110) {
+            return $this->getStatusStructure('warning', 'High (Limit to 80% Power)', 'yellow', 'Generator warming - reduce load');
+        } elseif ($statorTemp >= 110 && $statorTemp < 115) {
+            return $this->getStatusStructure('critical', 'Very High (Limit to 60% Power)', 'orange', 'Critical - implement power curtailment');
+        } elseif ($statorTemp >= 115 && $statorTemp < 120) {
+            return $this->getStatusStructure('critical', 'Shutdown Temperature', 'red', 'Shutdown to prevent damage');
+        } else {
+            return $this->getStatusStructure('failed', 'Failed - Overheated', 'red', 'Component failure - Alarm 3004');
+        }
+    }
+
+    /**
+     * Get main bearing temperature status
+     */
+    public function getMainBearingTempStatus($temp, $ambient, $loadFactor)
+    {
+        if ($temp === null) {
+            return $this->getStatusStructure('unknown', 'No Data', 'gray');
+        }
+
+        $expectedTemp = $ambient + (25 * $loadFactor);
+        $deviation = $temp - $expectedTemp;
+
+        // From docs: +5 to +15°C above expected is warning
+        if ($deviation < 5) {
+            return $this->getStatusStructure('good', 'Normal', 'green', 'Within expected range');
+        } elseif ($deviation >= 5 && $deviation < 15) {
+            return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Monitor bearing condition');
+        } elseif ($deviation >= 15 && $deviation < 25) {
+            return $this->getStatusStructure('critical', 'High', 'orange', 'Check lubrication system');
+        } else {
+            return $this->getStatusStructure('failed', 'Very High', 'red', 'Bearing damage risk');
+        }
+    }
+
+    /**
+     * Get overall temperature assessment
+     */
+    public function getOverallTemperatureStatus($temperature, $loadFactor)
+    {
+        $criticalComponents = [];
+        $warningComponents = [];
+
+        // Check each component
+        $checks = [
+            'Generator Stator' => $temperature->generator_stator_temp_c,
+            'Gearbox Bearing' => $temperature->gearbox_bearing_temp_c,
+            'Gearbox Oil' => $temperature->gearbox_oil_temp_c,
+            'Main Bearing' => $temperature->main_bearing_temp_c,
+        ];
+
+        foreach ($checks as $component => $temp) {
+            if ($temp === null) continue;
+
+            // Apply component-specific thresholds
+            if ($component === 'Generator Stator') {
+                if ($temp >= 115) $criticalComponents[] = $component;
+                elseif ($temp >= 100) $warningComponents[] = $component;
+            } elseif ($component === 'Gearbox Oil') {
+                if ($temp >= 90) $criticalComponents[] = $component;
+                elseif ($temp >= 80) $warningComponents[] = $component;
+            } else {
+                // Bearings
+                if ($temp >= 100) $criticalComponents[] = $component;
+                elseif ($temp >= 80) $warningComponents[] = $component;
+            }
+        }
+
+        if (count($criticalComponents) > 0) {
+            return [
+                'status' => 'critical',
+                'label' => 'Critical Temperature Detected',
+                'color' => 'red',
+                'message' => 'Components overheating: ' . implode(', ', $criticalComponents),
+                'action_required' => 'Immediate inspection required'
+            ];
+        } elseif (count($warningComponents) > 0) {
+            return [
+                'status' => 'warning',
+                'label' => 'Elevated Temperatures',
+                'color' => 'yellow',
+                'message' => 'Monitor: ' . implode(', ', $warningComponents),
+                'action_required' => 'Check cooling systems'
+            ];
+        } else {
+            return [
+                'status' => 'good',
+                'label' => 'All Temperatures Normal',
+                'color' => 'green',
+                'message' => 'All components within acceptable range',
+                'action_required' => 'None'
+            ];
+        }
+    }
+
+    /**
+     * Helper function to create consistent status structure
+     */
+    public function getStatusStructure($status, $label, $color, $description = null)
+    {
+        return [
+            'status' => $status,
+            'label' => $label,
+            'color' => $color,
+            'description' => $description
+        ];
+    }
 }
