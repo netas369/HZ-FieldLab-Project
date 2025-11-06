@@ -39,7 +39,7 @@
           Performance History
         </h3>
         <div class="h-64 flex items-center justify-center text-gray-400">
-          Chart will be here
+Performance
         </div>
       </div>
 
@@ -49,17 +49,17 @@
           Maintenance Records
         </h3>
         <div class="text-center py-8 text-gray-400">
-          Maintenance history will be here
         </div>
       </div>
 
       <!-- Section 3: Status Logs -->
       <div class="bg-gray-50 p-6 rounded-lg">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">
-          Status Change Logs
+        Status logs
+  <TurbineStatusLogs />
+          
         </h3>
         <div class="text-center py-8 text-gray-400">
-          Status logs will be here
         </div>
       </div>
     </div>
@@ -67,8 +67,14 @@
 </template>
 
 <script>
+import TurbineStatusLogs from './visualizations/TurbineStatusLogs.vue'
+
 export default {
   name: 'TurbineHistoryDetail',
+
+  components: {
+  TurbineStatusLogs
+  },
 
   // Receive turbine data from parent
   props: {
