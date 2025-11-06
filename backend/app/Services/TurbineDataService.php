@@ -181,4 +181,202 @@ class TurbineDataService
 
         return 'unknown';
     }
+
+    /**
+     * Get vibration status based on ISO 10816 standard
+     */
+    public function getVibrationStatus($vibration_mms)
+    {
+        if ($vibration_mms === null) {
+            return [
+                'status' => 'unknown',
+                'label' => 'No Data',
+                'zone' => 'N/A',
+                'color' => 'gray',
+                'severity' => 'none'
+            ];
+        }
+
+        // ISO 10816 Zones for large machines (wind turbines)
+        if ($vibration_mms < 2.8) {
+            return [
+                'status' => 'excellent',
+                'label' => 'Excellent',
+                'zone' => 'Zone A',
+                'color' => 'green',
+                'severity' => 'none',
+                'description' => 'Newly commissioned condition'
+            ];
+        } elseif ($vibration_mms >= 2.8 && $vibration_mms < 7.1) {
+            return [
+                'status' => 'good',
+                'label' => 'Good',
+                'zone' => 'Zone B',
+                'color' => 'green',
+                'severity' => 'none',
+                'description' => 'Acceptable for long-term operation'
+            ];
+        } elseif ($vibration_mms >= 7.1 && $vibration_mms < 11.2) {
+            return [
+                'status' => 'warning',
+                'label' => 'Warning',
+                'zone' => 'Zone C',
+                'color' => 'yellow',
+                'severity' => 'warning',
+                'description' => 'Plan maintenance soon'
+            ];
+        } else {
+            return [
+                'status' => 'critical',
+                'label' => 'Critical',
+                'zone' => 'Zone D',
+                'color' => 'red',
+                'severity' => 'critical',
+                'description' => 'Unacceptable - immediate action required'
+            ];
+        }
+    }
+
+    /**
+     * Check blade vibration balance
+     */
+    public function getBladeVibrationStatus($blade1, $blade2, $blade3)
+    {
+        if ($blade1 === null || $blade2 === null || $blade3 === null) {
+            return [
+                'status' => 'unknown',
+                'label' => 'No Data',
+                'color' => 'gray',
+                'balanced' => null
+            ];
+        }
+
+        // Check individual blade vibrations
+        $maxVibration = max($blade1, $blade2, $blade3);
+        $avgVibration = ($blade1 + $blade2 + $blade3) / 3;
+
+        // Check if blades are balanced (difference < 30% from average)
+        $imbalance = abs($maxVibration - $avgVibration) / $avgVibration;
+        $isBalanced = $imbalance < 0.3;
+
+        // Get overall status
+        $status = $this->getVibrationStatus($maxVibration);
+
+        return [
+            'status' => $status['status'],
+            'label' => $status['label'],
+            'zone' => $status['zone'],
+            'color' => $status['color'],
+            'balanced' => $isBalanced,
+            'imbalance_percentage' => round($imbalance * 100, 1),
+            'max_vibration' => $maxVibration,
+            'avg_vibration' => round($avgVibration, 2),
+            'blade_values' => [
+                'blade1' => $blade1,
+                'blade2' => $blade2,
+                'blade3' => $blade3
+            ]
+        ];
+    }
+
+    /**
+     * Get acoustic level status
+     */
+    public function getAcousticStatus($db_level)
+    {
+        if ($db_level === null) {
+            return [
+                'status' => 'unknown',
+                'label' => 'No Data',
+                'color' => 'gray'
+            ];
+        }
+
+        // Typical wind turbine noise levels
+        if ($db_level < 45) {
+            return [
+                'status' => 'quiet',
+                'label' => 'Quiet',
+                'color' => 'green',
+                'description' => 'Normal operation'
+            ];
+        } elseif ($db_level >= 45 && $db_level < 55) {
+            return [
+                'status' => 'normal',
+                'label' => 'Normal',
+                'color' => 'green',
+                'description' => 'Typical noise level'
+            ];
+        } elseif ($db_level >= 55 && $db_level < 65) {
+            return [
+                'status' => 'elevated',
+                'label' => 'Elevated',
+                'color' => 'yellow',
+                'description' => 'Higher than usual'
+            ];
+        } else {
+            return [
+                'status' => 'loud',
+                'label' => 'Loud',
+                'color' => 'orange',
+                'description' => 'Investigate noise source'
+            ];
+        }
+    }
+
+    /**
+     * Get overall vibration health assessment
+     */
+    public function getOverallVibrationStatus($vibration)
+    {
+        $components = [
+            'main_bearing' => $vibration->main_bearing_vibration_rms_mms,
+            'gearbox' => max(
+                $vibration->gearbox_vibration_axial_mms ?? 0,
+                $vibration->gearbox_vibration_radial_mms ?? 0
+            ),
+            'generator' => max(
+                $vibration->generator_vibration_de_mms ?? 0,
+                $vibration->generator_vibration_nde_mms ?? 0
+            ),
+            'tower' => max(
+                $vibration->tower_vibration_fa_mms ?? 0,
+                $vibration->tower_vibration_ss_mms ?? 0
+            ),
+        ];
+
+        $criticalCount = 0;
+        $warningCount = 0;
+
+        foreach ($components as $name => $value) {
+            if ($value >= 11.2) {
+                $criticalCount++;
+            } elseif ($value >= 7.1) {
+                $warningCount++;
+            }
+        }
+
+        if ($criticalCount > 0) {
+            return [
+                'status' => 'critical',
+                'label' => 'Critical Vibration Detected',
+                'color' => 'red',
+                'message' => "$criticalCount component(s) in critical zone"
+            ];
+        } elseif ($warningCount > 0) {
+            return [
+                'status' => 'warning',
+                'label' => 'Elevated Vibration',
+                'color' => 'yellow',
+                'message' => "$warningCount component(s) need attention"
+            ];
+        } else {
+            return [
+                'status' => 'good',
+                'label' => 'All Components Normal',
+                'color' => 'green',
+                'message' => 'All vibrations within acceptable range'
+            ];
+        }
+    }
 }

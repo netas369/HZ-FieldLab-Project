@@ -14,3 +14,5 @@ Route::get('turbines', [TurbineController::class, 'all_turbines']);
 Route::get('turbine/{turbineId}/latestScadaData', [LiveDataController::class, 'getTurbineLatestScadaData']);
 
 Route::get('turbine/{turbineId}/latestHydraulicReadings', [LiveDataController::class, 'getTurbineLatestHydraulicData']);
+
+Route::get('turbine/{turbineId}/vibrations', [LiveDataController::class, 'getTurbineLatestVibrationReadings']);

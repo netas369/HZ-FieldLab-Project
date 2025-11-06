@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HydraulicReading;
 use App\Models\ScadaReading;
 use App\Models\Turbine;
+use App\Models\VibrationReading;
 use App\Services\TurbineDataService;
 use Illuminate\Http\Request;
 
@@ -52,9 +53,56 @@ class LiveDataController extends Controller
            'turbine_id' => $turbine->id,
            'latest_reading' => $hydraulic_readings->reading_timestamp,
            'gearbox_oil_pressure_bar' => $hydraulic_readings->gearbox_oil_pressure_bar,
-            'gearbox_oil_pressure_status' => $this->getGearboxPressureStatus($hydraulic_readings->gearbox_oil_pressure_bar, $turbine->id),
+            'gearbox_oil_pressure_status' => $this->service->getGearboxPressureStatus($hydraulic_readings->gearbox_oil_pressure_bar, $turbine->id),
            'hydraulic_pressure_bar' => $hydraulic_readings->hydraulic_pressure_bar,
-            'hydraulic_pressure_status' => $this->getHydraulicPressureStatus($hydraulic_readings->hydraulic_pressure_bar),
+            'hydraulic_pressure_status' => $this->service->getHydraulicPressureStatus($hydraulic_readings->hydraulic_pressure_bar),
+        ]);
+    }
+
+    public function getTurbineLatestVibrationReadings($turbineId) {
+        $turbine = Turbine::findOrFail($turbineId);
+        $vibration = VibrationReading::where('turbine_id', $turbine->id)->latest()->first();
+
+        return response()->json([
+            'turbine_id' => $turbine->id,
+            'latest_reading' => $vibration->reading_timestamp,
+
+            // Main Bearing Vibration
+            'main_bearing_vibration_rms' => $vibration->main_bearing_vibration_rms_mms,
+            'main_bearing_vibration_peak' => $vibration->main_bearing_vibration_peak_mms,
+            'main_bearing_status' => $this->service->getVibrationStatus($vibration->main_bearing_vibration_rms_mms),
+
+            // Gearbox Vibration
+            'gearbox_vibration_axial' => $vibration->gearbox_vibration_axial_mms,
+            'gearbox_vibration_radial' => $vibration->gearbox_vibration_radial_mms,
+            'gearbox_status' => $this->service->getVibrationStatus($vibration->gearbox_vibration_axial_mms),
+
+            // Generator Vibration
+            'generator_vibration_de' => $vibration->generator_vibration_de_mms,
+            'generator_vibration_nde' => $vibration->generator_vibration_nde_mms,
+            'generator_status' => $this->service->getVibrationStatus($vibration->generator_vibration_de_mms),
+
+            // Tower Vibration
+            'tower_vibration_fa' => $vibration->tower_vibration_fa_mms,
+            'tower_vibration_ss' => $vibration->tower_vibration_ss_mms,
+            'tower_status' => $this->service->getVibrationStatus($vibration->tower_vibration_fa_mms),
+
+            // Blade Vibration
+            'blade1_vibration' => $vibration->blade1_vibration_mms,
+            'blade2_vibration' => $vibration->blade2_vibration_mms,
+            'blade3_vibration' => $vibration->blade3_vibration_mms,
+            'blade_status' => $this->service->getBladeVibrationStatus(
+                $vibration->blade1_vibration_mms,
+                $vibration->blade2_vibration_mms,
+                $vibration->blade3_vibration_mms
+            ),
+
+            // Acoustic Level
+            'acoustic_level_db' => $vibration->acoustic_level_db,
+            'acoustic_status' => $this->service->getAcousticStatus($vibration->acoustic_level_db),
+
+            // Overall Assessment
+            'overall_vibration_status' => $this->service->getOverallVibrationStatus($vibration)
         ]);
     }
 }
