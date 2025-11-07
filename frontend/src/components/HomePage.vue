@@ -25,7 +25,7 @@
             v-for="turbine in turbines"
             :key="turbine.id"
             class="bg-white border-2 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer"
-            :class="getTurbineBorderClass(turbine.liveData)"
+            :class="getTurbineBorderClass(turbine.liveScadaData)"
             @click="selectTurbine(turbine)"
         >
           <!-- Header with Turbine Name and Status Dot -->
@@ -34,9 +34,9 @@
               {{ turbine.turbine_id }}
             </h3>
             <span
-                v-if="turbine.liveData"
-                :class="['w-3 h-3 rounded-full', getStatusDotClass(turbine.liveData?.status_severity)]"
-                :title="turbine.liveData?.status_description"
+                v-if="turbine.liveScadaData"
+                :class="['w-3 h-3 rounded-full', getStatusDotClass(turbine.liveScadaData?.status_severity)]"
+                :title="turbine.liveScadaData?.status_description"
             ></span>
             <span v-else class="w-3 h-3 rounded-full bg-gray-300 animate-pulse"></span>
           </div>
@@ -49,19 +49,19 @@
           </p>
 
           <!-- Live Data Preview -->
-          <div v-if="turbine.liveData" class="mt-4 pt-4 border-t border-gray-200">
+          <div v-if="turbine.liveScadaData" class="mt-4 pt-4 border-t border-gray-200">
             <!-- Latest Reading Timestamp -->
             <div class="mb-3 flex items-center justify-between">
               <span class="text-xs text-gray-500">Last Update:</span>
               <span class="text-xs font-medium text-blue-600">
-                {{ formatTime(turbine.liveData.latest_reading) }}
+                {{ formatTime(turbine.liveScadaData.latest_reading) }}
               </span>
             </div>
 
             <!-- Data Age Indicator -->
             <div class="mb-3">
-              <span :class="['text-xs px-2 py-1 rounded', getDataAgeClass(turbine.liveData.latest_reading)]">
-                {{ getDataAge(turbine.liveData.latest_reading) }}
+              <span :class="['text-xs px-2 py-1 rounded', getDataAgeClass(turbine.liveScadaData.latest_reading)]">
+                {{ getDataAge(turbine.liveScadaData.latest_reading) }}
               </span>
             </div>
 
@@ -70,62 +70,90 @@
               <div
                   :class="[
                   'text-sm font-semibold px-3 py-2 rounded flex items-center',
-                  getStatusClass(turbine.liveData.status_severity)
+                  getStatusClass(turbine.liveScadaData.status_severity)
                 ]"
               >
-                <span class="mr-2">{{ getStatusIcon(turbine.liveData.status_code) }}</span>
-                {{ turbine.liveData.status_description }}
+                <span class="mr-2">{{ getStatusIcon(turbine.liveScadaData.status_code) }}</span>
+                {{ turbine.liveScadaData.status_description }}
               </div>
             </div>
 
             <!-- Alarm Warning (if exists) -->
             <div
-                v-if="turbine.liveData.alarm_code && turbine.liveData.alarm_code !== 0"
+                v-if="turbine.liveScadaData.alarm_code && turbine.liveScadaData.alarm_code !== 0"
                 :class="[
                 'mb-3 border rounded p-3',
-                getAlarmBoxClass(turbine.liveData.alarm_severity)
+                getAlarmBoxClass(turbine.liveScadaData.alarm_severity)
               ]"
             >
               <div class="flex items-start">
                 <span class="mr-2 text-lg">
-                  {{ getAlarmEmoji(turbine.liveData.alarm_severity) }}
+                  {{ getAlarmEmoji(turbine.liveScadaData.alarm_severity) }}
                 </span>
                 <div class="flex-1">
-                  <div :class="['text-sm font-semibold', getAlarmTextClass(turbine.liveData.alarm_severity)]">
-                    {{ turbine.liveData.alarm_description }}
+                  <div :class="['text-sm font-semibold', getAlarmTextClass(turbine.liveScadaData.alarm_severity)]">
+                    {{ turbine.liveScadaData.alarm_description }}
                   </div>
                   <div class="text-xs mt-1 opacity-75">
-                    Code: {{ turbine.liveData.alarm_code }}
+                    Code: {{ turbine.liveScadaData.alarm_code }}
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Live Data Grid -->
+            Scada:
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <span class="text-gray-500">Wind:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.wind_speed_ms, 1) }} m/s</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveScadaData.wind_speed_ms, 1) }} m/s</span>
               </div>
               <div>
                 <span class="text-gray-500">Power:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.power_kw, 0) }} kW</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveScadaData.power_kw, 0) }} kW</span>
               </div>
               <div>
                 <span class="text-gray-500">Rotor:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.rotor_speed_rpm, 1) }} RPM</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveScadaData.rotor_speed_rpm, 1) }} RPM</span>
               </div>
               <div>
                 <span class="text-gray-500">Temp:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.ambient_temp_c, 1) }}°C</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveScadaData.ambient_temp_c, 1) }}°C</span>
               </div>
               <div>
                 <span class="text-gray-500">Pitch:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.pitch_angle_deg, 1) }}°</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveScadaData.pitch_angle_deg, 1) }}°</span>
               </div>
               <div>
                 <span class="text-gray-500">Yaw:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.yaw_angle_deg, 1) }}°</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveScadaData.yaw_angle_deg, 1) }}°</span>
+              </div>
+            </div>
+            CMS:
+             <div class="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <span class="text-gray-500">Main bearing vibration:</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveCMSData.main_bearing_vibration_rms, 1) }} rms</span>
+              </div>
+              <div>
+                <span class="text-gray-500">Gearbox vibration:</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveCMSData.gearbox_vibration_axial, 0) }} mm/s</span>
+              </div>
+              <div>
+                <span class="text-gray-500">Blade1 vibration:</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveCMSData.blade1_vibration, 1) }} mm/s</span>
+              </div>
+              <div>
+                <span class="text-gray-500">Blade2 vibration</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveCMSData.blade2_vibration, 1) }} mm/s</span>
+              </div>
+              <div>
+                <span class="text-gray-500">Blade3 vibration</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveCMSData.blade3_vibration, 1) }} mm/s</span>
+              </div>
+              <div>
+                <span class="text-gray-500">Acoustic DB</span>
+                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveCMSData.acoustic_level_db, 1) }} DB</span>
               </div>
             </div>
           </div>
@@ -179,7 +207,10 @@ export default {
         const data = await response.json();
         this.turbines = data;
 
-        await this.fetchAllLiveData();
+        await Promise.allSettled([
+          this.fetchAllLiveData(),
+          this.fetchAllLiveCMSData()
+        ]); 
         this.startAutoRefresh();
 
       } catch (err) {
@@ -201,7 +232,28 @@ export default {
             const liveData = await response.json();
 
             // Vue 3: Just assign directly - reactivity works automatically
-            turbine.liveData = liveData;
+            turbine.liveScadaData = liveData;
+
+          }
+        } catch (err) {
+          console.error(`Failed to fetch live data for turbine ${turbine.id}:`, err);
+        }
+      });
+
+      await Promise.all(promises);
+    },
+
+      async fetchAllLiveCMSData() {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL;
+
+      const promises = this.turbines.map(async (turbine) => {
+        try {
+          const response = await fetch(`${apiUrl}/turbine/${turbine.id}/vibrations`);
+
+          if (response.ok) {
+            const liveData = await response.json();
+
+            turbine.liveCMSData = liveData;
 
           }
         } catch (err) {
@@ -214,6 +266,7 @@ export default {
 
     async refreshLiveData() {
       await this.fetchAllLiveData();
+      await this.fetchAllLiveCMSData();
     },
 
     startAutoRefresh() {
