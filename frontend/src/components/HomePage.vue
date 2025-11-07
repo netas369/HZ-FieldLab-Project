@@ -156,6 +156,43 @@
                 <span class="font-semibold ml-1">{{ formatNumber(turbine.liveCMSData.acoustic_level_db, 1) }} DB</span>
               </div>
             </div>
+
+<div class="flex flex-col items-center gap-6 p-2">
+
+    <div class="flex flex-col items-center bg-gray-100 dark:bg-gray-100 rounded-2xl shadow-md">
+      <svg class="w-64 h-64" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- LED ring color based on vibration -->
+        <circle cx="0" cy="0" r="14" :fill="ledColor" />
+        <circle cx="0" cy="0" r="14" fill="none" stroke="#222" stroke-width="0.6" />
+
+        <!-- blades -->
+        <g v-for="i in 3" :key="i" :transform="`rotate(${134 * (i) - i * 2})`">
+          <path d="M4 1 L45 -6 L20 5 Z" class="fill-gray-300 stroke-gray-700" />
+        </g>
+
+        <!-- hub -->
+        <circle cx="0" cy="0" r="6" class="fill-gray-700" />
+      </svg>
+
+      <div class="mt-4 text-center">
+        <p class="text-lg font-medium">Overall Status:
+          <span :class="{
+            'text-green-600': overallLabel === 'GREEN',
+            'text-yellow-500': overallLabel === 'YELLOW',
+            'text-red-600': overallLabel === 'RED'
+          }">
+            {{ overallLabel }}
+          </span>
+        </p>
+        <ul class="mt-2 space-y-1 text-sm">
+          <li v-for="(v, idx) in vibrations" :key="idx">Blade {{ idx+1 }}: {{ v.toFixed(2) }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+
           </div>
 
           <!-- Loading live data -->
@@ -198,19 +235,17 @@ export default {
 
       try {
         const apiUrl = import.meta.env.VITE_API_BASE_URL;
+           console.log('Fetching turbines from:', `${apiUrl}/turbines/`);
         const response = await fetch(`${apiUrl}/turbines/`);
 
         if (!response.ok) {
-          throw new Error('Failed to fetch turbines');
-        }
+      throw new Error(`Failed to fetch turbines: ${response.status} ${response.statusText}`);
+              }
 
         const data = await response.json();
         this.turbines = data;
 
-        await Promise.allSettled([
-          this.fetchAllLiveData(),
-          this.fetchAllLiveCMSData()
-        ]); 
+        await this.fetchAllLiveData();
         this.startAutoRefresh();
 
       } catch (err) {
@@ -226,36 +261,30 @@ export default {
 
       const promises = this.turbines.map(async (turbine) => {
         try {
-          const response = await fetch(`${apiUrl}/turbine/${turbine.id}/latestScadaData`);
+        
+          const [scadaResult, vibrationResult] = await Promise.allSettled([
+              fetch(`${apiUrl}/turbine/${turbine.id}/latestScadaData`),
+              fetch(`${apiUrl}/turbine/${turbine.id}/vibrations`)
+          ]);
 
-          if (response.ok) {
-            const liveData = await response.json();
+              if (scadaResult.status === "fulfilled" && scadaResult.value.ok) {
+        const scadaData = await scadaResult.value.json();
+        turbine.liveScadaData = scadaData;
+      } else if (scadaResult.status === "rejected") {
+        console.error(`SCADA fetch failed for turbine ${turbine.id}:`, scadaResult.reason);
+      } else {
+        console.warn(`SCADA request failed for turbine ${turbine.id}: ${scadaResult.value?.status}`);
+      }
 
-            // Vue 3: Just assign directly - reactivity works automatically
-            turbine.liveScadaData = liveData;
+         if (vibrationResult.status === "fulfilled" && vibrationResult.value.ok) {
+        const vibrationData = await vibrationResult.value.json();
+        turbine.liveCMSData = vibrationData;
+      } else if (vibrationResult.status === "rejected") {
+        console.error(`Vibration fetch failed for turbine ${turbine.id}:`, vibrationResult.reason);
+      } else {
+        console.warn(`Vibration request failed for turbine ${turbine.id}: ${vibrationResult.value?.status}`);
+      }
 
-          }
-        } catch (err) {
-          console.error(`Failed to fetch live data for turbine ${turbine.id}:`, err);
-        }
-      });
-
-      await Promise.all(promises);
-    },
-
-      async fetchAllLiveCMSData() {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL;
-
-      const promises = this.turbines.map(async (turbine) => {
-        try {
-          const response = await fetch(`${apiUrl}/turbine/${turbine.id}/vibrations`);
-
-          if (response.ok) {
-            const liveData = await response.json();
-
-            turbine.liveCMSData = liveData;
-
-          }
         } catch (err) {
           console.error(`Failed to fetch live data for turbine ${turbine.id}:`, err);
         }
@@ -266,13 +295,12 @@ export default {
 
     async refreshLiveData() {
       await this.fetchAllLiveData();
-      await this.fetchAllLiveCMSData();
     },
 
     startAutoRefresh() {
       this.refreshInterval = setInterval(() => {
         this.refreshLiveData();
-      }, 30000); // Refresh every 30 seconds
+      }, 60000); // Refresh every 30 seconds
     },
 
     selectTurbine(turbine) {
