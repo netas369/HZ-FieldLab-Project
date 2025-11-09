@@ -167,27 +167,13 @@
 
         <!-- blades -->
         <g v-for="i in 3" :key="i" :transform="`rotate(${134 * (i) - i * 2})`">
-          <path d="M4 1 L45 -6 L20 5 Z" class="fill-gray-300 stroke-gray-700" />
+          <path d="M4 1 L45 -6 L20 5 Z" class="stroke-gray-700" :class="getBladeColour(i, turbine.liveCMSData)" />
         </g>
 
         <!-- hub -->
         <circle cx="0" cy="0" r="6" class="fill-gray-700" />
       </svg>
 
-      <div class="mt-4 text-center">
-        <p class="text-lg font-medium">Overall Status:
-          <span :class="{
-            'text-green-600': overallLabel === 'GREEN',
-            'text-yellow-500': overallLabel === 'YELLOW',
-            'text-red-600': overallLabel === 'RED'
-          }">
-            {{ overallLabel }}
-          </span>
-        </p>
-        <ul class="mt-2 space-y-1 text-sm">
-          <li v-for="(v, idx) in vibrations" :key="idx">Blade {{ idx+1 }}: {{ v.toFixed(2) }}</li>
-        </ul>
-      </div>
     </div>
   </div>
 
@@ -341,15 +327,15 @@ export default {
 
     // Status badge styling
     getStatusClass(severity) {
-      const classes = {
+        const classes = {
         'normal': 'bg-green-100 text-green-800',
         'idle': 'bg-blue-100 text-blue-800',
         'maintenance': 'bg-yellow-100 text-yellow-800',
         'critical': 'bg-red-100 text-red-800',
         'external': 'bg-orange-100 text-orange-800'
-      };
-      return classes[severity] || 'bg-gray-100 text-gray-800';
-    },
+       };
+       return classes[severity] || 'bg-gray-100 text-gray-800';
+      },
 
     // Status icon
     getStatusIcon(statusCode) {
@@ -440,7 +426,25 @@ export default {
       if (!dateString) return 'N/A';
       const date = new Date(dateString);
       return date.toLocaleTimeString();
-    }
+    },
+
+    getStatusforBlades(vibration) {
+      if (vibration >= 0.5) {
+        return "fill-yellow-500";
+      } else if (vibration >= 0.7) {
+        return "fill-red-600";
+      } else {return "fill-green-600";}
+    },
+
+    getBladeColour(bladeIndex, liveCMSData) {
+      switch (bladeIndex) {
+        case 1: 
+        return this.getStatusforBlades(liveCMSData.blade1_vibration);
+        case 2:
+        return this.getStatusforBlades(liveCMSData.blade2_vibration);
+        case 3:
+        return this.getStatusforBlades(liveCMSData.blade3_vibration);
+    }  }
   }
 }
 </script>
