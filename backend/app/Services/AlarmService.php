@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\TurbineStatus;
 use App\Models\Alarm;
 use App\Models\ScadaReading;
+use App\Models\Turbine;
 use App\Models\VibrationReading;
 use App\Models\TemperatureReading;
 use App\Models\HydraulicReading;
@@ -30,6 +32,209 @@ class AlarmService
         $this->checkHydraulicAlarms($turbineId);
     }
 
+    public function updateTurbineStatus($turbineId)
+    {
+        $turbine = Turbine::findOrFail($turbineId);
+
+        // ============================================
+        // EDGE CASE 1: No SCADA data at all
+        // ============================================
+        $scada = ScadaReading::where('turbine_id', $turbineId)
+            ->latest('reading_timestamp')
+            ->first();
+
+        if (!$scada) {
+            // No data available - communication issue
+            $turbine->status = TurbineStatus::Error;
+            $turbine->save();
+            Log::warning("No SCADA data found for turbine {$turbineId}");
+            return;
+        }
+
+        // ============================================
+        // EDGE CASE 2: Stale/old data (no recent readings)
+        // ============================================
+        $lastReadingAge = Carbon::now()->diffInMinutes($scada->reading_timestamp);
+
+        if ($lastReadingAge > 60) {
+            // Data is older than 1 hour - possible communication failure
+            $turbine->status = TurbineStatus::Error;
+            $turbine->save();
+            Log::warning("Stale SCADA data for turbine {$turbineId}. Last reading: {$scada->reading_timestamp}");
+            return;
+        }
+
+        // ============================================
+        // EDGE CASE 3: Check for GRID FAULT alarms first
+        // ============================================
+        $gridFaultAlarms = Alarm::where('turbine_id', $turbineId)
+            ->where('status', 'active')
+            ->where('alarm_type', 'grid')  // If you have grid-specific alarms
+            ->exists();
+
+        if ($gridFaultAlarms) {
+            $turbine->status = TurbineStatus::GridFault;
+            $turbine->save();
+            return;
+        }
+
+        // ============================================
+        // EDGE CASE 4: Check for MAINTENANCE MODE
+        // (You might want to add a manual override for this)
+        // ============================================
+        $maintenanceAlarms = Alarm::where('turbine_id', $turbineId)
+            ->where('status', 'active')
+            ->where('component', 'maintenance_scheduled')  // If you track scheduled maintenance
+            ->exists();
+
+        if ($maintenanceAlarms) {
+            $turbine->status = TurbineStatus::Maintenance;
+            $turbine->save();
+            return;
+        }
+
+        // ============================================
+        // MAIN LOGIC: Check for failed alarms
+        // ============================================
+        $failedAlarms = Alarm::where('turbine_id', $turbineId)
+            ->where('status', 'active')
+            ->where('severity', 'failed')
+            ->get();
+
+        if ($failedAlarms->isNotEmpty()) {
+            // EDGE CASE 5: Multiple failed alarms - prioritize component failures
+            $componentFailures = $failedAlarms->whereIn('component', [
+                'main_bearing',
+                'gearbox',
+                'generator_stator',
+                'generator_bearing1',
+                'generator_bearing2',
+                'rotor_speed',
+                'hydraulic_pressure',      // Pitch system failure
+                'gearbox_oil_pressure'     // Critical lubrication failure
+            ]);
+
+            if ($componentFailures->isNotEmpty()) {
+                // Component failure takes priority over environmental
+                $turbine->status = TurbineStatus::Error; // FAULT - Component broken
+            } else {
+                // Only environmental failures (wind, temperature)
+                $turbine->status = TurbineStatus::Idle; // IDLE - Environmental
+            }
+        }
+        // ============================================
+        // EDGE CASE 6: No failed alarms, check wind conditions
+        // ============================================
+        elseif ($scada->wind_speed_ms < 3.0 || $scada->wind_speed_ms > 25.0) {
+            // Wind outside operational range
+            $turbine->status = TurbineStatus::Idle; // IDLE - Waiting for wind
+        }
+        // ============================================
+        // EDGE CASE 7: Check for critical alarms (not failed, but serious)
+        // ============================================
+        elseif ($this->hasCriticalConditions($turbineId)) {
+            // Has critical warnings but still operational with limits
+            $turbine->status = TurbineStatus::Normal; // Still operational but monitored
+        }
+        // ============================================
+        // DEFAULT: All systems normal
+        // ============================================
+        else {
+            $turbine->status = TurbineStatus::Normal; // OPERATIONAL
+        }
+
+        $turbine->save();
+
+        Log::info("Turbine {$turbineId} status updated to: {$turbine->status->label()}");
+    }
+
+    /**
+     * Helper: Check if turbine has critical conditions that limit operation
+     */
+    private function hasCriticalConditions($turbineId): bool
+    {
+        return Alarm::where('turbine_id', $turbineId)
+            ->where('status', 'active')
+            ->where('severity', 'critical')
+            ->exists();
+    }
+
+//    public function updateTurbineStatus($turbineId)
+//    {
+//        $turbine = Turbine::findOrFail($turbineId);
+//
+//        // Check for SCADA wind conditions first
+//        $scada = ScadaReading::where('turbine_id', $turbineId)
+//            ->latest('reading_timestamp')
+//            ->first();
+//
+//        if (!$scada) {
+//            // No data available - communication issue
+//            $turbine->status = TurbineStatus::Error;
+//            $turbine->save();
+//            Log::warning("No SCADA data found for turbine {$turbineId}");
+//            return;
+//        }
+//
+//        $gridFaultAlarms = Alarm::where('turbine_id', $turbineId)
+//            ->where('status', 'active')
+//            ->where('alarm_type', 'grid')  // If you have grid-specific alarms
+//            ->exists();
+//
+//        if ($gridFaultAlarms) {
+//            $turbine->status = TurbineStatus::GridFault;
+//            $turbine->save();
+//            return;
+//        }
+//
+//        $maintenanceAlarms = Alarm::where('turbine_id', $turbineId)
+//            ->where('status', 'active')
+//            ->where('component', 'maintenance_scheduled')  // If you track scheduled maintenance
+//            ->exists();
+//
+//        if ($maintenanceAlarms) {
+//            $turbine->status = TurbineStatus::Maintenance;
+//            $turbine->save();
+//            return;
+//        }
+//
+//        // Check for failed alarms
+//        $failedAlarms = Alarm::where('turbine_id', $turbineId)
+//            ->where('status', 'active')
+//            ->where('severity', 'failed')
+//            ->get();
+//
+//        if ($failedAlarms->isNotEmpty()) {
+//            // Component failures vs environmental failures
+//            $componentFailures = $failedAlarms->whereIn('component', [
+//                'main_bearing',
+//                'gearbox',
+//                'generator_stator',
+//                'generator_bearing1',
+//                'generator_bearing2',
+//                'rotor_speed',
+//                'hydraulic_pressure',      // Pitch system failure
+//                'gearbox_oil_pressure'     // Critical lubrication failure
+//            ]);
+//
+//            if ($componentFailures->isNotEmpty()) {
+//                // Component failure takes priority over environmental
+//                $turbine->status = TurbineStatus::Error; // FAULT - Component broken
+//            } else {
+//                // Only environmental failures (wind, temperature)
+//                $turbine->status = TurbineStatus::Idle; // IDLE - Environmental
+//            }
+//        } elseif ($scada && ($scada->wind_speed_ms < 3.0 || $scada->wind_speed_ms > 25.0)) {
+//            // No failed alarms, but wind is outside operational range
+//            $turbine->status = TurbineStatus::Idle; // IDLE - Waiting for wind
+//        } else {
+//            // No alarms, wind is good → Running normally
+//            $turbine->status_code = TurbineStatus::Normal; // OPERATIONAL
+//        }
+//
+//        $turbine->save();
+//    }
+
     /**
      * Check SCADA data for alarms
      */
@@ -40,6 +245,7 @@ class AlarmService
             ->first();
 
         if (!$scada) return;
+
 
         // Check Wind Speed - Extreme Weather
         if ($scada->wind_speed_ms > 30.0) {

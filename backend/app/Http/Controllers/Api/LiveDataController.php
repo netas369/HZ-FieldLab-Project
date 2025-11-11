@@ -34,6 +34,7 @@ class LiveDataController extends Controller
 
         // ✅ ONE CALL TO CHECK ALL SENSORS
         $this->alarmService->checkAndCreateAlarms($turbineId);
+        $this->alarmService->updateTurbineStatus($turbineId);
 
         return response()->json([
             'turbine_id' => $turbine->id,
