@@ -79,7 +79,6 @@ class LiveDataController extends Controller
             $hydraulic_readings->hydraulic_pressure_bar
         );
 
-        // ❌ REMOVED: Duplicate alarm calls (handled by checkAndCreateAlarms in SCADA endpoint)
 
         return response()->json([
             'turbine_id' => $turbine->id,
@@ -200,7 +199,6 @@ class LiveDataController extends Controller
             $loadFactor
         );
 
-        // ❌ REMOVED: All 8 duplicate alarm calls (handled by checkAndCreateAlarms in SCADA endpoint)
 
         return response()->json([
             'turbine_id' => $turbine->id,

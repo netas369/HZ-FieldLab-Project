@@ -171,7 +171,7 @@ class AlarmService
             $vibration->reading_timestamp
         );
 
-        // ✅ ADD: Check Blade Imbalance
+        // Check Blade Imbalance
         $bladeStatus = $this->turbineDataService->getBladeVibrationStatus(
             $vibration->blade1_vibration_mms,
             $vibration->blade2_vibration_mms,
@@ -186,7 +186,7 @@ class AlarmService
             $vibration->reading_timestamp
         );
 
-        // ✅ ADD: Check Acoustic Level
+        // Check Acoustic Level
         $acousticStatus = $this->turbineDataService->getAcousticStatus(
             $vibration->acoustic_level_db
         );
@@ -217,7 +217,7 @@ class AlarmService
             ->first();
         $loadFactor = $scada ? min($scada->power_kw / 2500, 1.0) : 0;
 
-        // ✅ ADD: Check Nacelle Temperature
+        // Check Nacelle Temperature
         $nacelleStatus = $this->turbineDataService->getNacelleTemperatureStatus(
             $temperature->nacelle_temp_c
         );
@@ -245,7 +245,7 @@ class AlarmService
             $temperature->reading_timestamp
         );
 
-        // ✅ ADD: Check Generator Bearing 1
+        // Check Generator Bearing 1
         $generatorBearing1Status = $this->turbineDataService->getMainBearingTempStatus(
             $temperature->generator_bearing1_temp_c,
             $temperature->gearbox_oil_temp_c,
@@ -260,7 +260,7 @@ class AlarmService
             $temperature->reading_timestamp
         );
 
-        // ✅ ADD: Check Generator Bearing 2
+        // Check Generator Bearing 2
         $generatorBearing2Status = $this->turbineDataService->getMainBearingTempStatus(
             $temperature->generator_bearing2_temp_c,
             $temperature->gearbox_oil_temp_c,
