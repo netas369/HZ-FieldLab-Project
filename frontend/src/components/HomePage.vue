@@ -25,7 +25,7 @@
             v-for="turbine in turbines"
             :key="turbine.id"
             class="bg-white border-2 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer"
-            :class="getTurbineBorderClass(turbine.liveData)"
+            :class="getTurbineBorderClass(turbine)"
             @click="selectTurbine(turbine)"
         >
           <!-- Header with Turbine Name and Status Dot -->
@@ -34,11 +34,9 @@
               {{ turbine.turbine_id }}
             </h3>
             <span
-                v-if="turbine.liveData"
-                :class="['w-3 h-3 rounded-full', getStatusDotClass(turbine.liveData?.status_severity)]"
-                :title="turbine.liveData?.status_description"
+                :class="['w-3 h-3 rounded-full', getStatusDotClass(turbine.status)]"
+                :title="getStatusLabel(turbine.status)"
             ></span>
-            <span v-else class="w-3 h-3 rounded-full bg-gray-300 animate-pulse"></span>
           </div>
 
           <p class="text-gray-600 text-sm mb-1">
@@ -48,90 +46,201 @@
             Added: {{ formatDate(turbine.created_at) }}
           </p>
 
-          <!-- Live Data Preview -->
-          <div v-if="turbine.liveData" class="mt-4 pt-4 border-t border-gray-200">
+          <!-- Debug Info (temporary) -->
+          <div v-if="turbine.dataLoadError" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">
+            Error loading data: {{ turbine.dataLoadError }}
+          </div>
+
+          <!-- Alarm Summary Section -->
+          <div v-if="turbine.alarms && turbine.alarms.total_alarms > 0" class="mt-4 mb-4">
+            <div class="bg-red-50 border border-red-200 rounded p-3">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-red-800">
+                  🚨 {{ turbine.alarms.total_alarms }} Active Alarm{{ turbine.alarms.total_alarms > 1 ? 's' : '' }}
+                </span>
+              </div>
+              <div class="flex gap-2 text-xs">
+                <span v-if="turbine.alarms.counts_by_severity.failed > 0" class="bg-red-100 text-red-800 px-2 py-1 rounded">
+                  Failed: {{ turbine.alarms.counts_by_severity.failed }}
+                </span>
+                <span v-if="turbine.alarms.counts_by_severity.critical > 0" class="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                  Critical: {{ turbine.alarms.counts_by_severity.critical }}
+                </span>
+                <span v-if="turbine.alarms.counts_by_severity.warning > 0" class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                  Warning: {{ turbine.alarms.counts_by_severity.warning }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCADA Data Preview -->
+          <div v-if="turbine.scadaData" class="mt-4 pt-4 border-t border-gray-200">
             <!-- Latest Reading Timestamp -->
             <div class="mb-3 flex items-center justify-between">
               <span class="text-xs text-gray-500">Last Update:</span>
               <span class="text-xs font-medium text-blue-600">
-                {{ formatTime(turbine.liveData.latest_reading) }}
+                {{ formatTime(turbine.scadaData.latest_reading) }}
               </span>
             </div>
 
             <!-- Data Age Indicator -->
             <div class="mb-3">
-              <span :class="['text-xs px-2 py-1 rounded', getDataAgeClass(turbine.liveData.latest_reading)]">
-                {{ getDataAge(turbine.liveData.latest_reading) }}
+              <span :class="['text-xs px-2 py-1 rounded', getDataAgeClass(turbine.scadaData.latest_reading)]">
+                {{ getDataAge(turbine.scadaData.latest_reading) }}
               </span>
             </div>
 
-            <!-- Status Badge -->
+            <!-- Status Badge (from turbines table) -->
             <div class="mb-3">
               <div
                   :class="[
                   'text-sm font-semibold px-3 py-2 rounded flex items-center',
-                  getStatusClass(turbine.liveData.status_severity)
+                  getTurbineStatusClass(turbine.status)
                 ]"
               >
-                <span class="mr-2">{{ getStatusIcon(turbine.liveData.status_code) }}</span>
-                {{ turbine.liveData.status_description }}
+                <span class="mr-2">{{ getTurbineStatusIcon(turbine.status) }}</span>
+                {{ getStatusLabel(turbine.status) }}
               </div>
             </div>
 
-            <!-- Alarm Warning (if exists) -->
+            <!-- Alarm Warning from SCADA (if exists) -->
             <div
-                v-if="turbine.liveData.alarm_code && turbine.liveData.alarm_code !== 0"
+                v-if="turbine.scadaData.alarm_code && turbine.scadaData.alarm_code !== 0"
                 :class="[
                 'mb-3 border rounded p-3',
-                getAlarmBoxClass(turbine.liveData.alarm_severity)
+                getAlarmBoxClass(turbine.scadaData.alarm_severity)
               ]"
             >
               <div class="flex items-start">
                 <span class="mr-2 text-lg">
-                  {{ getAlarmEmoji(turbine.liveData.alarm_severity) }}
+                  {{ getAlarmEmoji(turbine.scadaData.alarm_severity) }}
                 </span>
                 <div class="flex-1">
-                  <div :class="['text-sm font-semibold', getAlarmTextClass(turbine.liveData.alarm_severity)]">
-                    {{ turbine.liveData.alarm_description }}
+                  <div :class="['text-sm font-semibold', getAlarmTextClass(turbine.scadaData.alarm_severity)]">
+                    {{ turbine.scadaData.alarm_description }}
                   </div>
                   <div class="text-xs mt-1 opacity-75">
-                    Code: {{ turbine.liveData.alarm_code }}
+                    Code: {{ turbine.scadaData.alarm_code }}
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Live Data Grid -->
-            <div class="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span class="text-gray-500">Wind:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.wind_speed_ms, 1) }} m/s</span>
+            <!-- SCADA Data Grid -->
+            <div class="mb-3">
+              <h4 class="text-xs font-semibold text-gray-600 mb-2">SCADA Data</h4>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span class="text-gray-500">Wind:</span>
+                  <span class="font-semibold ml-1">{{ formatNumber(turbine.scadaData.wind_speed_ms, 1) }} m/s</span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Power:</span>
+                  <span class="font-semibold ml-1">{{ formatNumber(turbine.scadaData.power_kw, 0) }} kW</span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Rotor:</span>
+                  <span class="font-semibold ml-1">{{ formatNumber(turbine.scadaData.rotor_speed_rpm, 1) }} RPM</span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Temp:</span>
+                  <span class="font-semibold ml-1">{{ formatNumber(turbine.scadaData.ambient_temp_c, 1) }}°C</span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Pitch:</span>
+                  <span class="font-semibold ml-1">{{ formatNumber(turbine.scadaData.pitch_angle_deg, 1) }}°</span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Yaw:</span>
+                  <span class="font-semibold ml-1">{{ formatNumber(turbine.scadaData.yaw_angle_deg, 1) }}°</span>
+                </div>
               </div>
-              <div>
-                <span class="text-gray-500">Power:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.power_kw, 0) }} kW</span>
+            </div>
+
+            <!-- Temperature Data -->
+            <div v-if="turbine.temperatureData" class="mb-3 pt-3 border-t border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-600 mb-2">Temperature Readings</h4>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span class="text-gray-500">Nacelle:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.temperatureData.nacelle_status)]">
+                    {{ formatNumber(turbine.temperatureData.nacelle_temp, 1) }}°C
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Gearbox Oil:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.temperatureData.gearbox_oil_status)]">
+                    {{ formatNumber(turbine.temperatureData.gearbox_oil_temp, 1) }}°C
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Generator:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.temperatureData.generator_status)]">
+                    {{ formatNumber(turbine.temperatureData.generator_stator_temp, 1) }}°C
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Main Bearing:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.temperatureData.main_bearing_status)]">
+                    {{ formatNumber(turbine.temperatureData.main_bearing_temp, 1) }}°C
+                  </span>
+                </div>
               </div>
-              <div>
-                <span class="text-gray-500">Rotor:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.rotor_speed_rpm, 1) }} RPM</span>
+            </div>
+
+            <!-- Vibration Data -->
+            <div v-if="turbine.vibrationData" class="mb-3 pt-3 border-t border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-600 mb-2">Vibration Status</h4>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span class="text-gray-500">Main Bearing:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.vibrationData.main_bearing_status)]">
+                    {{ formatNumber(turbine.vibrationData.main_bearing_vibration_rms, 2) }} mm/s
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Gearbox:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.vibrationData.gearbox_status)]">
+                    {{ formatNumber(turbine.vibrationData.gearbox_vibration_axial, 2) }} mm/s
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Generator:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.vibrationData.generator_status)]">
+                    {{ formatNumber(turbine.vibrationData.generator_vibration_de, 2) }} mm/s
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Tower:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.vibrationData.tower_status)]">
+                    {{ formatNumber(turbine.vibrationData.tower_vibration_fa, 2) }} mm/s
+                  </span>
+                </div>
               </div>
-              <div>
-                <span class="text-gray-500">Temp:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.ambient_temp_c, 1) }}°C</span>
-              </div>
-              <div>
-                <span class="text-gray-500">Pitch:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.pitch_angle_deg, 1) }}°</span>
-              </div>
-              <div>
-                <span class="text-gray-500">Yaw:</span>
-                <span class="font-semibold ml-1">{{ formatNumber(turbine.liveData.yaw_angle_deg, 1) }}°</span>
+            </div>
+
+            <!-- Hydraulic Data -->
+            <div v-if="turbine.hydraulicData" class="mb-3 pt-3 border-t border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-600 mb-2">Hydraulic Pressures</h4>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span class="text-gray-500">Gearbox Oil:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.hydraulicData.gearbox_oil_pressure_status)]">
+                    {{ formatNumber(turbine.hydraulicData.gearbox_oil_pressure_bar, 1) }} bar
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Hydraulic:</span>
+                  <span :class="['font-semibold ml-1', getStatusColor(turbine.hydraulicData.hydraulic_pressure_status)]">
+                    {{ formatNumber(turbine.hydraulicData.hydraulic_pressure_bar, 1) }} bar
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Loading live data -->
-          <div v-else class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-400">
+          <div v-else-if="!turbine.dataLoadError" class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-400">
             <div class="animate-pulse">Loading live data...</div>
           </div>
         </div>
@@ -170,50 +279,104 @@ export default {
 
       try {
         const apiUrl = import.meta.env.VITE_API_BASE_URL;
+        console.log('API URL:', apiUrl);
+
         const response = await fetch(`${apiUrl}/turbines/`);
 
         if (!response.ok) {
-          throw new Error('Failed to fetch turbines');
+          throw new Error(`Failed to fetch turbines: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log('Turbines fetched:', data);
         this.turbines = data;
 
-        await this.fetchAllLiveData();
+        // Fetch all data after turbines are loaded
+        await this.fetchAllTurbineData();
         this.startAutoRefresh();
 
       } catch (err) {
         this.error = err.message;
-        console.error('Error:', err);
+        console.error('Error fetching turbines:', err);
       } finally {
         this.loading = false;
       }
     },
 
-    async fetchAllLiveData() {
+    async fetchAllTurbineData() {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
+      console.log('Fetching data for', this.turbines.length, 'turbines');
 
       const promises = this.turbines.map(async (turbine) => {
         try {
-          const response = await fetch(`${apiUrl}/turbine/${turbine.id}/latestScadaData`);
+          console.log(`Fetching data for turbine ${turbine.id}...`);
 
-          if (response.ok) {
-            const liveData = await response.json();
+          // Fetch all data endpoints in parallel
+          const [scadaRes, hydraulicRes, vibrationRes, temperatureRes, alarmsRes] = await Promise.all([
+            fetch(`${apiUrl}/turbine/${turbine.id}/latestScadaData`).catch(err => {
+              console.error(`SCADA fetch error for turbine ${turbine.id}:`, err);
+              return { ok: false, error: err.message };
+            }),
+            fetch(`${apiUrl}/turbine/${turbine.id}/latestHydraulicReadings`).catch(err => {
+              console.error(`Hydraulic fetch error for turbine ${turbine.id}:`, err);
+              return { ok: false, error: err.message };
+            }),
+            fetch(`${apiUrl}/turbine/${turbine.id}/vibrations`).catch(err => {
+              console.error(`Vibration fetch error for turbine ${turbine.id}:`, err);
+              return { ok: false, error: err.message };
+            }),
+            fetch(`${apiUrl}/turbine/${turbine.id}/latestTemperatures`).catch(err => {
+              console.error(`Temperature fetch error for turbine ${turbine.id}:`, err);
+              return { ok: false, error: err.message };
+            }),
+            fetch(`${apiUrl}/turbine/${turbine.id}/alarms`).catch(err => {
+              console.error(`Alarms fetch error for turbine ${turbine.id}:`, err);
+              return { ok: false, error: err.message };
+            })
+          ]);
 
-            // Vue 3: Just assign directly - reactivity works automatically
-            turbine.liveData = liveData;
-
+          // Parse responses
+          if (scadaRes.ok) {
+            const scadaData = await scadaRes.json();
+            console.log(`SCADA data for turbine ${turbine.id}:`, scadaData);
+            turbine.scadaData = scadaData;
+          } else {
+            console.warn(`No SCADA data for turbine ${turbine.id}`);
           }
+
+          if (hydraulicRes.ok) {
+            turbine.hydraulicData = await hydraulicRes.json();
+            console.log(`Hydraulic data loaded for turbine ${turbine.id}`);
+          }
+
+          if (vibrationRes.ok) {
+            turbine.vibrationData = await vibrationRes.json();
+            console.log(`Vibration data loaded for turbine ${turbine.id}`);
+          }
+
+          if (temperatureRes.ok) {
+            turbine.temperatureData = await temperatureRes.json();
+            console.log(`Temperature data loaded for turbine ${turbine.id}`);
+          }
+
+          if (alarmsRes.ok) {
+            turbine.alarms = await alarmsRes.json();
+            console.log(`Alarms loaded for turbine ${turbine.id}`);
+          }
+
         } catch (err) {
-          console.error(`Failed to fetch live data for turbine ${turbine.id}:`, err);
+          console.error(`Failed to fetch data for turbine ${turbine.id}:`, err);
+          turbine.dataLoadError = err.message;
         }
       });
 
       await Promise.all(promises);
+      console.log('All turbine data fetched');
     },
 
     async refreshLiveData() {
-      await this.fetchAllLiveData();
+      console.log('Refreshing live data...');
+      await this.fetchAllTurbineData();
     },
 
     startAutoRefresh() {
@@ -227,57 +390,85 @@ export default {
       // Add navigation here: this.$router.push(`/turbine/${turbine.id}`);
     },
 
-    // Border color based on status and alarms
-    getTurbineBorderClass(liveData) {
-      if (!liveData) return 'border-gray-200';
+    // Get status label from TurbineStatus enum value
+    getStatusLabel(status) {
+      const statusLabels = {
+        'normal': 'Operational',
+        'idle': 'Idle',
+        'maintenance': 'Maintenance',
+        'error': 'Error',
+        'grid_fault': 'Grid Fault'
+      };
+      return statusLabels[status] || status;
+    },
 
-      // Failed alarm = Red border
-      if (liveData.alarm_severity === 'failed') return 'border-red-500';
+    // Border color based on turbine status and alarms
+    getTurbineBorderClass(turbine) {
+      // Priority 1: Check for alarms
+      if (turbine.alarms && turbine.alarms.total_alarms > 0) {
+        if (turbine.alarms.counts_by_severity?.failed > 0) return 'border-red-500';
+        if (turbine.alarms.counts_by_severity?.critical > 0) return 'border-orange-500';
+        if (turbine.alarms.counts_by_severity?.warning > 0) return 'border-yellow-400';
+      }
 
-      // Critical alarm = Orange border
-      if (liveData.alarm_severity === 'critical') return 'border-orange-500';
-
-      // Status-based borders
-      if (liveData.status_severity === 'normal') return 'border-green-300';
-      if (liveData.status_severity === 'critical') return 'border-red-400';
-      if (liveData.status_severity === 'maintenance') return 'border-yellow-400';
-      if (liveData.status_severity === 'external') return 'border-orange-400';
+      // Priority 2: Check turbine status
+      if (turbine.status === 'error') return 'border-red-500';
+      if (turbine.status === 'grid_fault') return 'border-orange-500';
+      if (turbine.status === 'maintenance') return 'border-yellow-400';
+      if (turbine.status === 'idle') return 'border-blue-300';
+      if (turbine.status === 'normal') return 'border-green-300';
 
       return 'border-gray-200';
     },
 
-    // Status dot color indicator
-    getStatusDotClass(severity) {
+    // Get color based on status object from API (for component statuses)
+    getStatusColor(statusData) {
+      if (!statusData) return 'text-gray-800';
+
+      const status = statusData.status || statusData;
+
+      if (status === 'normal' || status === 'good') return 'text-green-600';
+      if (status === 'warning') return 'text-yellow-600';
+      if (status === 'critical') return 'text-orange-600';
+      if (status === 'failed') return 'text-red-600';
+
+      return 'text-gray-800';
+    },
+
+    // Status dot color indicator (from turbines table)
+    getStatusDotClass(status) {
       const classes = {
         'normal': 'bg-green-500',
         'idle': 'bg-blue-500',
         'maintenance': 'bg-yellow-500',
-        'critical': 'bg-red-500',
-        'external': 'bg-orange-500'
+        'error': 'bg-red-500',
+        'grid_fault': 'bg-orange-500'
       };
-      return classes[severity] || 'bg-gray-400';
+      return classes[status] || 'bg-gray-400';
     },
 
-    // Status badge styling
-    getStatusClass(severity) {
+    // Status badge styling (from turbines table)
+    getTurbineStatusClass(status) {
       const classes = {
         'normal': 'bg-green-100 text-green-800',
         'idle': 'bg-blue-100 text-blue-800',
         'maintenance': 'bg-yellow-100 text-yellow-800',
-        'critical': 'bg-red-100 text-red-800',
-        'external': 'bg-orange-100 text-orange-800'
+        'error': 'bg-red-100 text-red-800',
+        'grid_fault': 'bg-orange-100 text-orange-800'
       };
-      return classes[severity] || 'bg-gray-100 text-gray-800';
+      return classes[status] || 'bg-gray-100 text-gray-800';
     },
 
-    // Status icon
-    getStatusIcon(statusCode) {
-      if (statusCode === 100) return '✓';
-      if (statusCode === 200) return '⏸';
-      if (statusCode === 300) return '🔧';
-      if (statusCode === 400) return '✗';
-      if (statusCode === 500) return '⚡';
-      return '•';
+    // Status icon (from turbines table)
+    getTurbineStatusIcon(status) {
+      const icons = {
+        'normal': '✓',
+        'idle': '⏸',
+        'maintenance': '🔧',
+        'error': '✗',
+        'grid_fault': '⚡'
+      };
+      return icons[status] || '•';
     },
 
     // Alarm box styling

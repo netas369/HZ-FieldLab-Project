@@ -48,12 +48,12 @@ class LiveDataController extends Controller
             'nacelle_direction_deg' => $scadaData->nacelle_direction_deg,
             'ambient_temp_c' => $scadaData->ambient_temp_c,
             'wind_direction_deg' => $scadaData->wind_direction_deg,
-            'status_code' => $scadaData->status_code,
-            'status_severity' => $this->service->getStatusSeverity($scadaData->status_code),
-            'status_description' => $this->service->getStatusDescription($scadaData->status_code),
-            'alarm_code' => $scadaData->alarm_code,
-            'alarm_description' => $this->service->getAlarmDescription($scadaData->alarm_code),
-            'alarm_severity' => $this->service->getAlarmSeverity($scadaData->alarm_code),
+            'status_code' => $turbine->status,
+//            'status_severity' => $this->service->getStatusSeverity($scadaData->status_code),
+//            'status_description' => $this->service->getStatusDescription($scadaData->status_code),
+//            'alarm_code' => $scadaData->alarm_code,
+//            'alarm_description' => $this->service->getAlarmDescription($scadaData->alarm_code),
+//            'alarm_severity' => $this->service->getAlarmSeverity($scadaData->alarm_code),
         ]);
     }
 
