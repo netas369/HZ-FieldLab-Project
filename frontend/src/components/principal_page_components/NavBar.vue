@@ -6,7 +6,12 @@
         <!-- Logo/Brand -->
         <div class="flex-shrink-0">
           <h1 class="text-white text-2xl font-bold">
+            <router-link
+              to="/"
+              class="px-6 py-2 rounded-lg font-semibold transition-all duration-200"
+          >
             Wind Turbine Dashboard
+          </router-link> 
           </h1>
         </div>
 

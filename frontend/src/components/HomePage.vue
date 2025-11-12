@@ -20,6 +20,7 @@
         All Turbines ({{ turbines.length }})
       </h2>
 
+
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <div
             v-for="turbine in turbines"
@@ -382,12 +383,12 @@ export default {
     startAutoRefresh() {
       this.refreshInterval = setInterval(() => {
         this.refreshLiveData();
-      }, 30000); // Refresh every 30 seconds
+      }, 120000); // Refresh every 30 seconds
     },
 
     selectTurbine(turbine) {
       console.log('Selected turbine:', turbine);
-      // Add navigation here: this.$router.push(`/turbine/${turbine.id}`);
+      this.$router.push({ name: 'scadaData', params: { id: turbine.id } })
     },
 
     // Get status label from TurbineStatus enum value
