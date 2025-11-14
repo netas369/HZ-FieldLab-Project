@@ -200,7 +200,13 @@ export default {
         }
 
         case 'hydraulic':
-           return this.turbine?.hydraulicData?.hydraulic_pressure_status?.color;
+           if (this.turbine?.hydraulicData?.hydraulic_pressure_status?.color == "green" && this.turbine?.hydraulicData?.gearbox_oil_pressure_status?.color == "green") {
+            return "green";
+           } else if (this.turbine?.hydraulicData?.hydraulic_pressure_status?.color == "red" || this.turbine?.hydraulicData?.gearbox_oil_pressure_status?.color == "red") {
+            return "red"; 
+            } else if (this.turbine?.hydraulicData?.hydraulic_pressure_status?.color == "yellow" || this.turbine?.hydraulicData?.gearbox_oil_pressure_status?.color == "yellow") {
+              return "yellow";
+            }
 
         case 'vibration':
             return this.turbine?.vibrationData?.overall_vibration_status?.color;
@@ -209,7 +215,11 @@ export default {
           return this.turbine?.temperatureData?.overall_temperature_status?.color;
 
         case 'alarms':
-          return "green";
+          if (this.turbine?.alarms?.counts_by_severity?.critical) {
+            return "red";
+          } else if(this.turbine?.alarms?.counts_by_severity?.warning || this.turbine?.alarms?.counts_by_severity?.failed) {
+            return "yellow";
+          } else {return "green";}
         }
        return "";
     },
