@@ -27,7 +27,8 @@
           'py-2 px-4 -mb-px font-semibold text-gray-700 focus:outline-none',
           currentTab === tab.key
             ? 'border-b-2 border-blue-500 text-blue-500'
-            : 'hover:text-blue-500'
+            : 'hover:text-blue-500',
+            getTabColour(tab)
         ]"
       >
         {{ tab.label }}
@@ -186,6 +187,42 @@ export default {
       if (!dateString) return 'N/A';
       const date = new Date(dateString);
       return date.toLocaleTimeString();
+    },
+
+    getTabStatus(tab) {
+     switch (tab.key) {
+        case 'scada': {
+           const code = this.turbine?.scadaData?.status_code;
+           if (code == 200 || code == 100) return "green";
+           if (code == 300) return "yellow";
+           if (code == 400 || code == 500) return "red";
+           return "error";
+        }
+
+        case 'hydraulic':
+           return this.turbine?.hydraulicData?.hydraulic_pressure_status?.color;
+
+        case 'vibration':
+            return this.turbine?.vibrationData?.overall_vibration_status?.color;
+
+        case 'temperature':
+          return this.turbine?.temperatureData?.overall_temperature_status?.color;
+
+        case 'alarms':
+          return "green";
+        }
+       return "";
+    },
+
+    getTabColour(tab) {
+      let status = this.getTabStatus(tab);
+      if (status == "green") {
+        return "bg-green-500";
+      } else if (status == "yellow") {
+        return "bg-yellow-500";
+      } else if (status == "red") {
+        return "bg-red-500";
+      }
     }
   }
 }
