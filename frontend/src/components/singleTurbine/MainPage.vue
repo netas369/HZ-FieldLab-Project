@@ -49,7 +49,7 @@
 
       <div v-if="currentTab === 'vibration'">
         <h3 class="text-lg font-bold mb-2">Vibration Data</h3>
-        <pre class="bg-white p-2 rounded shadow-inner">{{ turbine.vibrationData }}</pre>
+        <VibrationPage :turbine="turbine.vibrationData" />
       </div>
 
       <div v-if="currentTab === 'temperature'">
@@ -74,9 +74,14 @@
 <script>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute} from 'vue-router'
+import VibrationPage from "./VibrationPage.vue";
 
 export default {
   name: 'MainPage',
+
+  components: {
+    VibrationPage
+      },
 
   data() {
     return {
