@@ -4,17 +4,14 @@
       Wind Turbine Park
     </h1>
 
-    <!-- Loading State -->
     <div v-if="loading" class="text-center py-20">
       <div class="text-blue-500 text-xl">Loading turbines...</div>
     </div>
 
-    <!-- Error State -->
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center">
       {{ error }}
     </div>
 
-    <!-- Turbines List -->
     <div v-if="!loading && !error">
       <h2 class="text-2xl font-semibold text-gray-700 mb-6">
         All Turbines ({{ turbines.length }})
@@ -28,7 +25,6 @@
             :class="getTurbineBorderClass(turbine)"
             @click="selectTurbine(turbine)"
         >
-          <!-- Header with Turbine Name and Status Dot -->
           <div class="flex items-center justify-between mb-2">
             <h3 class="text-xl font-bold text-gray-800">
               {{ turbine.turbine_id }}
@@ -46,12 +42,10 @@
             Added: {{ formatDate(turbine.created_at) }}
           </p>
 
-          <!-- Debug Info (temporary) -->
           <div v-if="turbine.dataLoadError" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">
             Error loading data: {{ turbine.dataLoadError }}
           </div>
 
-          <!-- Alarm Summary Section -->
           <div v-if="turbine.alarms && turbine.alarms.total_alarms > 0" class="mt-4 mb-4">
             <div class="bg-red-50 border border-red-200 rounded p-3">
               <div class="flex items-center justify-between mb-2">
@@ -73,9 +67,7 @@
             </div>
           </div>
 
-          <!-- SCADA Data Preview -->
           <div v-if="turbine.scadaData" class="mt-4 pt-4 border-t border-gray-200">
-            <!-- Latest Reading Timestamp -->
             <div class="mb-3 flex items-center justify-between">
               <span class="text-xs text-gray-500">Last Update:</span>
               <span class="text-xs font-medium text-blue-600">
@@ -83,14 +75,12 @@
               </span>
             </div>
 
-            <!-- Data Age Indicator -->
             <div class="mb-3">
               <span :class="['text-xs px-2 py-1 rounded', getDataAgeClass(turbine.scadaData.latest_reading)]">
                 {{ getDataAge(turbine.scadaData.latest_reading) }}
               </span>
             </div>
 
-            <!-- Status Badge (from turbines table) -->
             <div class="mb-3">
               <div
                   :class="[
@@ -103,7 +93,6 @@
               </div>
             </div>
 
-            <!-- Alarm Warning from SCADA (if exists) -->
             <div
                 v-if="turbine.scadaData.alarm_code && turbine.scadaData.alarm_code !== 0"
                 :class="[
@@ -126,7 +115,6 @@
               </div>
             </div>
 
-            <!-- SCADA Data Grid -->
             <div class="mb-3">
               <h4 class="text-xs font-semibold text-gray-600 mb-2">SCADA Data</h4>
               <div class="grid grid-cols-2 gap-2 text-sm">
@@ -157,7 +145,6 @@
               </div>
             </div>
 
-            <!-- Temperature Data -->
             <div v-if="turbine.temperatureData" class="mb-3 pt-3 border-t border-gray-100">
               <h4 class="text-xs font-semibold text-gray-600 mb-2">Temperature Readings</h4>
               <div class="grid grid-cols-2 gap-2 text-sm">
@@ -188,7 +175,6 @@
               </div>
             </div>
 
-            <!-- Vibration Data -->
             <div v-if="turbine.vibrationData" class="mb-3 pt-3 border-t border-gray-100">
               <h4 class="text-xs font-semibold text-gray-600 mb-2">Vibration Status</h4>
               <div class="grid grid-cols-2 gap-2 text-sm">
@@ -219,7 +205,6 @@
               </div>
             </div>
 
-            <!-- Hydraulic Data -->
             <div v-if="turbine.hydraulicData" class="mb-3 pt-3 border-t border-gray-100">
               <h4 class="text-xs font-semibold text-gray-600 mb-2">Hydraulic Pressures</h4>
               <div class="grid grid-cols-2 gap-2 text-sm">
@@ -239,7 +224,6 @@
             </div>
           </div>
 
-          <!-- Loading live data -->
           <div v-else-if="!turbine.dataLoadError" class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-400">
             <div class="animate-pulse">Loading live data...</div>
           </div>
@@ -250,6 +234,8 @@
 </template>
 
 <script>
+import * as api from '@/services/api'; // Adjust this path if needed
+
 export default {
   name: 'HomePage',
 
@@ -278,24 +264,27 @@ export default {
       this.error = null;
 
       try {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL;
-        console.log('API URL:', apiUrl);
-
-        const response = await fetch(`${apiUrl}/turbines/`);
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch turbines: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
+        // 2. Use the service to fetch turbines
+        const data = await api.getTurbines();
         console.log('Turbines fetched:', data);
-        this.turbines = data;
+        
+        // Initialize the turbine objects
+        this.turbines = data.map(turbine => ({
+          ...turbine,
+          scadaData: null,
+          hydraulicData: null,
+          vibrationData: null,
+          temperatureData: null,
+          alarms: null,
+          dataLoadError: null
+        }));
 
-        // Fetch all data after turbines are loaded
+        // Fetch details and start refreshing
         await this.fetchAllTurbineData();
         this.startAutoRefresh();
 
       } catch (err) {
+        // Errors from the service are caught here
         this.error = err.message;
         console.error('Error fetching turbines:', err);
       } finally {
@@ -304,74 +293,38 @@ export default {
     },
 
     async fetchAllTurbineData() {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL;
       console.log('Fetching data for', this.turbines.length, 'turbines');
 
+      // Create an array of promises, one for each turbine
       const promises = this.turbines.map(async (turbine) => {
         try {
-          console.log(`Fetching data for turbine ${turbine.id}...`);
+          // 3. Use the service to get all details for *each* turbine
+          const details = await api.getAllTurbineDetails(turbine.id);
 
-          // Fetch all data endpoints in parallel
-          const [scadaRes, hydraulicRes, vibrationRes, temperatureRes, alarmsRes] = await Promise.all([
-            fetch(`${apiUrl}/turbine/${turbine.id}/latestScadaData`).catch(err => {
-              console.error(`SCADA fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            }),
-            fetch(`${apiUrl}/turbine/${turbine.id}/latestHydraulicReadings`).catch(err => {
-              console.error(`Hydraulic fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            }),
-            fetch(`${apiUrl}/turbine/${turbine.id}/vibrations`).catch(err => {
-              console.error(`Vibration fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            }),
-            fetch(`${apiUrl}/turbine/${turbine.id}/latestTemperatures`).catch(err => {
-              console.error(`Temperature fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            }),
-            fetch(`${apiUrl}/turbine/${turbine.id}/alarms`).catch(err => {
-              console.error(`Alarms fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            })
-          ]);
-
-          // Parse responses
-          if (scadaRes.ok) {
-            const scadaData = await scadaRes.json();
-            console.log(`SCADA data for turbine ${turbine.id}:`, scadaData);
-            turbine.scadaData = scadaData;
+          // 4. Update the turbine object reactively
+          turbine.scadaData = details.scadaData;
+          turbine.hydraulicData = details.hydraulicData;
+          turbine.vibrationData = details.vibrationData;
+          turbine.temperatureData = details.temperatureData;
+          turbine.alarms = details.alarms;
+          
+          if (details.errors.length > 0) {
+            turbine.dataLoadError = details.errors.join(', ');
+            console.warn(`Partial data load error for turbine ${turbine.id}:`, details.errors);
           } else {
-            console.warn(`No SCADA data for turbine ${turbine.id}`);
-          }
-
-          if (hydraulicRes.ok) {
-            turbine.hydraulicData = await hydraulicRes.json();
-            console.log(`Hydraulic data loaded for turbine ${turbine.id}`);
-          }
-
-          if (vibrationRes.ok) {
-            turbine.vibrationData = await vibrationRes.json();
-            console.log(`Vibration data loaded for turbine ${turbine.id}`);
-          }
-
-          if (temperatureRes.ok) {
-            turbine.temperatureData = await temperatureRes.json();
-            console.log(`Temperature data loaded for turbine ${turbine.id}`);
-          }
-
-          if (alarmsRes.ok) {
-            turbine.alarms = await alarmsRes.json();
-            console.log(`Alarms loaded for turbine ${turbine.id}`);
+            turbine.dataLoadError = null; // Clear any previous errors
           }
 
         } catch (err) {
-          console.error(`Failed to fetch data for turbine ${turbine.id}:`, err);
-          turbine.dataLoadError = err.message;
+          // Catch any unexpected critical error during the fetch for this turbine
+          console.error(`Failed to fetch all data for turbine ${turbine.id}:`, err);
+          turbine.dataLoadError = "A critical error occurred while loading data.";
         }
       });
 
+      // Wait for all turbine data to be fetched before finishing
       await Promise.all(promises);
-      console.log('All turbine data fetched');
+      console.log('All turbine data refreshed');
     },
 
     async refreshLiveData() {
@@ -387,8 +340,13 @@ export default {
 
     selectTurbine(turbine) {
       console.log('Selected turbine:', turbine);
-      // Add navigation here: this.$router.push(`/turbine/${turbine.id}`);
+      // this.$router.push(`/turbine/${turbine.id}`);
     },
+
+    //
+    // --- All Formatting & Helper Methods ---
+    // (These all stay exactly the same as before)
+    //
 
     // Get status label from TurbineStatus enum value
     getStatusLabel(status) {
@@ -424,14 +382,11 @@ export default {
     // Get color based on status object from API (for component statuses)
     getStatusColor(statusData) {
       if (!statusData) return 'text-gray-800';
-
       const status = statusData.status || statusData;
-
       if (status === 'normal' || status === 'good') return 'text-green-600';
       if (status === 'warning') return 'text-yellow-600';
       if (status === 'critical') return 'text-orange-600';
       if (status === 'failed') return 'text-red-600';
-
       return 'text-gray-800';
     },
 
@@ -507,7 +462,6 @@ export default {
     // Calculate data age
     getDataAge(timestamp) {
       if (!timestamp) return 'No data';
-
       const now = new Date();
       const readingTime = new Date(timestamp);
       const diffSeconds = Math.floor((now - readingTime) / 1000);
@@ -521,13 +475,12 @@ export default {
     // Data age badge color
     getDataAgeClass(timestamp) {
       if (!timestamp) return 'bg-gray-100 text-gray-600';
-
       const now = new Date();
       const readingTime = new Date(timestamp);
       const diffSeconds = Math.floor((now - readingTime) / 1000);
 
-      if (diffSeconds < 60) return 'bg-green-100 text-green-700';      // Live
-      if (diffSeconds < 300) return 'bg-blue-100 text-blue-700';       // Recent
+      if (diffSeconds < 60) return 'bg-green-100 text-green-700';       // Live
+      if (diffSeconds < 300) return 'bg-blue-100 text-blue-700';      // Recent
       if (diffSeconds < 3600) return 'bg-yellow-100 text-yellow-700';  // Stale
       return 'bg-red-100 text-red-700';                                // Old
     },
