@@ -11,13 +11,14 @@ Route::get('/test', function () {
 
 Route::get('turbines', [TurbineController::class, 'all_turbines']);
 
-Route::get('turbine/{turbineId}/latestScadaData', [LiveDataController::class, 'getTurbineLatestScadaData']);
+Route::get('turbine/{turbineId}/latestScadaData', [LiveDataController::class, 'getScadaData']);
 
-Route::get('turbine/{turbineId}/latestHydraulicReadings', [LiveDataController::class, 'getTurbineLatestHydraulicData']);
+Route::get('turbine/{turbineId}/latestHydraulicReadings', [LiveDataController::class, 'getHydraulicData']);
 
-Route::get('turbine/{turbineId}/vibrations', [LiveDataController::class, 'getTurbineLatestVibrationReadings']);
+Route::get('turbine/{turbineId}/vibrations', [LiveDataController::class, 'getVibrationData']);
 
-Route::get('turbine/{turbineId}/latestTemperatures', [LiveDataController::class, 'getTurbineLatestTemperatureReadings']);
+Route::get('turbine/{turbineId}/latestTemperatures', [LiveDataController::class, 'getTemperatureData']);
 
-Route::get('turbine/{turbineId}/alarms', [LiveDataController::class, 'getTurbineAlarms']);
+Route::get('turbine/{turbineId}/alarms', [LiveDataController::class, 'getAlarmsData']);
 
+Route::get('dashboard/all', [LiveDataController::class, 'getAllTurbinesData']);

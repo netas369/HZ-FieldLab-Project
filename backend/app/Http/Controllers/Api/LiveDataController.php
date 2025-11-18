@@ -23,89 +23,175 @@ class LiveDataController extends Controller
         $this->alarmService = $alarmService;
     }
 
-    public function getTurbineLatestScadaData($turbineId)
+    /**
+     * Get all turbines with all their data in one call
+     */
+    public function getAllTurbinesData()
+    {
+        $turbines = Turbine::all();
+        $result = [];
+
+        foreach ($turbines as $turbine) {
+            // Check alarms once per turbine
+            $this->alarmService->checkAndCreateAlarms($turbine->id);
+            $this->alarmService->updateTurbineStatus($turbine->id);
+
+            // Refresh turbine to get updated status
+            $turbine->refresh();
+
+            $turbineData = [
+                'id' => $turbine->id,
+                'turbine_id' => $turbine->turbine_id,
+                'status' => $turbine->status,
+                'created_at' => $turbine->created_at,
+                'scada' => $this->buildScadaData($turbine->id),
+                'hydraulic' => $this->buildHydraulicData($turbine->id),
+                'vibration' => $this->buildVibrationData($turbine->id),
+                'temperature' => $this->buildTemperatureData($turbine->id),
+                'alarms' => $this->buildAlarmsData($turbine->id),
+            ];
+
+            $result[] = $turbineData;
+        }
+
+        return response()->json($result);
+    }
+
+    /**
+     * API ENDPOINTS (keep for individual turbine requests)
+     */
+
+    public function getScadaData($turbineId)
     {
         $turbine = Turbine::findOrFail($turbineId);
-        $scadaData = ScadaReading::where('turbine_id', $turbine->id)->latest('reading_timestamp')->first();
-
-        if(!$scadaData) {
-            return response()->json(['error' => 'No SCADA data found'], 404);
-        }
 
         // ✅ ONE CALL TO CHECK ALL SENSORS
         $this->alarmService->checkAndCreateAlarms($turbineId);
         $this->alarmService->updateTurbineStatus($turbineId);
 
-        return response()->json([
-            'turbine_id' => $turbine->id,
-            'latest_reading' => $scadaData->reading_timestamp,
-            'wind_speed_ms' => $scadaData->wind_speed_ms,
-            'power_kw' => $scadaData->power_kw,
-            'rotor_speed_rpm' => $scadaData->rotor_speed_rpm,
-            'generator_speed_rpm' => $scadaData->generator_speed_rpm,
-            'pitch_angle_deg' => $scadaData->pitch_angle_deg,
-            'yaw_angle_deg' => $scadaData->yaw_angle_deg,
-            'nacelle_direction_deg' => $scadaData->nacelle_direction_deg,
-            'ambient_temp_c' => $scadaData->ambient_temp_c,
-            'wind_direction_deg' => $scadaData->wind_direction_deg,
-            'status_code' => $turbine->status,
-//            'status_severity' => $this->service->getStatusSeverity($scadaData->status_code),
-//            'status_description' => $this->service->getStatusDescription($scadaData->status_code),
-//            'alarm_code' => $scadaData->alarm_code,
-//            'alarm_description' => $this->service->getAlarmDescription($scadaData->alarm_code),
-//            'alarm_severity' => $this->service->getAlarmSeverity($scadaData->alarm_code),
-        ]);
+        $scadaData = $this->buildScadaData($turbineId);
+
+        if (!$scadaData) {
+            return response()->json(['error' => 'No SCADA data found'], 404);
+        }
+
+        return response()->json($scadaData);
     }
 
-    public function getTurbineLatestHydraulicData($turbineId)
+    public function getHydraulicData($turbineId)
     {
         $turbine = Turbine::findOrFail($turbineId);
-        $hydraulic_readings = HydraulicReading::where('turbine_id', $turbine->id)
-            ->latest('reading_timestamp')
-            ->first();
+        $hydraulicData = $this->buildHydraulicData($turbineId);
 
-        if (!$hydraulic_readings) {
+        if (!$hydraulicData) {
             return response()->json([
-                'turbine_id' => $turbine->id,
+                'turbine_id' => $turbineId,
                 'message' => 'No hydraulic readings found for this turbine'
             ], 404);
         }
 
-        // Get status data
-        $gearboxStatus = $this->service->getGearboxPressureStatus(
-            $hydraulic_readings->gearbox_oil_pressure_bar,
-            $turbine->id
-        );
-        $hydraulicStatus = $this->service->getHydraulicPressureStatus(
-            $hydraulic_readings->hydraulic_pressure_bar
-        );
-
-
-        return response()->json([
-            'turbine_id' => $turbine->id,
-            'latest_reading' => $hydraulic_readings->reading_timestamp,
-            'gearbox_oil_pressure_bar' => $hydraulic_readings->gearbox_oil_pressure_bar,
-            'gearbox_oil_pressure_status' => $gearboxStatus,
-            'hydraulic_pressure_bar' => $hydraulic_readings->hydraulic_pressure_bar,
-            'hydraulic_pressure_status' => $hydraulicStatus,
-        ]);
+        return response()->json($hydraulicData);
     }
 
-    public function getTurbineLatestVibrationReadings($turbineId)
+    public function getVibrationsData($turbineId)
     {
         $turbine = Turbine::findOrFail($turbineId);
-        $vibration = VibrationReading::where('turbine_id', $turbine->id)
-            ->latest('reading_timestamp')
-            ->first();
+        $vibrationData = $this->buildVibrationData($turbineId);
 
-        if (!$vibration) {
+        if (!$vibrationData) {
             return response()->json([
-                'turbine_id' => $turbine->id,
+                'turbine_id' => $turbineId,
                 'message' => 'No vibration readings found'
             ], 404);
         }
 
-        // Get all status data
+        return response()->json($vibrationData);
+    }
+
+    public function getTemperatureData($turbineId)
+    {
+        $turbine = Turbine::findOrFail($turbineId);
+        $temperatureData = $this->buildTemperatureData($turbineId);
+
+        if (!$temperatureData) {
+            return response()->json([
+                'error' => 'No temperature data found for this turbine'
+            ], 404);
+        }
+
+        return response()->json($temperatureData);
+    }
+
+    public function getAlarmsData($turbineId)
+    {
+        $turbine = Turbine::findOrFail($turbineId);
+        $alarmsData = $this->buildAlarmsData($turbineId);
+
+        return response()->json($alarmsData);
+    }
+
+    /**
+     * PRIVATE HELPER METHODS (return arrays, not JSON responses)
+     */
+
+    private function buildScadaData($turbineId)
+    {
+        $scada = ScadaReading::where('turbine_id', $turbineId)
+            ->latest('reading_timestamp')
+            ->first();
+
+        if (!$scada) return null;
+
+        return [
+            'turbine_id' => $turbineId,
+            'latest_reading' => $scada->reading_timestamp,
+            'wind_speed_ms' => $scada->wind_speed_ms,
+            'power_kw' => $scada->power_kw,
+            'rotor_speed_rpm' => $scada->rotor_speed_rpm,
+            'generator_speed_rpm' => $scada->generator_speed_rpm,
+            'pitch_angle_deg' => $scada->pitch_angle_deg,
+            'yaw_angle_deg' => $scada->yaw_angle_deg,
+            'nacelle_direction_deg' => $scada->nacelle_direction_deg,
+            'ambient_temp_c' => $scada->ambient_temp_c,
+            'wind_direction_deg' => $scada->wind_direction_deg,
+        ];
+    }
+
+    private function buildHydraulicData($turbineId)
+    {
+        $hydraulic = HydraulicReading::where('turbine_id', $turbineId)
+            ->latest('reading_timestamp')
+            ->first();
+
+        if (!$hydraulic) return null;
+
+        $gearboxStatus = $this->service->getGearboxPressureStatus(
+            $hydraulic->gearbox_oil_pressure_bar,
+            $turbineId
+        );
+
+        $hydraulicStatus = $this->service->getHydraulicPressureStatus(
+            $hydraulic->hydraulic_pressure_bar
+        );
+
+        return [
+            'turbine_id' => $turbineId,
+            'latest_reading' => $hydraulic->reading_timestamp,
+            'gearbox_oil_pressure_bar' => $hydraulic->gearbox_oil_pressure_bar,
+            'gearbox_oil_pressure_status' => $gearboxStatus,
+            'hydraulic_pressure_bar' => $hydraulic->hydraulic_pressure_bar,
+            'hydraulic_pressure_status' => $hydraulicStatus,
+        ];
+    }
+
+    private function buildVibrationData($turbineId)
+    {
+        $vibration = VibrationReading::where('turbine_id', $turbineId)
+            ->latest('reading_timestamp')
+            ->first();
+
+        if (!$vibration) return null;
+
         $mainBearingStatus = $this->service->getVibrationStatus($vibration->main_bearing_vibration_rms_mms);
         $gearboxStatus = $this->service->getVibrationStatus($vibration->gearbox_vibration_axial_mms);
         $generatorStatus = $this->service->getVibrationStatus($vibration->generator_vibration_de_mms);
@@ -117,8 +203,8 @@ class LiveDataController extends Controller
         );
         $acousticStatus = $this->service->getAcousticStatus($vibration->acoustic_level_db);
 
-        return response()->json([
-            'turbine_id' => $turbine->id,
+        return [
+            'turbine_id' => $turbineId,
             'latest_reading' => $vibration->reading_timestamp,
             'main_bearing_vibration_rms' => $vibration->main_bearing_vibration_rms_mms,
             'main_bearing_vibration_peak' => $vibration->main_bearing_vibration_peak_mms,
@@ -139,111 +225,79 @@ class LiveDataController extends Controller
             'acoustic_level_db' => $vibration->acoustic_level_db,
             'acoustic_status' => $acousticStatus,
             'overall_vibration_status' => $this->service->getOverallVibrationStatus($vibration)
-        ]);
+        ];
     }
 
-    /**
-     * Get latest temperature readings for a turbine
-     */
-    public function getTurbineLatestTemperatureReadings($turbineId)
+    private function buildTemperatureData($turbineId)
     {
-        $turbine = Turbine::findOrFail($turbineId);
-        $temperature = TemperatureReading::where('turbine_id', $turbine->id)
+        $temperature = TemperatureReading::where('turbine_id', $turbineId)
             ->latest('reading_timestamp')
             ->first();
 
-        if(!$temperature) {
-            return response()->json([
-                'error' => 'No temperature data found for this turbine'
-            ], 404);
-        }
+        if (!$temperature) return null;
 
-        $scada = ScadaReading::where('turbine_id', $turbine->id)
+        $scada = ScadaReading::where('turbine_id', $turbineId)
             ->latest('reading_timestamp')
             ->first();
 
-        // calculate load factor (0-1) based on rated power (2500 kw assumingly)
         $loadFactor = $scada ? min($scada->power_kw / 2500, 1.0) : 0;
 
-        // Get all temperature status data
         $nacelleStatus = $this->service->getNacelleTemperatureStatus($temperature->nacelle_temp_c);
-
         $gearboxBearingStatus = $this->service->getGearboxBearingTempStatus(
             $temperature->gearbox_bearing_temp_c,
             $temperature->gearbox_oil_temp_c,
             $loadFactor
         );
-
         $gearboxOilStatus = $this->service->getGearboxOilTempStatus($temperature->gearbox_oil_temp_c);
-
         $generatorStatus = $this->service->getGeneratorTemperatureStatus(
             $temperature->generator_stator_temp_c,
             $temperature->gearbox_oil_temp_c,
             $loadFactor
         );
-
         $mainBearingStatus = $this->service->getMainBearingTempStatus(
             $temperature->main_bearing_temp_c,
             $temperature->gearbox_oil_temp_c,
             $loadFactor
         );
-
         $generatorBearing1Status = $this->service->getMainBearingTempStatus(
             $temperature->generator_bearing1_temp_c,
             $temperature->gearbox_oil_temp_c,
             $loadFactor
         );
-
         $generatorBearing2Status = $this->service->getMainBearingTempStatus(
             $temperature->generator_bearing2_temp_c,
             $temperature->gearbox_oil_temp_c,
             $loadFactor
         );
 
-
-        return response()->json([
-            'turbine_id' => $turbine->id,
+        return [
+            'turbine_id' => $turbineId,
             'latest_reading' => $temperature->reading_timestamp,
             'load_factor' => round($loadFactor, 2),
-
-            // Nacelle Temperature
             'nacelle_temp' => $temperature->nacelle_temp_c,
             'nacelle_status' => $nacelleStatus,
-
-            // Gearbox Temperatures
             'gearbox_bearing_temp' => $temperature->gearbox_bearing_temp_c,
             'gearbox_bearing_status' => $gearboxBearingStatus,
             'gearbox_oil_temp' => $temperature->gearbox_oil_temp_c,
             'gearbox_oil_status' => $gearboxOilStatus,
-
-            // Generator Temperatures
             'generator_bearing1_temp' => $temperature->generator_bearing1_temp_c,
             'generator_bearing1_status' => $generatorBearing1Status,
             'generator_bearing2_temp' => $temperature->generator_bearing2_temp_c,
             'generator_bearing2_status' => $generatorBearing2Status,
             'generator_stator_temp' => $temperature->generator_stator_temp_c,
             'generator_status' => $generatorStatus,
-
-            // Main Bearing Temperature
             'main_bearing_temp' => $temperature->main_bearing_temp_c,
             'main_bearing_status' => $mainBearingStatus,
-
-            // Overall Temperature Assessment
             'overall_temperature_status' => $this->service->getOverallTemperatureStatus($temperature, $loadFactor)
-        ]);
+        ];
     }
 
-    /**
-     * Get all active alarms for a turbine
-     */
-    public function getTurbineAlarms($turbineId)
+    private function buildAlarmsData($turbineId)
     {
-        $turbine = Turbine::findOrFail($turbineId);
-
         $alarms = $this->alarmService->getActiveAlarms($turbineId);
         $counts = $this->alarmService->getAlarmCountsBySeverity($turbineId);
 
-        return response()->json([
+        return [
             'turbine_id' => $turbineId,
             'total_alarms' => $alarms->count(),
             'counts_by_severity' => [
@@ -252,6 +306,6 @@ class LiveDataController extends Controller
                 'failed' => $counts['failed'] ?? 0,
             ],
             'alarms' => $alarms
-        ]);
+        ];
     }
 }

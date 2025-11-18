@@ -282,102 +282,64 @@ export default {
         const apiUrl = import.meta.env.VITE_API_BASE_URL;
         console.log('API URL:', apiUrl);
 
-        const response = await fetch(`${apiUrl}/turbines/`);
+        // ✅ ONE API CALL instead of 50+
+        const response = await fetch(`${apiUrl}/dashboard/all`);
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch turbines: ${response.status} ${response.statusText}`);
+          throw new Error(`Failed to fetch dashboard data: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log('Turbines fetched:', data);
-        this.turbines = data;
+        console.log('Dashboard data fetched:', data);
 
-        // Fetch all data after turbines are loaded
-        await this.fetchAllTurbineData();
+        // Map the response to match your existing structure
+        this.turbines = data.map(turbine => ({
+          id: turbine.id,
+          turbine_id: turbine.turbine_id,
+          status: turbine.status,
+          created_at: turbine.created_at,
+          scadaData: turbine.scada,
+          hydraulicData: turbine.hydraulic,
+          vibrationData: turbine.vibration,
+          temperatureData: turbine.temperature,
+          alarms: turbine.alarms
+        }));
+
         this.startAutoRefresh();
 
       } catch (err) {
         this.error = err.message;
-        console.error('Error fetching turbines:', err);
+        console.error('Error fetching dashboard:', err);
       } finally {
         this.loading = false;
       }
     },
 
-    async fetchAllTurbineData() {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL;
-      console.log('Fetching data for', this.turbines.length, 'turbines');
-
-      const promises = this.turbines.map(async (turbine) => {
-        try {
-          console.log(`Fetching data for turbine ${turbine.id}...`);
-
-          // Fetch all data endpoints in parallel
-          const [scadaRes, hydraulicRes, vibrationRes, temperatureRes, alarmsRes] = await Promise.all([
-            fetch(`${apiUrl}/turbine/${turbine.id}/latestScadaData`).catch(err => {
-              console.error(`SCADA fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            }),
-            fetch(`${apiUrl}/turbine/${turbine.id}/latestHydraulicReadings`).catch(err => {
-              console.error(`Hydraulic fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            }),
-            fetch(`${apiUrl}/turbine/${turbine.id}/vibrations`).catch(err => {
-              console.error(`Vibration fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            }),
-            fetch(`${apiUrl}/turbine/${turbine.id}/latestTemperatures`).catch(err => {
-              console.error(`Temperature fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            }),
-            fetch(`${apiUrl}/turbine/${turbine.id}/alarms`).catch(err => {
-              console.error(`Alarms fetch error for turbine ${turbine.id}:`, err);
-              return { ok: false, error: err.message };
-            })
-          ]);
-
-          // Parse responses
-          if (scadaRes.ok) {
-            const scadaData = await scadaRes.json();
-            console.log(`SCADA data for turbine ${turbine.id}:`, scadaData);
-            turbine.scadaData = scadaData;
-          } else {
-            console.warn(`No SCADA data for turbine ${turbine.id}`);
-          }
-
-          if (hydraulicRes.ok) {
-            turbine.hydraulicData = await hydraulicRes.json();
-            console.log(`Hydraulic data loaded for turbine ${turbine.id}`);
-          }
-
-          if (vibrationRes.ok) {
-            turbine.vibrationData = await vibrationRes.json();
-            console.log(`Vibration data loaded for turbine ${turbine.id}`);
-          }
-
-          if (temperatureRes.ok) {
-            turbine.temperatureData = await temperatureRes.json();
-            console.log(`Temperature data loaded for turbine ${turbine.id}`);
-          }
-
-          if (alarmsRes.ok) {
-            turbine.alarms = await alarmsRes.json();
-            console.log(`Alarms loaded for turbine ${turbine.id}`);
-          }
-
-        } catch (err) {
-          console.error(`Failed to fetch data for turbine ${turbine.id}:`, err);
-          turbine.dataLoadError = err.message;
-        }
-      });
-
-      await Promise.all(promises);
-      console.log('All turbine data fetched');
-    },
 
     async refreshLiveData() {
       console.log('Refreshing live data...');
-      await this.fetchAllTurbineData();
+      // Just call fetchTurbines again to get fresh data
+      const apiUrl = import.meta.env.VITE_API_BASE_URL;
+
+      try {
+        const response = await fetch(`${apiUrl}/dashboard/all`);
+        if (response.ok) {
+          const data = await response.json();
+          this.turbines = data.map(turbine => ({
+            id: turbine.id,
+            turbine_id: turbine.turbine_id,
+            status: turbine.status,
+            created_at: turbine.created_at,
+            scadaData: turbine.scada,
+            hydraulicData: turbine.hydraulic,
+            vibrationData: turbine.vibration,
+            temperatureData: turbine.temperature,
+            alarms: turbine.alarms
+          }));
+        }
+      } catch (err) {
+        console.error('Error refreshing data:', err);
+      }
     },
 
     startAutoRefresh() {
