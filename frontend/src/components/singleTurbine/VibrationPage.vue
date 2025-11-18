@@ -24,7 +24,7 @@
 
 <script setup>
 import MainBearingCard from "@/components/singleTurbine/VibrationVisualizaton/MainBearingCard.vue"
-import GearboxCard from "@/components/singleTurbine/VibrationVisualizaton/GearboxCard.vue"
+import GearboxCard from "@/components/singleTurbine/VibrationVisualizaton/GearBoxCard.vue"
 import GeneratorCard from "@/components/singleTurbine/VibrationVisualizaton/GeneratorCard.vue"
 import TowerCard from "@/components/singleTurbine/VibrationVisualizaton/TowerCard.vue"
 import BladeCard from "@/components/singleTurbine/VibrationVisualizaton/BladeCard.vue"
