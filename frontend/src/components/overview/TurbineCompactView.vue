@@ -36,19 +36,7 @@
         >
           <!-- Turbine ID with Icon -->
           <td class="py-3 px-4">
-            <div class="flex items-center gap-3">
-              <div class="relative w-8 h-8 flex-shrink-0">
-                <svg viewBox="0 0 100 100" :class="['w-full h-full', getTurbineIconColor(turbine.status)]">
-                  <circle cx="50" cy="42" r="3" fill="currentColor"/>
-                  <g :class="{ 'animate-spin-slow': turbine.status === 'running' }" style="transform-origin: 50px 42px">
-                    <ellipse cx="50" cy="22" rx="2.5" ry="16" fill="currentColor" opacity="0.9"/>
-                  </g>
-                  <rect x="47" y="42" width="6" height="40" fill="currentColor" opacity="0.3"/>
-                </svg>
-                <div :class="['absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border border-white', getStatusBadgeColor(turbine.status)]"></div>
-              </div>
               <span class="font-semibold text-slate-900 dark:text-white">{{ turbine.id }}</span>
-            </div>
           </td>
 
           <!-- Location -->

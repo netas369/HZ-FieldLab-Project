@@ -1,15 +1,12 @@
 <template>
-  <div id="app">
-    <router-view />
-  </div>
+  <router-view />
 </template>
 
-<script>
-export default {
-  name: 'App'
-}
+<script setup>
+// App.vue is now just a router outlet
+// All logic moved to AppLayout.vue
 </script>
 
 <style>
-/* Your existing styles */
+/* Global styles only */
 </style>

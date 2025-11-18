@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
     <div class="h-screen flex flex-col">
+      <!-- Header -->
       <HeaderBar
         :user="state.currentUser"
         :active-alarms-count="criticalAlarmsCount"
@@ -9,8 +10,9 @@
       />
 
       <div class="flex-1 flex overflow-hidden">
+        <!-- Sidebar -->
         <SidebarNav
-          :active-tab="state.activeRoute"
+          :active-tab="currentRoute"
           :tabs="navItems"
           :search-query="state.searchQuery"
           @update:active-tab="handleNavigation"
@@ -18,51 +20,48 @@
           @quick-link="handleQuickLink"
         />
 
+        <!-- Main Content Area -->
         <main class="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900">
           <div class="max-w-[1600px] mx-auto p-6">
+            <!-- Router View with transition -->
             <transition name="slide-fade" mode="out-in">
-              <component
-                :is="currentView"
-                v-bind="currentViewProps"
-                @select-turbine="handleTurbineSelect"
-                @show-alarm="handleShowAlarm"
-                @acknowledge-alarm="handleAcknowledgeAlarm"
-                @add-log="state.showMaintenanceForm = true"
-                @add-maintenance="handleAddMaintenance"
-                :key="state.activeRoute"
-              />
+              <router-view 
+                v-slot="{ Component }"
+                :key="$route.path"
+              >
+                <component 
+                  :is="Component"
+                  @select-turbine="handleTurbineSelect"
+                  @show-alarm="handleShowAlarm"
+                  @acknowledge-alarm="handleAcknowledgeAlarm"
+                  @add-log="state.showMaintenanceForm = true"
+                  @add-maintenance="handleAddMaintenance"
+                />
+              </router-view>
             </transition>
           </div>
         </main>
-
-        <aside
-          v-if="showRightSidebar"
-          class="w-80 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 overflow-auto"
-        >
-          <QuickActionsPanel
-            :alarms="activeAlarms"
-            :recent-activity="recentActivity"
-            @show-alarm="handleShowAlarm"
-            @quick-action="handleQuickAction"
-          />
-        </aside>
       </div>
     </div>
 
+    <!-- Modals (Teleported to body) -->
     <Teleport to="body">
+      <!-- Alarm Detail Modal -->
       <div
         v-if="state.selectedAlarm"
         class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         @click.self="state.selectedAlarm = null"
       >
-         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
           <div class="p-6">
             <div class="flex items-start justify-between mb-4">
               <div>
                 <h3 class="text-2xl font-bold text-slate-900 dark:text-white">
                   {{ state.selectedAlarm.title }}
                 </h3>
-                <span :class="['inline-block mt-2 px-3 py-1 rounded-full text-sm font-bold', getPriorityClass(state.selectedAlarm.priority)]">
+                <span 
+                  :class="['inline-block mt-2 px-3 py-1 rounded-full text-sm font-bold', getPriorityClass(state.selectedAlarm.priority)]"
+                >
                   {{ state.selectedAlarm.priority }}
                 </span>
               </div>
@@ -113,12 +112,13 @@
         </div>
       </div>
 
-       <div
+      <!-- Maintenance Form Modal -->
+      <div
         v-if="state.showMaintenanceForm"
         class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         @click.self="state.showMaintenanceForm = false"
       >
-         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full">
           <div class="p-6">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Log Maintenance</h3>
@@ -149,7 +149,7 @@
                 </select>
               </div>
               
-               <div>
+              <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Type
                 </label>
@@ -214,27 +214,16 @@
 </template>
 
 <script setup>
-import { reactive, computed, onMounted, watch, ref } from 'vue'
+import { reactive, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import HeaderBar from '@/components/core/HeaderBar.vue'
+import SidebarNav from '@/components/core/SidebarNav.vue'
+import { useScadaService } from '@/composables/api.js'
 
-// Import our redesigned components
-import HeaderBar from './HeaderBar.vue'
-import SidebarNav from './SidebarNav.vue'
+const router = useRouter()
+const route = useRoute()
 
-// Import tab/view components
-import OverviewTab from './overview/OverviewTab.vue'
-import AnalyticsTab from './AnalyticsTab.vue'
-import AlarmTab from './AlarmTab.vue'
-import MaintenanceTab from './MaintenanceTab.vue'
-import ReportsTab from "@/components/ReportsTab.vue";
-import SettingsTab from "@/components/SettingsTab.vue";
-
-// *** IMPORT THE NEW SERVICE ***
-import { useScadaService } from '../composables/api.js'
-
-// Placeholder components
-const QuickActionsPanel = { template: '<div class="p-4"><h3 class="font-bold mb-4">Quick Actions</h3><p class="text-sm text-slate-600">Recent activity will appear here</p></div>' }
-
-// *** GET ALL STORES AND METHODS FROM THE SERVICE ***
+// Get stores and methods from service
 const { 
   turbineStore, 
   alarmStore, 
@@ -245,12 +234,10 @@ const {
 } = useScadaService()
 
 // ============================================================================
-// COMPONENT-LOCAL STATE
-// This state is only for this component (view state)
+// STATE
 // ============================================================================
 
 const state = reactive({
-  activeRoute: 'overview',
   currentUser: {
     name: 'John Smith',
     role: 'Supervisor',
@@ -263,7 +250,6 @@ const state = reactive({
   theme: 'light'
 })
 
-// Maintenance form state remains local
 const maintenanceForm = reactive({
   turbine: '',
   type: 'Preventive',
@@ -272,16 +258,22 @@ const maintenanceForm = reactive({
 })
 
 // ============================================================================
-// ALL API-DRIVEN STORES AND FETCH LOGIC ARE NOW GONE
-// They live in useScadaService.js
+// COMPUTED
 // ============================================================================
 
-// ============================================================================
-// COMPUTED PROPERTIES (Unchanged)
-// These just work, because they read from the imported stores.
-// ============================================================================
+const currentRoute = computed(() => {
+  // Map route name to tab id for SidebarNav
+  const routeMap = {
+    'Overview': 'overview',
+    'Alarms': 'alarms',
+    'Maintenance': 'maintenance',
+    'Analytics': 'analytics',
+    'Reports': 'reports',
+    'Settings': 'settings'
+  }
+  return routeMap[route.name] || 'overview'
+})
 
-// Navigation items
 const navItems = computed(() => [
   { id: 'overview', label: 'Overview', icon: 'dashboard', badge: null },
   { id: 'alarms', label: 'Alarms', icon: 'alert', badge: criticalAlarmsCount.value },
@@ -291,94 +283,35 @@ const navItems = computed(() => [
   { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
 ])
 
-const currentView = computed(() => {
-  const viewMap = {
-    overview: OverviewTab,
-    performance: OverviewTab,
-    alarms: AlarmTab,
-    maintenance: MaintenanceTab,
-    analytics: AnalyticsTab,
-    reports: ReportsTab,
-    settings: SettingsTab
-  }
-  return viewMap[state.activeRoute] || OverviewTab
-})
-
-const currentViewProps = computed(() => {
-  switch (state.activeRoute) {
-    case 'overview':
-    case 'performance':
-      return {
-        turbines: filteredTurbines.value,
-        selectedTurbine: state.selectedTurbine,
-        searchQuery: state.searchQuery,
-        loading: turbineStore.loading, // Pass loading state
-        error: turbineStore.error       // Pass error state
-      }
-
-    case 'alarms':
-      return {
-        alarms: alarmStore.alarms,
-        filters: ['All', 'Critical', 'Major', 'Warning', 'Minor'],
-        initialFilter: 'All',
-        loading: alarmStore.loading,    // Pass loading state
-        error: alarmStore.error        // Pass error state
-      }
-
-    case 'maintenance':
-      return {
-        maintenanceLogs: maintenanceStore.logs,
-        predictiveInsights: [],
-        maintenanceTabs: ['Recent', 'Scheduled', 'Predictive', 'Component History'],
-        activeMaintenanceTab: 'Recent',
-        loading: maintenanceStore.loading, // Pass loading state
-        error: maintenanceStore.error      // Pass error state
-      }
-
-    case 'analytics':
-      return {
-        kpis: [],
-        charts: []
-      }
-
-    default:
-      return {}
-  }
-})
-
-const filteredTurbines = computed(() => {
-  if (!state.searchQuery) return turbineStore.turbines
-  const query = state.searchQuery.toLowerCase()
-  return turbineStore.turbines.filter(t =>
-      t.id.toLowerCase().includes(query) || t.location.toLowerCase().includes(query)
-  )
-})
-
-const activeAlarms = computed(() => alarmStore.activeAlarms)
 const criticalAlarmsCount = computed(() => alarmStore.criticalCount)
-const showRightSidebar = computed(() => ['overview', 'performance'].includes(state.activeRoute))
-
-const recentActivity = computed(() => {
-  return alarmStore.recentAlarms(3).map(alarm => ({
-    type: 'alarm',
-    timestamp: alarm.time,
-    message: `${alarm.title} on ${alarm.turbine}`,
-    severity: alarm.priority
-  }))
-})
 
 // ============================================================================
-// METHODS (Unchanged)
-// These also just work, as they call methods on the imported stores.
+// METHODS
 // ============================================================================
 
-const handleNavigation = (routeId) => {
-  state.activeRoute = routeId
+const handleNavigation = (tabId) => {
+  // Convert tab id to route name
+  const routeMap = {
+    'overview': 'Overview',
+    'alarms': 'Alarms',
+    'maintenance': 'Maintenance',
+    'analytics': 'Analytics',
+    'reports': 'Reports',
+    'settings': 'Settings'
+  }
+  
+  const routeName = routeMap[tabId]
+  if (routeName && route.name !== routeName) {
+    router.push({ name: routeName })
+  }
 }
 
 const handleTurbineSelect = (turbine) => {
   state.selectedTurbine = turbine
   turbineStore.selectTurbine(turbine.id)
+  
+  // Navigate to turbine detail page
+  router.push({ name: 'TurbineDetail', params: { id: turbine.id } })
 }
 
 const handleShowAlarm = (alarm) => {
@@ -386,18 +319,19 @@ const handleShowAlarm = (alarm) => {
 }
 
 const handleAcknowledgeAlarm = async (alarm) => {
-  await alarmStore.acknowledgeAlarm(alarm.id) // Calls the service method
+  await alarmStore.acknowledgeAlarm(alarm.id)
   state.selectedAlarm = null
   console.log('✓ Alarm acknowledged')
 }
 
 const handleAddMaintenance = (turbine) => {
   state.selectedTurbine = turbine
+  maintenanceForm.turbine = turbine.id
   state.showMaintenanceForm = true
 }
 
 const handleMaintenanceSubmit = async () => {
-  await maintenanceStore.addLog({ ...maintenanceForm }) // Calls the service method
+  await maintenanceStore.addLog({ ...maintenanceForm })
   state.showMaintenanceForm = false
 
   // Reset form
@@ -408,12 +342,9 @@ const handleMaintenanceSubmit = async () => {
   console.log('✓ Maintenance log saved')
 }
 
-const handleQuickAction = (action) => {
-  console.log('Quick action:', action)
-}
-
 const handleQuickLink = (action) => {
   console.log('Quick link:', action)
+  // Handle quick link actions (export, docs, support)
 }
 
 const toggleTheme = () => {
@@ -432,28 +363,19 @@ const getPriorityClass = (priority) => {
 }
 
 // ============================================================================
-// LIFECYCLE (Unchanged)
-// This now calls the fetch methods from our service.
+// LIFECYCLE
 // ============================================================================
 
 onMounted(async () => {
-  // 1. Fetch turbines first. This is now mandatory.
+  // Fetch all data on mount
   await fetchTurbines()
-  
-  // 2. Once turbines are loaded, fetch alarms and maintenance.
-  //    fetchAlarms can now loop through the turbineStore.turbines list.
   await Promise.all([
     fetchAlarms(),
-    fetchMaintenanceLogs() // This can run in parallel with fetchAlarms
-  ])
-
-  // 3. Select the first turbine as default
-  if (turbineStore.turbines.length > 0) {
-    handleTurbineSelect(turbineStore.turbines[0])
-  }
+    fetchMaintenanceLogs()
+  ]);
 })
 
-// Watcher (Unchanged)
+// Watch for critical alarms
 watch(() => alarmStore.criticalCount, (newCount, oldCount) => {
   if (newCount > oldCount) {
     console.log('⚠️ New critical alarm!')
@@ -462,7 +384,6 @@ watch(() => alarmStore.criticalCount, (newCount, oldCount) => {
 </script>
 
 <style scoped>
-/* STYLES ARE UNCHANGED */
 .slide-fade-enter-active {
   transition: all 0.2s ease-out;
 }
