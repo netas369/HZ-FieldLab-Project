@@ -24,11 +24,12 @@
         <main class="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900">
           <div class="max-w-[1600px] mx-auto p-6">
             <!-- Router View with transition -->
-            <transition name="slide-fade" mode="out-in">
-              <router-view 
+            <router-view 
                 v-slot="{ Component }"
                 :key="$route.path"
               >
+                <transition name="slide-fade" mode="out-in">
+
                 <component 
                   :is="Component"
                   @select-turbine="handleTurbineSelect"
@@ -37,8 +38,9 @@
                   @add-log="state.showMaintenanceForm = true"
                   @add-maintenance="handleAddMaintenance"
                 />
-              </router-view>
-            </transition>
+              </transition>
+
+            </router-view>
           </div>
         </main>
       </div>
@@ -308,10 +310,13 @@ const handleNavigation = (tabId) => {
 
 const handleTurbineSelect = (turbine) => {
   state.selectedTurbine = turbine
-  turbineStore.selectTurbine(turbine.id)
+  turbineStore.selectTurbine(turbine._api_id)
+
+  console.log(turbine);
+  
   
   // Navigate to turbine detail page
-  router.push({ name: 'TurbineDetail', params: { id: turbine.id } })
+  router.push({ name: 'TurbineDetail', params: { id: turbine._api_id } })
 }
 
 const handleShowAlarm = (alarm) => {

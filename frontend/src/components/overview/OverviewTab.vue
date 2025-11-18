@@ -317,7 +317,7 @@ const fleetStats = computed(() => [
 // ============================================================================
 
 const handleTurbineSelect = (turbine) => {
-  emit('select-turbine', turbine)
+  emit('select-turbine', turbine);
 }
 
 const clearFilters = () => {

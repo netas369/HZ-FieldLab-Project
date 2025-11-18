@@ -4,7 +4,7 @@
       v-for="turbine in turbines"
       :key="turbine.id"
       :turbine="turbine"
-      @select="$emit('select-turbine', $event)"
+      @select="$emit('select', $event)"
     />
   </div>
 </template>
@@ -20,5 +20,5 @@ defineProps({
   }
 })
 
-defineEmits(['select-turbine'])
+defineEmits(['select'])
 </script>

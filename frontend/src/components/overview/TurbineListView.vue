@@ -3,7 +3,7 @@
     <div
       v-for="turbine in turbines"
       :key="turbine.id"
-      @click="$emit('select-turbine', turbine)"
+      @click="$emit('select', turbine)"
       :class="[
         'group flex items-center gap-4 p-4 rounded-xl transition-all cursor-pointer',
         getBorderClass(turbine),
@@ -84,7 +84,7 @@ defineProps({
   }
 })
 
-defineEmits(['select-turbine'])
+defineEmits(['select'])
 
 // Helper methods
 const getIconColor = (status) => {

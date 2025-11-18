@@ -31,7 +31,7 @@
         <tr
           v-for="turbine in turbines"
           :key="turbine.id"
-          @click="$emit('select-turbine', turbine)"
+          @click="$emit('select', turbine)"
           class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer transition-colors group"
         >
           <!-- Turbine ID with Icon -->
@@ -110,7 +110,7 @@ defineProps({
   }
 })
 
-defineEmits(['select-turbine'])
+defineEmits(['select'])
 
 // Helper functions
 const getTurbineIconColor = (status) => {
