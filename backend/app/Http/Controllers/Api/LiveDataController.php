@@ -294,7 +294,21 @@ class LiveDataController extends Controller
 
     private function buildAlarmsData($turbineId)
     {
-        $alarms = $this->alarmService->getActiveAlarms($turbineId);
+        $alarms = $this->alarmService->getActiveAlarms($turbineId)->map(function($alarm) {
+            return [
+                'id' => $alarm->id,
+                'alarm_code' => $alarm->alarm_code,  // ✅ ADD THIS
+                'alarm_type' => $alarm->alarm_type,
+                'component' => $alarm->component,
+                'severity' => $alarm->severity,
+                'status' => $alarm->status,
+                'message' => $alarm->message,
+                'data' => $alarm->data,
+                'detected_at' => $alarm->detected_at,
+                'alarm_details' => $alarm->getAlarmDetails(),  // ✅ ADD THIS (includes standard reference)
+            ];
+        });
+
         $counts = $this->alarmService->getAlarmCountsBySeverity($turbineId);
 
         return [

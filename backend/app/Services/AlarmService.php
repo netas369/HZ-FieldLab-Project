@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Constants\AlarmCodes;
 use App\Enums\TurbineStatus;
 use App\Models\Alarm;
 use App\Models\ScadaReading;
@@ -601,6 +602,14 @@ class AlarmService
      */
     private function createAlarm($turbineId, $type, $component, $severity, $label, $description, $value, $timestamp)
     {
+        // Get the appropriate alarm code
+        $alarmCode = AlarmCodes::getCodeForComponent($component, $severity, $value);
+
+        // If no specific code found, generate based on severity
+        if (!$alarmCode) {
+            $alarmCode = $this->generateFallbackCode($component, $severity);
+        }
+
         // Check if alarm already exists
         $existingAlarm = Alarm::where('turbine_id', $turbineId)
             ->where('alarm_type', $type)
@@ -608,9 +617,9 @@ class AlarmService
             ->where('status', 'active')
             ->first();
 
-        // If alarm exists with same severity, just update it
         if ($existingAlarm && $existingAlarm->severity === $severity) {
             $existingAlarm->update([
+                'alarm_code' => $alarmCode,  // ✅ ADD THIS
                 'data' => [
                     'value' => $value,
                     'label' => $label,
@@ -621,7 +630,6 @@ class AlarmService
             return;
         }
 
-        // If severity changed, resolve old and create new
         if ($existingAlarm) {
             $existingAlarm->update([
                 'status' => 'resolved',
@@ -630,7 +638,6 @@ class AlarmService
             ]);
         }
 
-        // Create new alarm
         $message = $this->generateAlarmMessage($type, $component, [
             'label' => $label,
             'description' => $description
@@ -640,6 +647,7 @@ class AlarmService
             'turbine_id' => $turbineId,
             'alarm_type' => $type,
             'component' => $component,
+            'alarm_code' => $alarmCode,  // ✅ ADD THIS
             'severity' => $severity,
             'status' => 'active',
             'message' => $message,
@@ -651,11 +659,24 @@ class AlarmService
             'detected_at' => $timestamp ?? Carbon::now(),
         ]);
 
-        Log::info("Alarm created: {$type} - {$component} for turbine {$turbineId}", [
+        Log::info("Alarm created: {$type} - {$component} (Code: {$alarmCode}) for turbine {$turbineId}", [
             'severity' => $severity,
             'alarm_id' => $alarm->id,
+            'alarm_code' => $alarmCode,
             'value' => $value
         ]);
+    }
+
+    private function generateFallbackCode($component, $severity): int
+    {
+        // Fallback code generation if specific code not found
+        $baseCode = [
+            'warning' => 1000,
+            'critical' => 2000,
+            'failed' => 3000,
+        ][$severity] ?? 9000;
+
+        return $baseCode + crc32($component) % 100;
     }
 
     /**
