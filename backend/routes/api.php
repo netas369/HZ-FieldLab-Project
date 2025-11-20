@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\HistoryDataController;
 use App\Http\Controllers\Api\LiveDataController;
 use App\Http\Controllers\Api\TurbineController;
 use Illuminate\Http\Request;
@@ -22,3 +23,5 @@ Route::get('turbine/{turbineId}/latestTemperatures', [LiveDataController::class,
 Route::get('turbine/{turbineId}/alarms', [LiveDataController::class, 'getAlarmsData']);
 
 Route::get('dashboard/all', [LiveDataController::class, 'getAllTurbinesData']);
+
+Route::get('turbine/historicalData', [HistoryDataController::class, 'loadHistoricalDataBetweenTwoPeriods']);
