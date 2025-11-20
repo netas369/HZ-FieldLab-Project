@@ -286,6 +286,37 @@ Test the API connection:
 
 ---
 
+## 🟩 Local SonarQube Setup with Docker
+
+```bash
+# First run this command in the root of the project
+docker compose -f docker-compose.sonar up -d
+
+# Wait 30–60 seconds until it’s fully started.
+
+# Open:
+http://localhost:9000
+
+# Login:
+admin / admin   # change password when asked.
+
+# Create a new project using the "manual" option:
+Project key = HZ-FieldLab
+
+# Save the created project token as you need to use it later.
+
+# Run the Sonar Scanner:
+docker run --rm `
+  -v "${PWD}:/usr/src" `
+  sonarsource/sonar-scanner-cli `
+  "-Dsonar.host.url=http://host.docker.internal:9000" `
+  "-Dsonar.token=YOUR_TOKEN_HERE"
+
+# Open SonarQube and check results in the measures tab:
+http://localhost:9000
+```
+---
+
 ## 🆘 Need Help?
 
 1. 📖 Check this README first
