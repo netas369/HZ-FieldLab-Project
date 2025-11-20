@@ -11,11 +11,8 @@
     </div>
 
     <!-- RIGHT: Blade Visualization -->
-    <div class="flex flex-col items-center bg-gray-100 rounded-xl p-2 dark:bg-gray-800">
+    <div class="flex flex-col items-center rounded-xl p-2">
       <svg class="w-40 h-40" viewBox="-50 -50 100 100">
-
-        <circle cx="0" cy="0" r="14" :fill="ledColor" />
-        <circle cx="0" cy="0" r="14" fill="none" stroke="#222" stroke-width="0.6" />
 
         <g v-for="i in 3" :key="i" :transform="`rotate(${134 * i - 2 * i})`">
           <path
