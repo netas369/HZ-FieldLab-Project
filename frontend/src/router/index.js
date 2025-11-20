@@ -11,7 +11,6 @@ import AnalyticsPage from '@/views/AnalyticsPage.vue'
 import ReportsPage from '@/views/ReportsPage.vue'
 import SettingsPage from '@/views/SettingsPage.vue'
 import TurbineDetailPage from '@/views/TurbineDetailPage.vue'
-import MainPage from '@/components/singleTurbine/MainPage.vue'
 
 const routes = [
   {
@@ -79,7 +78,7 @@ const routes = [
       {
         path: 'turbine/:id',
         name: 'TurbineDetail',
-        component: MainPage,
+        component: TurbineDetailPage,
         meta: { 
           title: 'Turbine Details'
         },

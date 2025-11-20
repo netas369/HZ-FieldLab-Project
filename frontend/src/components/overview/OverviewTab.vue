@@ -225,7 +225,7 @@ const filteredAndSortedTurbines = computed(() => {
   
   switch (filters.sortBy) {
     case 'power':
-      return turbines.sort((a, b) => (b.metrics?.power_mw || 0) - (a.metrics?.power_mw || 0))
+      return turbines.sort((a, b) => (b.scadaData.power_mw || 0) - (a.scadaData.power_mw || 0))
     
     case 'alarms':
       return turbines.sort((a, b) => (b.alarmSummary?.total || 0) - (a.alarmSummary?.total || 0))
