@@ -150,14 +150,7 @@ async function fetchDashboard() {
         id: displayId,
         location: apiTurbine.location || 'Unknown Field',
         status: statusCodeMap[apiTurbine.status] || 'error',
-        metrics: {
-          power_mw: 0,
-          wind_ms: 0,
-          rotor_rpm: 0,
-          generator_rpm: 0,
-          pitch_deg: 0,
-          ambient_temp_c: 0,
-        },
+        metrics: null,
         hydraulicData: null,
         vibrationData: null,
         temperatureData: null,
@@ -167,13 +160,7 @@ async function fetchDashboard() {
       
       // --- Populate SCADA Data ---
       if (apiTurbine.scada) {
-        const scada = apiTurbine.scada;
-        turbineData.metrics.power_mw = scada.power_kw ? (scada.power_kw / 1000) : 0;
-        turbineData.metrics.wind_ms = scada.wind_speed_ms ? parseFloat(scada.wind_speed_ms) : 0;
-        turbineData.metrics.rotor_rpm = scada.rotor_speed_rpm ? parseFloat(scada.rotor_speed_rpm) : 0;
-        turbineData.metrics.generator_rpm = scada.generator_speed_rpm ? parseFloat(scada.generator_speed_rpm) : 0;
-        turbineData.metrics.pitch_deg = scada.pitch_angle_deg ? parseFloat(scada.pitch_angle_deg) : 0;
-        turbineData.metrics.ambient_temp_c = scada.ambient_temp_c ? parseFloat(scada.ambient_temp_c) : 0;
+        turbineData.scadaData = apiTurbine.scada;
       }
       
       // --- Populate Hydraulic Data ---
@@ -246,6 +233,7 @@ async function fetchDashboard() {
  * Fetches maintenance logs.
  */
 async function fetchMaintenanceLogs() {
+    return [];
   // !! REQUIRES API ROUTE !!
   // Assuming a route like 'GET /maintenance'
   maintenanceStore.loading = true;
