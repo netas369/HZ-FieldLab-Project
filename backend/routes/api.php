@@ -10,6 +10,7 @@ Route::get('/test', function () {
     return response()->json(['message' => 'API is working!']);
 });
 
+// LIVE DATA
 Route::get('turbines', [TurbineController::class, 'all_turbines']);
 
 Route::get('turbine/{turbineId}/latestScadaData', [LiveDataController::class, 'getScadaData']);
@@ -24,4 +25,8 @@ Route::get('turbine/{turbineId}/alarms', [LiveDataController::class, 'getAlarmsD
 
 Route::get('dashboard/all', [LiveDataController::class, 'getAllTurbinesData']);
 
-Route::get('turbine/historicalData', [HistoryDataController::class, 'loadHistoricalDataBetweenTwoPeriods']);
+// HISTORY DATA
+Route::get('turbine/historicalScadaData', [HistoryDataController::class, 'loadScadaDataBetweenTwoPeriods']);
+Route::get('turbine/historicalHydraulicData', [HistoryDataController::class, 'loadHydraulicDataBetweenTwoPeriods']);
+Route::get('turbine/historicalVibrationData', [HistoryDataController::class, 'loadVibrationDataBetweenTwoPeriods']);
+Route::get('turbine/historicalTemperatureData', [HistoryDataController::class, 'loadTemperatureDataBetweenTwoPeriods']);
