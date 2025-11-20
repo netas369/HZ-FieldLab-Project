@@ -113,7 +113,7 @@
                   :class="[
                   'w-2 h-2 rounded-full',
                   getTabStatus(tab.key) === 'green' ? 'bg-green-500' : '',
-                  getTabStatus(tab.key) === 'yellow' ? 'bg-yellow-500' : '',
+                  getTabStatus(tab.key) === 'orange' ? 'bg-yellow-500' : '',
                   getTabStatus(tab.key) === 'red' ? 'bg-red-500 animate-pulse' : ''
                 ]"
               ></span>
@@ -316,12 +316,31 @@ const getPriorityClass = (priority) => {
 }
 
 const getTabStatus = (tabKey) => {
-  // Placeholder - will implement logic based on actual data
-  // For now, return null or 'green'/'yellow'/'red' based on data
-  if (tabKey === 'alarms' && turbineAlarms.value.length > 0) {
+  console.log(turbineData.value.temperatureData)
+  if (tabKey === 'scada') {
+    //no clue
+  } else if (tabKey === 'hydraulic') {
+     if (turbineData.value.hydraulicData.gearbox_oil_pressure_status.color === 'red' || turbineData.value.hydraulicData.hydraulic_pressure_status.color === 'red') {
+      return 'red'
+    } else if (turbineData.value.hydraulicData.gearbox_oil_pressure_status.color === 'orange' || turbineData.value.hydraulicData.hydraulic_pressure_status.color === 'orange') {
+      return 'orange'
+    }
+  } else if (tabKey === 'vibration') {
+    if (turbineData.value.vibrationData.overall_vibration_status.color === 'red') {
+      return 'red'
+    } else if (turbineData.value.vibrationData.overall_vibration_status.color === 'orange') {
+      return 'orange'
+    }
+  } else if (tabKey === 'temperature') {
+if (turbineData.value.temperatureData.overall_temperature_status.color === 'red') {
+      return 'red'
+    } else if (turbineData.value.temperatureData.overall_temperature_status.color === 'orange') {
+      return 'orange'
+    }
+  }  else if (tabKey === 'alarms' && turbineAlarms.value.length > 0) {
     const hasCritical = turbineAlarms.value.some(a => a.priority === 'Critical')
-    return hasCritical ? 'red' : 'yellow'
-  }
+    return hasCritical ? 'red' : 'orange'
+  } 
   return 'green'
 }
 
