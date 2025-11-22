@@ -4,10 +4,27 @@
       <header>
         <div class="logo">
           <svg viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="3" fill="#667eea"/>
-            <path d="M50 10 L50 40 L35 25 M50 40 L65 25" stroke="#667eea" stroke-width="3" fill="none"/>
-            <path d="M50 10 L50 40 L35 25 M50 40 L65 25" stroke="#667eea" stroke-width="3" fill="none" transform="rotate(120 50 50)"/>
-            <path d="M50 10 L50 40 L35 25 M50 40 L65 25" stroke="#667eea" stroke-width="3" fill="none" transform="rotate(240 50 50)"/>
+            <circle cx="50" cy="50" r="3" fill="#667eea" />
+            <path
+              d="M50 10 L50 40 L35 25 M50 40 L65 25"
+              stroke="#667eea"
+              stroke-width="3"
+              fill="none"
+            />
+            <path
+              d="M50 10 L50 40 L35 25 M50 40 L65 25"
+              stroke="#667eea"
+              stroke-width="3"
+              fill="none"
+              transform="rotate(120 50 50)"
+            />
+            <path
+              d="M50 10 L50 40 L35 25 M50 40 L65 25"
+              stroke="#667eea"
+              stroke-width="3"
+              fill="none"
+              transform="rotate(240 50 50)"
+            />
           </svg>
           <h1>Wind Turbine Monitoring System</h1>
         </div>
@@ -21,17 +38,17 @@
       <div class="main-grid">
         <aside class="sidebar">
           <input
-              type="text"
-              class="search-bar"
-              placeholder="Search turbines..."
-              v-model="searchQuery"
-          >
+            v-model="searchQuery"
+            type="text"
+            class="search-bar"
+            placeholder="Search turbines..."
+          />
           <nav>
             <div
-                v-for="item in navItems"
-                :key="item.id"
-                :class="['nav-item', { active: activeTab === item.id }]"
-                @click="activeTab = item.id"
+              v-for="item in navItems"
+              :key="item.id"
+              :class="['nav-item', { active: activeTab === item.id }]"
+              @click="activeTab = item.id"
             >
               <span>{{ item.icon }}</span> {{ item.label }}
             </div>
@@ -46,22 +63,41 @@
                 <h2>Turbine Fleet Status</h2>
                 <div class="turbine-grid">
                   <div
-                      v-for="turbine in filteredTurbines"
-                      :key="turbine.id"
-                      :class="['turbine-card', { selected: selectedTurbine.id === turbine.id }]"
-                      @click="selectTurbine(turbine)"
+                    v-for="turbine in filteredTurbines"
+                    :key="turbine.id"
+                    :class="['turbine-card', { selected: selectedTurbine.id === turbine.id }]"
+                    @click="selectTurbine(turbine)"
                   >
                     <div class="turbine-icon">
                       <svg viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="2" fill="#333"/>
-                        <path d="M50 20 L50 40 L40 30 M50 40 L60 30" stroke="#333" stroke-width="2" fill="none"/>
-                        <path d="M50 20 L50 40 L40 30 M50 40 L60 30" stroke="#333" stroke-width="2" fill="none" transform="rotate(120 50 50)"/>
-                        <path d="M50 20 L50 40 L40 30 M50 40 L60 30" stroke="#333" stroke-width="2" fill="none" transform="rotate(240 50 50)"/>
-                        <line x1="50" y1="50" x2="50" y2="80" stroke="#333" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="2" fill="#333" />
+                        <path
+                          d="M50 20 L50 40 L40 30 M50 40 L60 30"
+                          stroke="#333"
+                          stroke-width="2"
+                          fill="none"
+                        />
+                        <path
+                          d="M50 20 L50 40 L40 30 M50 40 L60 30"
+                          stroke="#333"
+                          stroke-width="2"
+                          fill="none"
+                          transform="rotate(120 50 50)"
+                        />
+                        <path
+                          d="M50 20 L50 40 L40 30 M50 40 L60 30"
+                          stroke="#333"
+                          stroke-width="2"
+                          fill="none"
+                          transform="rotate(240 50 50)"
+                        />
+                        <line x1="50" y1="50" x2="50" y2="80" stroke="#333" stroke-width="2" />
                       </svg>
                       <div :class="['status-indicator', 'status-' + turbine.status]"></div>
                     </div>
-                    <div><strong>{{ turbine.id }}</strong></div>
+                    <div>
+                      <strong>{{ turbine.id }}</strong>
+                    </div>
                     <div class="location-text">{{ turbine.location }}</div>
                     <div :style="{ fontSize: '14px', color: getStatusColor(turbine.status) }">
                       {{ turbine.statusText }}
@@ -73,7 +109,11 @@
               <div class="metrics-panel">
                 <h3>{{ selectedTurbine.id }} Performance Metrics</h3>
                 <div class="metric-cards">
-                  <div class="metric-card" v-for="metric in selectedTurbineMetrics" :key="metric.label">
+                  <div
+                    v-for="metric in selectedTurbineMetrics"
+                    :key="metric.label"
+                    class="metric-card"
+                  >
                     <div class="metric-label">{{ metric.label }}</div>
                     <div class="metric-value">{{ metric.value }}</div>
                     <div class="metric-trend">{{ metric.trend }}</div>
@@ -82,7 +122,11 @@
 
                 <h4 class="component-health-title">Component Health</h4>
                 <div class="component-health">
-                  <div class="health-item" v-for="component in componentHealth" :key="component.name">
+                  <div
+                    v-for="component in componentHealth"
+                    :key="component.name"
+                    class="health-item"
+                  >
                     <span>{{ component.name }}</span>
                     <div class="health-bar">
                       <div class="health-fill" :style="{ width: component.health + '%' }"></div>
@@ -98,10 +142,10 @@
                 <h3>Maintenance History - {{ selectedTurbine.id }}</h3>
                 <div class="tabs">
                   <button
-                      v-for="tab in maintenanceTabs"
-                      :key="tab"
-                      :class="['tab', { active: activeMaintenanceTab === tab }]"
-                      @click="activeMaintenanceTab = tab"
+                    v-for="tab in maintenanceTabs"
+                    :key="tab"
+                    :class="['tab', { active: activeMaintenanceTab === tab }]"
+                    @click="activeMaintenanceTab = tab"
                   >
                     {{ tab }}
                   </button>
@@ -122,10 +166,10 @@
                 <h3>Predictive Maintenance Insights</h3>
                 <div class="insights-grid">
                   <div
-                      v-for="insight in predictiveInsights"
-                      :key="insight.component"
-                      class="insight-card"
-                      :style="{ borderLeftColor: insight.color }"
+                    v-for="insight in predictiveInsights"
+                    :key="insight.component"
+                    class="insight-card"
+                    :style="{ borderLeftColor: insight.color }"
                   >
                     <h4>{{ insight.component }} - {{ insight.turbine }}</h4>
                     <p class="rul-text">
@@ -163,10 +207,10 @@
           <h3>Active Alarms ({{ filteredAlarms.length }})</h3>
           <div class="alarm-filters">
             <button
-                v-for="filter in alarmFilters"
-                :key="filter"
-                :class="['btn', 'btn-filter', { 'btn-outline': activeAlarmFilter !== filter }]"
-                @click="activeAlarmFilter = filter"
+              v-for="filter in alarmFilters"
+              :key="filter"
+              :class="['btn', 'btn-filter', { 'btn-outline': activeAlarmFilter !== filter }]"
+              @click="activeAlarmFilter = filter"
             >
               {{ filter }}
             </button>
@@ -174,10 +218,10 @@
 
           <transition-group name="slide-fade">
             <div
-                v-for="alarm in filteredAlarms"
-                :key="alarm.id"
-                :class="['alarm-item', 'alarm-' + alarm.priority.toLowerCase()]"
-                @click="showAlarmDetails(alarm)"
+              v-for="alarm in filteredAlarms"
+              :key="alarm.id"
+              :class="['alarm-item', 'alarm-' + alarm.priority.toLowerCase()]"
+              @click="showAlarmDetails(alarm)"
             >
               <div class="alarm-header">
                 <span class="alarm-title">{{ alarm.title }}</span>
@@ -214,7 +258,7 @@ export default {
 
     const currentUser = ref({
       name: 'John Smith',
-      role: 'Supervisor'
+      role: 'Supervisor',
     })
 
     const navItems = ref([
@@ -223,7 +267,7 @@ export default {
       { id: 'alarms', icon: '⚠️', label: 'Active Alarms' },
       { id: 'analytics', icon: '📈', label: 'Analytics' },
       { id: 'reports', icon: '📄', label: 'Reports' },
-      { id: 'settings', icon: '⚙️', label: 'Settings' }
+      { id: 'settings', icon: '⚙️', label: 'Settings' },
     ])
 
     const turbines = ref([
@@ -232,7 +276,7 @@ export default {
       { id: 'WT-003', location: 'East Field', status: 'maintenance', statusText: 'Maintenance' },
       { id: 'WT-004', location: 'East Field', status: 'warning', statusText: 'Warning' },
       { id: 'WT-005', location: 'South Field', status: 'stopped', statusText: 'Stopped' },
-      { id: 'WT-006', location: 'South Field', status: 'running', statusText: 'Running' }
+      { id: 'WT-006', location: 'South Field', status: 'running', statusText: 'Running' },
     ])
 
     const turbineMetrics = ref({
@@ -241,7 +285,7 @@ export default {
       'WT-003': { power: '0 MW', wind: '12 m/s', availability: '85.3%', rotor: '0 RPM' },
       'WT-004': { power: '2.4 MW', wind: '11 m/s', availability: '94.1%', rotor: '13 RPM' },
       'WT-005': { power: '0 MW', wind: '10 m/s', availability: '0%', rotor: '0 RPM' },
-      'WT-006': { power: '2.9 MW', wind: '15 m/s', availability: '99.1%', rotor: '16 RPM' }
+      'WT-006': { power: '2.9 MW', wind: '15 m/s', availability: '99.1%', rotor: '16 RPM' },
     })
 
     const alarms = ref([
@@ -251,7 +295,7 @@ export default {
         priority: 'Warning',
         description: 'Vibration level: 4.2 mm/s RMS (Threshold: 4.5)',
         turbine: 'WT-004',
-        time: '2 hours ago'
+        time: '2 hours ago',
       },
       {
         id: 2,
@@ -259,7 +303,7 @@ export default {
         priority: 'Major',
         description: 'Winding temp: 88°C (Warning: 85°C, Fault: 95°C)',
         turbine: 'WT-003',
-        time: '5 hours ago'
+        time: '5 hours ago',
       },
       {
         id: 3,
@@ -267,7 +311,7 @@ export default {
         priority: 'Minor',
         description: 'Misalignment: 12° from optimal (Threshold: 15°)',
         turbine: 'WT-001',
-        time: '30 mins ago'
+        time: '30 mins ago',
       },
       {
         id: 4,
@@ -275,7 +319,7 @@ export default {
         priority: 'Critical',
         description: 'Tower vibration: 2.8 mm amplitude. Immediate inspection required.',
         turbine: 'WT-005',
-        time: '1 hour ago'
+        time: '1 hour ago',
       },
       {
         id: 5,
@@ -283,7 +327,7 @@ export default {
         priority: 'Minor',
         description: 'Power factor: 0.93 (Target: >0.95)',
         turbine: 'WT-002',
-        time: '4 hours ago'
+        time: '4 hours ago',
       },
       {
         id: 6,
@@ -291,7 +335,7 @@ export default {
         priority: 'Warning',
         description: 'Oil pressure: 1.8 bar (Warning: <2.0 bar)',
         turbine: 'WT-006',
-        time: '6 hours ago'
+        time: '6 hours ago',
       },
       {
         id: 7,
@@ -299,7 +343,7 @@ export default {
         priority: 'Minor',
         description: 'Relative humidity: 87% (Warning: >85%)',
         turbine: 'WT-001',
-        time: '12 hours ago'
+        time: '12 hours ago',
       },
       {
         id: 8,
@@ -307,33 +351,36 @@ export default {
         priority: 'Warning',
         description: 'Wind speed: 22 m/s (Warning: >20 m/s, Shutdown: >25 m/s)',
         turbine: 'All turbines',
-        time: '3 hours ago'
-      }
+        time: '3 hours ago',
+      },
     ])
 
     const maintenanceLogs = ref([
       {
         date: '2025-09-20',
         technician: 'Mike Johnson',
-        actions: '• Gearbox oil change completed<br>• Vibration analysis performed<br>• Brake pads inspected - 70% life remaining'
+        actions:
+          '• Gearbox oil change completed<br>• Vibration analysis performed<br>• Brake pads inspected - 70% life remaining',
       },
       {
         date: '2025-09-15',
         technician: 'Sarah Williams',
-        actions: '• Blade pitch motor calibration<br>• Yaw bearing lubrication<br>• Control system firmware update v2.3.1'
+        actions:
+          '• Blade pitch motor calibration<br>• Yaw bearing lubrication<br>• Control system firmware update v2.3.1',
       },
       {
         date: '2025-08-28',
         technician: 'David Chen',
-        actions: '• Annual inspection completed<br>• Tower bolts torque check<br>• Lightning protection system tested'
-      }
+        actions:
+          '• Annual inspection completed<br>• Tower bolts torque check<br>• Lightning protection system tested',
+      },
     ])
 
     const componentHealth = ref([
       { name: 'Gearbox', health: 85 },
       { name: 'Generator', health: 92 },
       { name: 'Blades', health: 78 },
-      { name: 'Main Bearing', health: 88 }
+      { name: 'Main Bearing', health: 88 },
     ])
 
     const predictiveInsights = ref([
@@ -342,22 +389,22 @@ export default {
         turbine: 'WT-004',
         rul: 45,
         color: '#10b981',
-        recommendation: 'Schedule oil analysis within 2 weeks'
+        recommendation: 'Schedule oil analysis within 2 weeks',
       },
       {
         component: 'Main Bearing',
         turbine: 'WT-003',
         rul: 120,
         color: '#f59e0b',
-        recommendation: 'Monitor vibration trends weekly'
+        recommendation: 'Monitor vibration trends weekly',
       },
       {
         component: 'Blade Pitch System',
         turbine: 'WT-002',
         rul: 200,
         color: '#3b82f6',
-        recommendation: 'Normal degradation pattern observed'
-      }
+        recommendation: 'Normal degradation pattern observed',
+      },
     ])
 
     const maintenanceTabs = ref(['Recent', 'Scheduled', 'Component History'])
@@ -370,7 +417,8 @@ export default {
     const filteredTurbines = computed(() => {
       if (!searchQuery.value) return turbines.value
 
-      return turbines.value.filter(turbine =>
+      return turbines.value.filter(
+        turbine =>
           turbine.id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
           turbine.location.toLowerCase().includes(searchQuery.value.toLowerCase())
       )
@@ -379,38 +427,39 @@ export default {
     const filteredAlarms = computed(() => {
       if (activeAlarmFilter.value === 'All') return alarms.value
 
-      return alarms.value.filter(alarm =>
-          alarm.priority === activeAlarmFilter.value
-      )
+      return alarms.value.filter(alarm => alarm.priority === activeAlarmFilter.value)
     })
 
     const selectedTurbineMetrics = computed(() => {
-      const metrics = turbineMetrics.value[selectedTurbine.value.id] || turbineMetrics.value['WT-001']
+      const metrics =
+        turbineMetrics.value[selectedTurbine.value.id] || turbineMetrics.value['WT-001']
       return [
         { label: 'Power Output', value: metrics.power, trend: '↑ 5% from yesterday' },
         { label: 'Wind Speed', value: metrics.wind, trend: 'Optimal range' },
         { label: 'Availability', value: metrics.availability, trend: 'Above target' },
-        { label: 'Rotor Speed', value: metrics.rotor, trend: 'Normal operation' }
+        { label: 'Rotor Speed', value: metrics.rotor, trend: 'Normal operation' },
       ]
     })
 
     // Methods
-    const selectTurbine = (turbine) => {
+    const selectTurbine = turbine => {
       selectedTurbine.value = turbine
     }
 
-    const getStatusColor = (status) => {
+    const getStatusColor = status => {
       const colors = {
         running: '#10b981',
         maintenance: '#f59e0b',
         stopped: '#ef4444',
-        warning: '#8b5cf6'
+        warning: '#8b5cf6',
       }
       return colors[status] || '#666'
     }
 
-    const showAlarmDetails = (alarm) => {
-      alert(`Alarm Details:\n\n${alarm.title}\nPriority: ${alarm.priority}\nTurbine: ${alarm.turbine}\n\n${alarm.description}\n\nRecommended Action: Schedule immediate inspection`)
+    const showAlarmDetails = alarm => {
+      alert(
+        `Alarm Details:\n\n${alarm.title}\nPriority: ${alarm.priority}\nTurbine: ${alarm.turbine}\n\n${alarm.description}\n\nRecommended Action: Schedule immediate inspection`
+      )
     }
 
     // Simulate real-time updates
@@ -467,9 +516,9 @@ export default {
       selectedTurbineMetrics,
       selectTurbine,
       getStatusColor,
-      showAlarmDetails
+      showAlarmDetails,
     }
-  }
+  },
 }
 </script>
 
@@ -499,7 +548,7 @@ header {
   border-radius: 15px;
   padding: 20px 30px;
   margin-bottom: 20px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -518,8 +567,12 @@ header {
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 h1 {
@@ -558,7 +611,7 @@ h1 {
   backdrop-filter: blur(10px);
   border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .nav-item {
@@ -593,7 +646,7 @@ h1 {
   backdrop-filter: blur(10px);
   border-radius: 15px;
   padding: 25px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .turbine-grid {
@@ -615,7 +668,7 @@ h1 {
 
 .turbine-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   border-color: #667eea;
 }
 
@@ -647,15 +700,29 @@ h1 {
   animation: pulse 2s ease-in-out infinite;
 }
 
-.status-running { background: #10b981; }
-.status-maintenance { background: #f59e0b; }
-.status-stopped { background: #ef4444; }
-.status-warning { background: #8b5cf6; }
+.status-running {
+  background: #10b981;
+}
+.status-maintenance {
+  background: #f59e0b;
+}
+.status-stopped {
+  background: #ef4444;
+}
+.status-warning {
+  background: #8b5cf6;
+}
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
 .metrics-panel {
@@ -663,7 +730,7 @@ h1 {
   backdrop-filter: blur(10px);
   border-radius: 15px;
   padding: 25px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .metric-cards {
@@ -682,7 +749,7 @@ h1 {
 
 .metric-card:hover {
   transform: scale(1.02);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .metric-value {
@@ -746,7 +813,7 @@ h1 {
   backdrop-filter: blur(10px);
   border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   max-height: 85vh;
   overflow-y: auto;
 }
@@ -769,13 +836,21 @@ h1 {
 
 .alarm-item:hover {
   transform: translateX(5px);
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
-.alarm-critical { border-left-color: #ef4444; }
-.alarm-major { border-left-color: #f59e0b; }
-.alarm-minor { border-left-color: #3b82f6; }
-.alarm-warning { border-left-color: #8b5cf6; }
+.alarm-critical {
+  border-left-color: #ef4444;
+}
+.alarm-major {
+  border-left-color: #f59e0b;
+}
+.alarm-minor {
+  border-left-color: #3b82f6;
+}
+.alarm-warning {
+  border-left-color: #8b5cf6;
+}
 
 .alarm-header {
   display: flex;
@@ -795,10 +870,18 @@ h1 {
   border-radius: 12px;
   color: white;
 }
-.priority-critical { background: #ef4444; }
-.priority-major { background: #f59e0b; }
-.priority-minor { background: #3b82f6; }
-.priority-warning { background: #8b5cf6; }
+.priority-critical {
+  background: #ef4444;
+}
+.priority-major {
+  background: #f59e0b;
+}
+.priority-minor {
+  background: #3b82f6;
+}
+.priority-warning {
+  background: #8b5cf6;
+}
 
 .alarm-description {
   font-size: 13px;
@@ -859,7 +942,7 @@ h1 {
 }
 
 .maintenance-log:hover {
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
 .log-header {
@@ -952,11 +1035,13 @@ h1 {
   transition: width 0.5s ease;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -965,7 +1050,7 @@ h1 {
 }
 
 .slide-fade-leave-active {
-  transition: all 0.3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
 }
 
 .slide-fade-enter-from,

@@ -11,7 +11,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .js,.vue,.ts --max-warnings=0",
-    "format": "prettier --write .",
+    "lint:fix": "eslint . --ext .js,.vue,.ts --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
     "test": "vitest",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage"

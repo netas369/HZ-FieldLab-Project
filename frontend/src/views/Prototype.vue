@@ -11,8 +11,8 @@ import Prototype from '@/components/Prototype.vue'
 export default {
   name: 'TurbineMonitoringView',
   components: {
-    Prototype
-  }
+    Prototype,
+  },
 }
 </script>
 

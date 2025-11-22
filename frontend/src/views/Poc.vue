@@ -1,24 +1,23 @@
-
 <template>
-    <div class="poc-view">
-        <Poc />
-    </div>
+  <div class="poc-view">
+    <Poc />
+  </div>
 </template>
 
 <script>
 import Poc from '@/components/Poc.vue'
 
 export default {
-    name: 'PocView',
-    components: {
-        Poc
-    }
+  name: 'PocView',
+  components: {
+    Poc,
+  },
 }
 </script>
 
 <style scoped>
 .poc-view {
-    padding: 2rem;
-    text-align: center;
+  padding: 2rem;
+  text-align: center;
 }
 </style>
