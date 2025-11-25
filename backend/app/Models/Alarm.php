@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Constants\AlarmCodes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,6 +14,7 @@ class Alarm extends Model
         'turbine_id',
         'alarm_type',
         'component',
+        'alarm_code',
         'severity',
         'status',
         'message',
@@ -49,5 +51,21 @@ class Alarm extends Model
     public function scopeSeverity($query, $severity)
     {
         return $query->where('severity', $severity);
+    }
+
+    // ✅ ADD THIS METHOD
+    public function getAlarmDetails()
+    {
+        if ($this->alarm_code) {
+            return AlarmCodes::getAlarmDetails($this->alarm_code);
+        }
+        return null;
+    }
+
+    // ✅ ADD THIS METHOD
+    public function getStandardReference()
+    {
+        $details = $this->getAlarmDetails();
+        return $details['standard'] ?? null;
     }
 }

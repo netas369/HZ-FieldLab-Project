@@ -1,20 +1,12 @@
 <template>
-  <div id="app">
-    <navbar />
-
-    <router-view />
-  </div>
+  <router-view />
 </template>
 
-<script>
-import Navbar from "@/components/principal_page_components/NavBar.vue";
-
-export default {
-  name: 'App',
-  components: {Navbar}
-}
+<script setup>
+// App.vue is now just a router outlet
+// All logic moved to AppLayout.vue
 </script>
 
 <style>
-/* Your existing styles */
+/* Global styles only */
 </style>

@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\TurbineStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Turbine extends Model
 {
-    protected $fillable = ['turbine_id'];
+    protected $fillable = ['turbine_id', 'status'];
+
+    protected $casts = [
+        'status' => TurbineStatus::class,
+    ];
 
     public function ScadaReadings() {
         return $this->hasMany(ScadaReading::class);
