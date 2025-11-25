@@ -30,3 +30,4 @@ Route::get('turbine/historicalScadaData', [HistoryDataController::class, 'loadSc
 Route::get('turbine/historicalHydraulicData', [HistoryDataController::class, 'loadHydraulicDataBetweenTwoPeriods']);
 Route::get('turbine/historicalVibrationData', [HistoryDataController::class, 'loadVibrationDataBetweenTwoPeriods']);
 Route::get('turbine/historicalTemperatureData', [HistoryDataController::class, 'loadTemperatureDataBetweenTwoPeriods']);
+Route::get('turbine/allHistoricalData', [HistoryDataController::class, 'loadAllHistoricalDataBetweenTwoPeriods']);

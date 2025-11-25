@@ -12,6 +12,32 @@ use Illuminate\Http\Request;
 
 class HistoryDataController extends Controller
 {
+    public function loadAllHistoricalDataBetweenTwoPeriods(Request $request)
+    {
+        $validated = $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'turbine_id' => 'required',
+        ]);
+
+        $turbine = Turbine::where('turbine_id', $validated['turbine_id'])->first();
+        $result = [];
+
+        $turbineData = [
+            'id' => $turbine->id,
+            'turbine_id' => $turbine->turbine_id,
+            'status' => $turbine->status,
+            'scada' => $this->buildScadaDataBetweenTwoPeriods($turbine->id, $validated['start_date'], $validated['end_date']),
+            'vibration' => $this->buildVibrationDataBetweenTwoPeriods($turbine->id, $validated['start_date'], $validated['end_date']),
+            'hydraulic' => $this->buildHydraulicDataBetweenTwoPeriods($turbine->id, $validated['start_date'], $validated['end_date']),
+            'temperature' => $this->buildTemperatureDataBetweenTwoPeriods($turbine->id, $validated['start_date'], $validated['end_date']),
+        ];
+
+        $result[] = $turbineData;
+
+        return response()->json($result);
+    }
+
     public function loadScadaDataBetweenTwoPeriods(Request $request) {
 
         $validated = $request->validate([
@@ -80,7 +106,7 @@ class HistoryDataController extends Controller
             'temperature_data' => $temperatureData,
         ]);
     }
-    
+
     private function buildTemperatureDataBetweenTwoPeriods($turbineId, $startDate, $endDate) {
         $temperatureData = TemperatureReading::where('turbine_id', $turbineId)
             ->whereBetween('reading_timestamp', [$startDate, $endDate])
