@@ -57,24 +57,24 @@ const routes = [
           icon: 'chart'
         }
       },
-      {
-        path: 'reports',
-        name: 'Reports',
-        component: ReportsPage,
-        meta: { 
-          title: 'Reports',
-          icon: 'file'
-        }
-      },
-      {
-        path: 'settings',
-        name: 'Settings',
-        component: SettingsPage,
-        meta: { 
-          title: 'Settings',
-          icon: 'settings'
-        }
-      },
+      // {
+      //   path: 'reports',
+      //   name: 'Reports',
+      //   component: ReportsPage,
+      //   meta: {
+      //     title: 'Reports',
+      //     icon: 'file'
+      //   }
+      // },
+      // {
+      //   path: 'settings',
+      //   name: 'Settings',
+      //   component: SettingsPage,
+      //   meta: {
+      //     title: 'Settings',
+      //     icon: 'settings'
+      //   }
+      // },
       {
         path: 'turbine/:id',
         name: 'TurbineDetail',

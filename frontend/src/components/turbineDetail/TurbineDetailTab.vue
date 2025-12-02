@@ -165,44 +165,44 @@
           </section>
 
           <!-- Alarms Section -->
-          <section :id="'alarms'" v-show="currentTab === 'alarms'" class="space-y-4">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-xl font-bold text-slate-900 dark:text-white">Active Alarms</h3>
-            </div>
+<!--          <section :id="'alarms'" v-show="currentTab === 'alarms'" class="space-y-4">-->
+<!--            <div class="flex items-center justify-between mb-4">-->
+<!--              <h3 class="text-xl font-bold text-slate-900 dark:text-white">Active Alarms</h3>-->
+<!--            </div>-->
 
-            <div v-if="turbineAlarms.length > 0" class="space-y-3">
-              <div
-                  v-for="alarm in turbineAlarms"
-                  :key="alarm.id"
-                  class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                  @click="$emit('show-alarm', alarm)"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-2">
-                      <span :class="['px-2 py-1 rounded text-xs font-bold', getPriorityClass(alarm.priority)]">
-                        {{ alarm.priority }}
-                      </span>
-                      <span class="text-xs text-slate-500 dark:text-slate-400">{{ alarm.time }}</span>
-                    </div>
-                    <h4 class="font-semibold text-slate-900 dark:text-white mb-1">{{ alarm.title }}</h4>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">{{ alarm.description }}</p>
-                  </div>
-                  <svg class="w-5 h-5 text-slate-400 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
+<!--            <div v-if="turbineAlarms.length > 0" class="space-y-3">-->
+<!--              <div-->
+<!--                  v-for="alarm in turbineAlarms"-->
+<!--                  :key="alarm.id"-->
+<!--                  class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"-->
+<!--                  @click="$emit('show-alarm', alarm)"-->
+<!--              >-->
+<!--                <div class="flex items-start justify-between">-->
+<!--                  <div class="flex-1">-->
+<!--                    <div class="flex items-center gap-2 mb-2">-->
+<!--                      <span :class="['px-2 py-1 rounded text-xs font-bold', getPriorityClass(alarm.priority)]">-->
+<!--                        {{ alarm.priority }}-->
+<!--                      </span>-->
+<!--                      <span class="text-xs text-slate-500 dark:text-slate-400">{{ alarm.time }}</span>-->
+<!--                    </div>-->
+<!--                    <h4 class="font-semibold text-slate-900 dark:text-white mb-1">{{ alarm.title }}</h4>-->
+<!--                    <p class="text-sm text-slate-600 dark:text-slate-400">{{ alarm.description }}</p>-->
+<!--                  </div>-->
+<!--                  <svg class="w-5 h-5 text-slate-400 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />-->
+<!--                  </svg>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
 
-            <div v-else class="text-center py-12">
-              <svg class="w-16 h-16 mx-auto text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p class="text-lg font-semibold text-slate-900 dark:text-white">No Active Alarms</p>
-              <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">All systems operating normally</p>
-            </div>
-          </section>
+<!--            <div v-else class="text-center py-12">-->
+<!--              <svg class="w-16 h-16 mx-auto text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />-->
+<!--              </svg>-->
+<!--              <p class="text-lg font-semibold text-slate-900 dark:text-white">No Active Alarms</p>-->
+<!--              <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">All systems operating normally</p>-->
+<!--            </div>-->
+<!--          </section>-->
         </div>
       </div>
     </div>
@@ -239,7 +239,7 @@ const tabs = [
   { key: 'hydraulic', label: 'Hydraulic' },
   { key: 'vibration', label: 'Vibration' },
   { key: 'temperature', label: 'Temperature' },
-  { key: 'alarms', label: 'Alarms' }
+  // { key: 'alarms', label: 'Alarms' }
 ]
 
 // Computed

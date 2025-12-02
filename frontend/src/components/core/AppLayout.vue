@@ -270,8 +270,8 @@ const currentRoute = computed(() => {
     'Alarms': 'alarms',
     'Maintenance': 'maintenance',
     'Analytics': 'analytics',
-    'Reports': 'reports',
-    'Settings': 'settings'
+    // 'Reports': 'reports',
+    // 'Settings': 'settings'
   }
   return routeMap[route.name] || 'overview'
 })
@@ -281,8 +281,8 @@ const navItems = computed(() => [
   { id: 'alarms', label: 'Alarms', icon: 'alert', badge: criticalAlarmsCount.value },
   { id: 'maintenance', label: 'Maintenance', icon: 'wrench', badge: null },
   { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
-  { id: 'reports', label: 'Reports', icon: 'file', badge: null },
-  { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
+  // { id: 'reports', label: 'Reports', icon: 'file', badge: null },
+  // { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
 ])
 
 const criticalAlarmsCount = computed(() => alarmStore.criticalCount)
