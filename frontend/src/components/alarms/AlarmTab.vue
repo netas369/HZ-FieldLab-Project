@@ -366,6 +366,8 @@ watch(() => props.initialFilter, (newFilter) => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 /* Scrollbar styling */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;

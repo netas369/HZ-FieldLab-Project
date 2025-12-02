@@ -230,7 +230,7 @@ const {
   turbineStore, 
   alarmStore, 
   maintenanceStore,
-  fetchTurbines,
+  fetchDashboard,
   fetchAlarms,
   fetchMaintenanceLogs
 } = useScadaService()
@@ -249,7 +249,7 @@ const state = reactive({
   selectedAlarm: null,
   showMaintenanceForm: false,
   searchQuery: '',
-  theme: 'light'
+  theme: localStorage.getItem('theme') || 'dark'
 })
 
 const maintenanceForm = reactive({
@@ -353,8 +353,9 @@ const handleQuickLink = (action) => {
 }
 
 const toggleTheme = () => {
-  state.theme = state.theme === 'light' ? 'dark' : 'light'
-  document.documentElement.classList.toggle('dark')
+  state.theme = state.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', state.theme);
 }
 
 const getPriorityClass = (priority) => {
@@ -373,9 +374,9 @@ const getPriorityClass = (priority) => {
 
 onMounted(async () => {
   // Fetch all data on mount
-  await fetchTurbines()
+  await fetchDashboard()
   await Promise.all([
-    fetchAlarms(),
+    // fetchAlarms(),
     fetchMaintenanceLogs()
   ]);
 })
