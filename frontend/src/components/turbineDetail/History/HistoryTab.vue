@@ -50,10 +50,10 @@
               <span class="text-xs font-normal text-slate-400">(Set to 'Full' for deep zooming)</span>
             </label>
             <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-700">
-              <button @click="resolution = 50" :class="getResClass(50)">Low</button>
-              <button @click="resolution = 200" :class="getResClass(200)">Med</button>
-              <button @click="resolution = 1000" :class="getResClass(1000)">High</button>
-              <button @click="resolution = 99999" :class="getResClass(99999)">Full</button>
+              <button @click="updateResolution(50)" :class="getResClass(50)">Low</button>
+              <button @click="updateResolution(200)" :class="getResClass(200)">Med</button>
+              <button @click="updateResolution(1000)" :class="getResClass(1000)">High</button>
+              <button @click="updateResolution(99999)" :class="getResClass(99999)">Full</button>
             </div>
           </div>
 
@@ -142,6 +142,11 @@ const resetZoom = () => {
   if (chartRef.value && chartRef.value.chart) {
     chartRef.value.chart.resetZoom()
   }
+}
+
+const updateResolution = (newRes) => {
+  resolution.value = newRes;
+  resetZoom();
 }
 
 const getResClass = (val) => {
