@@ -271,7 +271,6 @@ const currentRoute = computed(() => {
     'Maintenance': 'maintenance',
     'Analytics': 'analytics',
     'Reports': 'reports',
-    'Settings': 'settings'
   }
   return routeMap[route.name] || 'overview'
 })
@@ -282,7 +281,6 @@ const navItems = computed(() => [
   { id: 'maintenance', label: 'Maintenance', icon: 'wrench', badge: null },
   { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
   { id: 'reports', label: 'Reports', icon: 'file', badge: null },
-  { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
 ])
 
 const criticalAlarmsCount = computed(() => alarmStore.criticalCount)
@@ -299,7 +297,6 @@ const handleNavigation = (tabId) => {
     'maintenance': 'Maintenance',
     'analytics': 'Analytics',
     'reports': 'Reports',
-    'settings': 'Settings'
   }
   
   const routeName = routeMap[tabId]
@@ -349,7 +346,7 @@ const handleMaintenanceSubmit = async () => {
 
 const handleQuickLink = (action) => {
   console.log('Quick link:', action)
-  // Handle quick link actions (export, docs, support)
+  router.push({ name: 'ImportData' })
 }
 
 const toggleTheme = () => {

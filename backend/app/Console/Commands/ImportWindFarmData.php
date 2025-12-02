@@ -66,7 +66,7 @@ class ImportWindFarmData extends Command
         $gridBatch = [];
         $hydraulicBatch = [];
 
-        $batchSize = 1000;
+        $batchSize = 5000;
         $processedRows = 0;
 
         // Process CSV rows
