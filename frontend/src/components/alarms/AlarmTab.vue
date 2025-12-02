@@ -1,14 +1,18 @@
 <template>
   <div class="flex flex-col h-full">
     <!-- Header Section -->
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 mb-6">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
             Active Alarms
           </h2>
           <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            {{ stats.total }} total • {{ stats.critical }} critical • {{ stats.unacknowledged }} unacknowledged
+            {{ stats.total }} total •
+            <span :class="stats.critical > 0 ? 'text-red-600 dark:text-red-400 font-semibold' : ''">
+              {{ stats.critical }} critical
+            </span> •
+            {{ stats.unacknowledged }} unacknowledged
           </p>
         </div>
 
@@ -25,20 +29,37 @@
                   ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               ]"
+                :title="`${view} view`"
             >
-              {{ view === 'list' ? 'List' : 'Grid' }}
+              <svg v-if="view === 'list'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
             </button>
           </div>
 
           <!-- Sort Dropdown -->
           <select
               v-model="sortBy"
-              class="px-3 py-2 bg-slate-100 dark:bg-slate-700 border-0 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500"
+              class="px-3 py-2 bg-slate-100 dark:bg-slate-700 border-0 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
           >
             <option value="time">Most Recent</option>
             <option value="priority">Priority</option>
             <option value="turbine">Turbine</option>
           </select>
+
+          <!-- Refresh Button -->
+          <button
+              @click="$emit('refresh')"
+              class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors"
+              title="Refresh alarms"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -68,6 +89,24 @@
             </span>
           </span>
         </button>
+
+        <!-- Acknowledged Filter Toggle -->
+        <button
+            @click="showAcknowledged = !showAcknowledged"
+            :class="[
+            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+            showAcknowledged
+              ? 'bg-green-500 text-white'
+              : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+          ]"
+        >
+          <span class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {{ showAcknowledged ? 'Hide' : 'Show' }} Acknowledged
+          </span>
+        </button>
       </div>
     </div>
 
@@ -77,7 +116,7 @@
         <!-- Empty State -->
         <div
             v-if="filteredAndSortedAlarms.length === 0"
-            class="flex flex-col items-center justify-center h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm p-12"
+            class="flex flex-col items-center justify-center h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-12"
         >
           <div class="w-24 h-24 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-4">
             <svg class="w-12 h-12 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,12 +127,12 @@
             All Clear!
           </h3>
           <p class="text-slate-600 dark:text-slate-400 text-center max-w-md">
-            {{ activeFilters.length > 1 ? 'No alarms match your current filters' : 'No active alarms at the moment' }}
+            {{ activeFilters.length > 1 || !showAcknowledged ? 'No alarms match your current filters' : 'No active alarms at the moment' }}
           </p>
           <button
-              v-if="activeFilters.length > 1"
+              v-if="activeFilters.length > 1 || !showAcknowledged"
               @click="resetFilters"
-              class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition"
+              class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
           >
             Clear Filters
           </button>
@@ -121,7 +160,7 @@
         <!-- Grid View -->
         <div
             v-else
-            class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto h-full pr-2 scrollbar-thin"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto h-full pr-2 scrollbar-thin"
         >
           <transition-group name="grid" tag="div" class="contents">
             <AlarmCard
@@ -156,10 +195,18 @@ const props = defineProps({
   initialFilter: {
     type: String,
     default: 'All'
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  error: {
+    type: String,
+    default: null
   }
 })
 
-const emit = defineEmits(['show-alarm', 'acknowledge-alarm', 'filter-change'])
+const emit = defineEmits(['show-alarm', 'acknowledge-alarm', 'filter-change', 'refresh'])
 
 // ============================================================================
 // STATE
@@ -169,13 +216,14 @@ const currentView = ref('list')
 const sortBy = ref('time')
 const activeFilters = ref(['all'])
 const expandedAlarms = ref(new Set())
+const showAcknowledged = ref(false)
 
 // Filter configuration
 const filterOptions = [
   {
     value: 'all',
     label: 'All Alarms',
-    activeClass: 'bg-slate-900 dark:bg-slate-600 text-white'
+    activeClass: 'bg-slate-900 dark:bg-slate-600 text-white shadow-lg'
   },
   {
     value: 'Critical',
@@ -217,7 +265,12 @@ const stats = computed(() => {
 const filteredAndSortedAlarms = computed(() => {
   let result = [...props.alarms]
 
-  // Apply filters
+  // Filter by acknowledged status
+  if (!showAcknowledged.value) {
+    result = result.filter(alarm => !alarm.acknowledged)
+  }
+
+  // Apply priority filters
   if (!activeFilters.value.includes('all')) {
     result = result.filter(alarm => activeFilters.value.includes(alarm.priority))
   }
@@ -276,6 +329,7 @@ const isFilterActive = (filterValue) => {
 
 const resetFilters = () => {
   activeFilters.value = ['all']
+  showAcknowledged.value = false
   emit('filter-change', ['all'])
 }
 
