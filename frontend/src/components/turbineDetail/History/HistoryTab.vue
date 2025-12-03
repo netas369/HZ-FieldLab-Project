@@ -188,12 +188,24 @@ import 'hammerjs'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, zoomPlugin)
 
 const props = defineProps({ turbineId: { type: String, required: true } })
-const { historyStore } = useScadaService()
+const { historyStore, turbineStore } = useScadaService() // ✅ Get turbineStore too
 
 const form = reactive({ start_date: '', end_date: '' })
 const selectedMetric = ref('performance')
 const resolution = ref(200)
 const chartRef = ref(null)
+
+// ✅ ADD: Resolve numeric ID to string ID
+const resolvedTurbineId = computed(() => {
+  // If props.turbineId is already "WT001" format, return it
+  if (props.turbineId.startsWith('WT')) {
+    return props.turbineId
+  }
+
+  // Otherwise, it's a numeric ID like "1", so find the turbine
+  const turbine = turbineStore.turbines.find(t => t._api_id == props.turbineId)
+  return turbine?.id || props.turbineId // Return WT001 or fallback
+})
 
 // --- Estimation & Loading State ---
 const progressPercentage = ref(0)
@@ -231,7 +243,8 @@ const initiateFetch = async () => {
   }, 100)
 
   // Real API Call
-  await historyStore.fetchHistory(props.turbineId, form.start_date, form.end_date)
+  console.log('🔍 Fetching history for turbine:', resolvedTurbineId.value)
+  await historyStore.fetchHistory(resolvedTurbineId.value, form.start_date, form.end_date)
 
   // Finish
   clearInterval(progressInterval)

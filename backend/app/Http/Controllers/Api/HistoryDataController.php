@@ -29,6 +29,15 @@ class HistoryDataController extends Controller
         ]);
 
         $turbine = Turbine::where('turbine_id', $validated['turbine_id'])->first();
+
+        // Check if turbine exists
+        if (!$turbine) {
+            return response()->json([
+                'error' => 'Turbine not found',
+                'turbine_id' => $validated['turbine_id']
+            ], 404);
+        }
+
         $result = [];
 
         $turbineData = [

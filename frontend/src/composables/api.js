@@ -50,36 +50,46 @@ const historyStore = reactive({
         historyStore.error = null;
         historyStore.data = null;
 
-        // 1. Resolve Display ID (WT001) to API ID (1)
-        const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
-        // const apiTurbineId = turbine ? turbine._api_id : null;
-        const apiTurbineId = turbine?.id;
+        // 1. Resolve Display ID (WT001) to turbine_id string
+        const turbine = turbineStore.turbines.find(t => t.id === displayId);
+        const turbineId = turbine?.id; // This should be "WT001", "WT002", etc.
 
-        if (!apiTurbineId) {
-            historyStore.error = `Could not find API ID for turbine ${displayId}`;
+        if (!turbineId) {
+            historyStore.error = `Could not find turbine ${displayId}`;
             historyStore.loading = false;
             return;
         }
 
         try {
-            // 2. Perform Request
-            const response = await fetch(`${apiUrl}/turbine/allHistoricalData`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    start_date: startDate,
-                    end_date: endDate,
-                    turbine_id: apiTurbineId // Sending the resolved ID
-                })
+            console.log('🔍 Fetching history for:', { turbineId, startDate, endDate });
+
+            // 2. ✅ CORRECTED: Use GET with query parameters
+            const params = new URLSearchParams({
+                turbine_id: turbineId,
+                start_date: startDate,
+                end_date: endDate
             });
 
-            if (!response.ok) throw new Error('Failed to fetch historical data');
+            const response = await fetch(`${apiUrl}/turbine/allHistoricalData?${params}`, {
+                method: 'GET', // ✅ Changed from POST to GET
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Server error:', errorText);
+                throw new Error(`Failed to fetch historical data: ${response.status} ${response.statusText}`);
+            }
 
             const data = await response.json();
+            console.log('✅ History data received:', data);
             historyStore.data = data;
 
         } catch (err) {
-            console.error('History fetch error:', err);
+            console.error('❌ History fetch error:', err);
             historyStore.error = err.message;
         } finally {
             historyStore.loading = false;
