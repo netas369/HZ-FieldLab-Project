@@ -55,14 +55,14 @@ class TurbineDataService
      */
     public function getHydraulicPressureStatus($pressure)
     {
-        if ($pressure >= 160 && $pressure <= 180) {
+        if ($pressure >= 155 && $pressure <= 165) { // ✅ CORRECTED
             return [
                 'status' => 'normal',
                 'label' => 'Normal',
                 'color' => 'green',
                 'description' => 'Optimal pitch system pressure'
             ];
-        } elseif ($pressure >= 150 && $pressure < 160) {
+        } elseif ($pressure >= 150 && $pressure < 155) { // ✅ ADJUSTED
             return [
                 'status' => 'warning',
                 'label' => 'Below Normal',
@@ -340,14 +340,16 @@ class TurbineDataService
             return $this->getStatusStructure('unknown', 'No Data', 'gray');
         }
 
-        if ($temp < 70) {
+        if ($temp < 65) { // ✅ CORRECTED
             return $this->getStatusStructure('normal', 'Normal', 'green', 'Optimal operating temperature');
-        } elseif ($temp >= 70 && $temp < 75) {
-            return $this->getStatusStructure('warning', 'Warm', 'yellow', 'Higher than optimal');
+        } elseif ($temp >= 65 && $temp < 70) { // ✅ NEW WARNING RANGE
+            return $this->getStatusStructure('warning', 'Warm', 'yellow', 'Approaching warning level');
+        } elseif ($temp >= 70 && $temp < 75) { // ✅ ADJUSTED
+            return $this->getStatusStructure('warning', 'Hot', 'yellow', 'Higher than optimal');
         } elseif ($temp >= 75 && $temp < 85) {
-            return $this->getStatusStructure('critical', 'Hot', 'orange', 'Check cooling system');
+            return $this->getStatusStructure('critical', 'Very Hot', 'orange', 'Check cooling system');
         } else {
-            return $this->getStatusStructure('failed', 'Very Hot', 'red', 'Oil degradation risk');
+            return $this->getStatusStructure('failed', 'Critical', 'red', 'Oil degradation risk');
         }
     }
 
