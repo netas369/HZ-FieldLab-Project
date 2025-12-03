@@ -1,6 +1,15 @@
 import { reactive, computed } from 'vue'
+import axios from 'axios'
 
-const apiUrl = import.meta.env.VITE_API_BASE_URL;
+// Create an Axios instance for cleaner config
+const apiClient = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+    // timeout: 10000 // Optional: good practice to add a timeout
+});
 
 // ============================================================================
 // STORES
@@ -21,25 +30,25 @@ const alarmStore = reactive({
     criticalCount: computed(() => alarmStore.alarms.filter(a => a.priority === 'Critical' && !a.acknowledged).length),
 
     acknowledgeAlarm: async (alarmId) => {
+        // Optimistic UI update
+        const alarm = alarmStore.alarms.find(a => a.id === alarmId)
+        if (alarm) alarm.acknowledged = true
+
         try {
-            const alarm = alarmStore.alarms.find(a => a.id === alarmId)
-            if (alarm) alarm.acknowledged = true
-
-            const response = await fetch(`${apiUrl}/alarms/${alarmId}/acknowledge`, { method: 'POST' })
-
-            if (!response.ok) {
-                if (alarm) alarm.acknowledged = false
-                throw new Error('Failed to acknowledge alarm')
-            }
+            // Axios automatically throws if status is not 2xx
+            await apiClient.post(`/alarms/${alarmId}/acknowledge`)
         } catch (err) {
-            console.error(err)
-            alarmStore.error = err.message
+            // Revert on failure
+            if (alarm) alarm.acknowledged = false
+
+            console.error('Failed to acknowledge alarm:', err)
+            // Axios stores the server response in err.response
+            alarmStore.error = err.response?.data?.message || err.message
         }
     },
     recentAlarms: (count) => alarmStore.alarms.slice(0, count)
 });
 
-// NEW: History Store for trends
 const historyStore = reactive({
     data: null,
     loading: false,
@@ -50,9 +59,8 @@ const historyStore = reactive({
         historyStore.error = null;
         historyStore.data = null;
 
-        // 1. Resolve Display ID (WT001) to turbine_id string
         const turbine = turbineStore.turbines.find(t => t.id === displayId);
-        const turbineId = turbine?.id; // This should be "WT001", "WT002", etc.
+        const turbineId = turbine?.id;
 
         if (!turbineId) {
             historyStore.error = `Could not find turbine ${displayId}`;
@@ -63,40 +71,26 @@ const historyStore = reactive({
         try {
             console.log('🔍 Fetching history for:', { turbineId, startDate, endDate });
 
-            // 2. ✅ CORRECTED: Use GET with query parameters
-            const params = new URLSearchParams({
-                turbine_id: turbineId,
-                start_date: startDate,
-                end_date: endDate
-            });
-
-            const response = await fetch(`${apiUrl}/turbine/allHistoricalData?${params}`, {
-                method: 'GET', // ✅ Changed from POST to GET
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+            // Axios handles query params automatically via the 'params' object
+            const response = await apiClient.get('/turbine/allHistoricalData', {
+                params: {
+                    turbine_id: turbineId,
+                    start_date: startDate,
+                    end_date: endDate
                 }
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ Server error:', errorText);
-                throw new Error(`Failed to fetch historical data: ${response.status} ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log('✅ History data received:', data);
-            historyStore.data = data;
+            console.log('✅ History data received:', response.data);
+            historyStore.data = response.data;
 
         } catch (err) {
             console.error('❌ History fetch error:', err);
-            historyStore.error = err.message;
+            historyStore.error = err.response?.data?.message || err.message;
         } finally {
             historyStore.loading = false;
         }
     },
 
-    // Helper to clear data when switching views if needed
     clear: () => {
         historyStore.data = null;
         historyStore.error = null;
@@ -127,18 +121,14 @@ const maintenanceStore = reactive({
         }
 
         try {
-            const response = await fetch(`${apiUrl}/maintenance`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(apiPayload)
-            })
-            if (!response.ok) throw new Error('Failed to save maintenance log')
+            // Axios automatically stringifies the body
+            const response = await apiClient.post('/maintenance', apiPayload);
 
-            const newLogFromApi = await response.json()
+            const newLogFromApi = response.data;
 
             const newLogForStore = {
                 id: newLogFromApi.id,
-                turbine: log.turbine, // Keep the display ID for UI
+                turbine: log.turbine,
                 type: log.type,
                 description: newLogFromApi.notes,
                 date: new Date(newLogFromApi.log_date).toISOString(),
@@ -148,7 +138,7 @@ const maintenanceStore = reactive({
             maintenanceStore.logs.unshift(newLogForStore)
         } catch (err) {
             console.error('Failed to add maintenance log:', err)
-            maintenanceStore.error = err.message
+            maintenanceStore.error = err.response?.data?.message || err.message
         }
     }
 });
@@ -172,10 +162,11 @@ async function fetchDashboard() {
     alarmStore.error = null;
 
     try {
-        const response = await fetch(`${apiUrl}/dashboard/all`);
-        if (!response.ok) throw new Error(`Failed to fetch dashboard: ${response.status}`);
+        const response = await apiClient.get('/dashboard/all');
 
-        const dashboardData = await response.json();
+        // Axios stores the parsed JSON in .data
+        const dashboardData = response.data;
+
         const turbines = [];
         const allAlarms = [];
 
@@ -222,8 +213,10 @@ async function fetchDashboard() {
         alarmStore.alarms = allAlarms;
 
     } catch (err) {
-        turbineStore.error = err.message;
-        alarmStore.error = err.message;
+        // Handle Axios error structure
+        const message = err.response?.data?.message || err.message;
+        turbineStore.error = message;
+        alarmStore.error = message;
         console.error('Dashboard fetch error:', err);
     } finally {
         turbineStore.loading = false;
