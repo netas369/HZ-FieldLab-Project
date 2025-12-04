@@ -11,6 +11,7 @@ import AnalyticsPage from '@/views/AnalyticsPage.vue'
 import ReportsPage from '@/views/ReportsPage.vue'
 import SettingsPage from '@/views/SettingsPage.vue'
 import TurbineDetailPage from '@/views/TurbineDetailPage.vue'
+import ImportData from '@/views/ImportData.vue'
 
 const routes = [
   {
@@ -81,6 +82,15 @@ const routes = [
         component: TurbineDetailPage,
         meta: { 
           title: 'Turbine Details'
+        },
+        props: true // Pass route params as props
+      }, 
+      {
+        path: 'import',
+        name: 'ImportData',
+        component: ImportData,
+        meta: {
+          title: 'import datta'
         },
         props: true // Pass route params as props
       }

@@ -123,7 +123,16 @@
           >
             <span class="flex items-center gap-2">
               {{ tab.label }}
-              <span class="w-2 h-2 rounded-full bg-green-500"></span>
+              <!-- Status Indicator Dot -->
+              <span
+                  v-if="getTabStatus(tab.key)"
+                  :class="[
+                  'w-2 h-2 rounded-full',
+                  getTabStatus(tab.key) === 'green' ? 'bg-green-500' : '',
+                  getTabStatus(tab.key) === 'orange' ? 'bg-yellow-500' : '',
+                  getTabStatus(tab.key) === 'red' ? 'bg-red-500 animate-pulse' : ''
+                ]"
+              ></span>
             </span>
             <div
                 v-if="currentTab === tab.key"
@@ -243,15 +252,14 @@ const navigateToTab = (tabKey) => {
   router.replace({ hash: `#${tabKey}` })
 }
 
-const switchView = (mode) => {
-  viewMode.value = mode
-  if (mode === 'live') {
-    // Ensure URL matches the current tab when switching back to live
-    router.replace({ hash: `#${currentTab.value}` })
-  } else {
-    // Clear hash when entering history mode to avoid confusion
-    router.replace({ hash: '' })
+const getTabStatus = (tabKey) => {
+  // Placeholder - will implement logic based on actual data
+  // For now, return null or 'green'/'yellow'/'red' based on data
+  if (tabKey === 'alarms' && turbineAlarms.value.length > 0) {
+    const hasCritical = turbineAlarms.value.some(a => a.priority === 'Critical')
+    return hasCritical ? 'red' : 'yellow'
   }
+  return 'green'
 }
 
 // Lifecycle & Watchers

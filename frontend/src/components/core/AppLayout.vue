@@ -299,7 +299,6 @@ const handleNavigation = (tabId) => {
     'maintenance': 'Maintenance',
     'analytics': 'Analytics',
     'reports': 'Reports',
-    'settings': 'Settings'
   }
   
   const routeName = routeMap[tabId]
@@ -349,7 +348,7 @@ const handleMaintenanceSubmit = async () => {
 
 const handleQuickLink = (action) => {
   console.log('Quick link:', action)
-  // Handle quick link actions (export, docs, support)
+  router.push({ name: 'ImportData' })
 }
 
 const toggleTheme = () => {
