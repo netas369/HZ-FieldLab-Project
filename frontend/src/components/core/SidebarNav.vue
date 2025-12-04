@@ -53,24 +53,24 @@
         <div class="my-4 border-t border-slate-200 dark:border-slate-800"></div>
 
         <!-- Secondary Navigation -->
-<!--        <div class="space-y-1">-->
-<!--          <p class="px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">-->
-<!--            Quick Links-->
-<!--          </p>-->
+       <div class="space-y-1">-->
+         <p class="px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+           Quick Links
+         </p>
 
-<!--          <button-->
-<!--              v-for="link in quickLinks"-->
-<!--              :key="link.id"-->
-<!--              type="button"-->
-<!--              @click="handleQuickLink(link.action)"-->
-<!--              class="w-full group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"-->
-<!--          >-->
-<!--            <div class="text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400">-->
-<!--              <component :is="getIcon(link.icon)" class="w-5 h-5" />-->
-<!--            </div>-->
-<!--            <span class="flex-1 text-left">{{ link.label }}</span>-->
-<!--          </button>-->
-<!--        </div>-->
+         <button
+             v-for="link in quickLinks"
+             :key="link.id"
+             type="button"
+             @click="handleQuickLink(link.action)"
+             class="w-full group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"
+         >
+           <div class="text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400">
+             <component :is="getIcon(link.icon)" class="w-5 h-5" />
+           </div>
+           <span class="flex-1 text-left">{{ link.label }}</span>
+          </button>
+    </div>
       </nav>
 
       <!-- Footer Info -->
