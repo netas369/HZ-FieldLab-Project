@@ -178,6 +178,7 @@ async function fetchDashboard() {
                 id: displayId,
                 location: apiTurbine.location || 'Unknown Field',
                 status: statusCodeMap[apiTurbine.status] || 'error',
+                metrics: {},
                 hydraulicData: apiTurbine.hydraulic || null,
                 vibrationData: apiTurbine.vibration || null,
                 temperatureData: apiTurbine.temperature || null,
@@ -185,6 +186,14 @@ async function fetchDashboard() {
                 alarmSummary: null,
                 _api_id: apiId
             };
+
+            turbineData.metrics.power_mw = turbineData.scadaData.power_kw ? (turbineData.scadaData.power_kw / 1000) : 0;
+            turbineData.metrics.wind_ms = turbineData.scadaData.wind_speed_ms ? parseFloat(turbineData.scadaData.wind_speed_ms) : 0;
+            turbineData.metrics.wind_speed_ms = turbineData.scadaData.wind_speed_ms ? parseFloat(turbineData.scadaData.wind_speed_ms) : 0;
+            turbineData.metrics.rotor_rpm = turbineData.scadaData.rotor_speed_rpm ? parseFloat(turbineData.scadaData.rotor_speed_rpm) : 0;
+            turbineData.metrics.generator_rpm = turbineData.scadaData.generator_speed_rpm ? parseFloat(turbineData.scadaData.generator_speed_rpm) : 0;
+            turbineData.metrics.pitch_deg = turbineData.scadaData.pitch_angle_deg ? parseFloat(turbineData.scadaData.pitch_angle_deg) : 0;
+            turbineData.metrics.ambient_temp_c = turbineData.scadaData.ambient_temp_c ? parseFloat(turbineData.scadaData.ambient_temp_c) : 0;
 
             if (apiTurbine.alarms) {
                 turbineData.alarmSummary = {

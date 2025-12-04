@@ -75,14 +75,14 @@
         <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 backdrop-blur-sm">
           <p class="text-xs text-slate-600 dark:text-slate-400 mb-1">Power</p>
           <p class="text-lg font-bold text-slate-900 dark:text-white">
-            {{Number(turbine.scadaData?.power_kw)?.toFixed(1) || '0.0'}}
+            {{ turbine.metrics?.power_mw?.toFixed(1) || '0.0' }}
             <span class="text-sm font-normal text-slate-500">MW</span>
           </p>
         </div>
         <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 backdrop-blur-sm">
           <p class="text-xs text-slate-600 dark:text-slate-400 mb-1">Wind</p>
           <p class="text-lg font-bold text-slate-900 dark:text-white">
-            {{Number(turbine.scadaData?.wind_speed_ms)?.toFixed(1) || '-'}}
+            {{ turbine.metrics?.wind_ms?.toFixed(1) || '-' }}
             <span class="text-sm font-normal text-slate-500">m/s</span>
           </p>
         </div>
@@ -94,7 +94,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          {{parseInt(turbine.scadaData?.rotor_speed_rpm) || '0'}} RPM
+          {{ turbine.metrics?.rotor_rpm?.toFixed(0) || '-' }} RPM
         </span>
         <span class="text-indigo-600 dark:text-indigo-400 font-medium group-hover:underline">
           View Details →
