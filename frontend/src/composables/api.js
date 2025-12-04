@@ -178,7 +178,6 @@ async function fetchDashboard() {
                 id: displayId,
                 location: apiTurbine.location || 'Unknown Field',
                 status: statusCodeMap[apiTurbine.status] || 'error',
-                metrics: null,
                 hydraulicData: apiTurbine.hydraulic || null,
                 vibrationData: apiTurbine.vibration || null,
                 temperatureData: apiTurbine.temperature || null,
