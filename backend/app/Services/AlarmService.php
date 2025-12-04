@@ -55,15 +55,15 @@ class AlarmService
         // ============================================
         // EDGE CASE 2: Stale/old data (no recent readings)
         // ============================================
-        $lastReadingAge = Carbon::now()->diffInMinutes($scada->reading_timestamp);
-
-        if ($lastReadingAge > 60) {
-            // Data is older than 1 hour - possible communication failure
-            $turbine->status = TurbineStatus::Error;
-            $turbine->save();
-            Log::warning("Stale SCADA data for turbine {$turbineId}. Last reading: {$scada->reading_timestamp}");
-            return;
-        }
+//        $lastReadingAge = Carbon::now()->diffInMinutes($scada->reading_timestamp);
+//
+//        if ($lastReadingAge > 60) {
+//            // Data is older than 1 hour - possible communication failure
+//            $turbine->status = TurbineStatus::Error;
+//            $turbine->save();
+//            Log::warning("Stale SCADA data for turbine {$turbineId}. Last reading: {$scada->reading_timestamp}");
+//            return;
+//        }
 
         // ============================================
         // EDGE CASE 3: Check for GRID FAULT alarms first

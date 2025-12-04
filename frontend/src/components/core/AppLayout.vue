@@ -230,7 +230,7 @@ const {
   turbineStore, 
   alarmStore, 
   maintenanceStore,
-  fetchTurbines,
+  fetchDashboard,
   fetchAlarms,
   fetchMaintenanceLogs
 } = useScadaService()
@@ -249,7 +249,7 @@ const state = reactive({
   selectedAlarm: null,
   showMaintenanceForm: false,
   searchQuery: '',
-  theme: 'light'
+  theme: localStorage.getItem('theme') || 'dark'
 })
 
 const maintenanceForm = reactive({
@@ -270,7 +270,8 @@ const currentRoute = computed(() => {
     'Alarms': 'alarms',
     'Maintenance': 'maintenance',
     'Analytics': 'analytics',
-    'Reports': 'reports',
+    // 'Reports': 'reports',
+    // 'Settings': 'settings'
   }
   return routeMap[route.name] || 'overview'
 })
@@ -280,7 +281,8 @@ const navItems = computed(() => [
   { id: 'alarms', label: 'Alarms', icon: 'alert', badge: criticalAlarmsCount.value },
   { id: 'maintenance', label: 'Maintenance', icon: 'wrench', badge: null },
   { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
-  { id: 'reports', label: 'Reports', icon: 'file', badge: null },
+  // { id: 'reports', label: 'Reports', icon: 'file', badge: null },
+  // { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
 ])
 
 const criticalAlarmsCount = computed(() => alarmStore.criticalCount)
@@ -350,8 +352,9 @@ const handleQuickLink = (action) => {
 }
 
 const toggleTheme = () => {
-  state.theme = state.theme === 'light' ? 'dark' : 'light'
-  document.documentElement.classList.toggle('dark')
+  state.theme = state.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', state.theme);
 }
 
 const getPriorityClass = (priority) => {
@@ -370,9 +373,9 @@ const getPriorityClass = (priority) => {
 
 onMounted(async () => {
   // Fetch all data on mount
-  await fetchTurbines()
+  await fetchDashboard()
   await Promise.all([
-    fetchAlarms(),
+    // fetchAlarms(),
     fetchMaintenanceLogs()
   ]);
 })
