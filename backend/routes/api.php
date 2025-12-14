@@ -58,3 +58,9 @@ Route::get('/component-health/{componentName}', [ComponentHealthController::clas
 
 // Get deterioration trends for a turbine
 Route::get('/turbines/{turbineId}/deterioration-trends', [ComponentHealthController::class, 'getDeteriorationTrends']);
+
+
+
+Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
+    return $request->user();
+});
