@@ -1,7 +1,6 @@
 <template>
   <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
 
-    <!-- 1. HEADER & DATE CONTROLS -->
     <div class="mb-6 border-b border-slate-200 dark:border-slate-700 pb-6">
       <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
         <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,7 +42,6 @@
       </div>
     </div>
 
-    <!-- 2. LOADING STATE (Extracted) -->
     <HistoryLoader
         v-if="historyStore.loading"
         :day-count="dayCount"
@@ -51,7 +49,6 @@
         :progress="progressPercentage"
     />
 
-    <!-- 3. DATA CONTENT (Chart + Stats) -->
     <div v-else-if="historyStore.data && chartData" class="space-y-6">
 
       <HistoryChart
@@ -62,21 +59,25 @@
       />
 
       <HistoryStats
-          :stats="stats"
+          v-if="selectedMetric !== 'alarms'"
+          :stats="telemetryStats"
           :displayed-points="displayedDataCount"
           :total-points="rawDataCount"
       />
 
+      <HistoryAlarms
+          v-else
+          :alarms="rawResponse.alarms"
+      />
+
     </div>
 
-    <!-- 4. ERROR STATE -->
     <div v-else-if="historyStore.error" class="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900 rounded-xl p-8 text-center">
       <h3 class="text-lg font-bold text-red-900 dark:text-red-300 mb-2">Failed to load history</h3>
       <p class="text-red-600 dark:text-red-400 mb-4">{{ historyStore.error }}</p>
       <button @click="historyStore.clear()" class="px-4 py-2 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors">Dismiss</button>
     </div>
 
-    <!-- 5. EMPTY STATE -->
     <div v-else class="flex flex-col items-center justify-center py-16 text-center">
       <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-full mb-4 border border-slate-100 dark:border-slate-700">
         <svg class="w-10 h-10 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,18 +94,30 @@
 <script setup>
 import { reactive, onUnmounted, ref, computed } from 'vue'
 import { useScadaService } from '@/composables/api.js'
-// Chart Dependencies
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js'
+
+// --- CHART.JS SETUP ---
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import 'hammerjs'
 
-// Sub-components
+// --- SUB COMPONENTS ---
 import HistoryChart from './HistoryChart.vue'
 import HistoryStats from './HistoryStats.vue'
 import HistoryLoader from './HistoryLoader.vue'
+import HistoryAlarms from './Alarms/HistoryAlarms.vue' // <--- NEW COMPONENT
 
-// Register Chart.js globally for this view
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, zoomPlugin)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler, zoomPlugin)
 
 const props = defineProps({ turbineId: { type: String, required: true } })
 const { historyStore, turbineStore } = useScadaService()
@@ -113,7 +126,7 @@ const form = reactive({ start_date: '', end_date: '' })
 const selectedMetric = ref('performance')
 const resolution = ref(200)
 
-// --- ID Resolution ---
+// --- ID Logic ---
 const resolvedTurbineId = computed(() => {
   if (props.turbineId.startsWith('WT')) return props.turbineId
   const turbine = turbineStore.turbines.find(t => t._api_id == props.turbineId)
@@ -154,7 +167,7 @@ onUnmounted(() => {
   if (progressInterval) clearInterval(progressInterval)
 })
 
-// --- Data Logic & Downsampling ---
+// --- Data Parsing ---
 const rawResponse = computed(() => historyStore.data?.[0] || null)
 const rawDataCount = computed(() => rawResponse.value?.scada?.scada_data?.length || 0)
 
@@ -171,14 +184,17 @@ const vibList = computed(() => downsample(rawResponse.value?.vibration?.vibratio
 const hydroList = computed(() => downsample(rawResponse.value?.hydraulic?.hydraulic_data))
 const displayedDataCount = computed(() => scadaList.value.length)
 
-// --- Stats Calculation ---
-const stats = computed(() => {
+// --- Stats Logic (Telemetry Only) ---
+// Alarm stats are now handled inside HistoryAlarms.vue
+const telemetryStats = computed(() => {
   const fullScada = rawResponse.value?.scada?.scada_data || []
-  if (!fullScada.length) return { avgPower: 0, maxWind: 0, avgTemp: 0 }
+  if (!fullScada.length) return { type: 'telemetry', avgPower: 0, maxWind: 0, avgTemp: 0 }
+
   const avgPower = (fullScada.reduce((sum, d) => sum + parseFloat(d.power_kw), 0) / fullScada.length).toFixed(0)
   const maxWind = Math.max(...fullScada.map(d => parseFloat(d.wind_speed_ms))).toFixed(1)
   const avgTemp = (fullScada.reduce((sum, d) => sum + parseFloat(d.ambient_temp_c), 0) / fullScada.length).toFixed(1)
-  return { avgPower, maxWind, avgTemp }
+
+  return { type: 'telemetry', avgPower, maxWind, avgTemp }
 })
 
 // --- Chart Configuration ---
@@ -188,45 +204,100 @@ const chartOptions = computed(() => ({
   animation: false,
   interaction: { mode: 'index', intersect: false },
   plugins: {
-    legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8, padding: 20, font: { size: 11 } } },
-    tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12, cornerRadius: 8, titleFont: { size: 13, weight: 'bold' }, displayColors: true, usePointStyle: true },
-    zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, limits: { x: {min: 'original', max: 'original'} } }
+    legend: {
+      position: 'top',
+      align: 'end',
+      labels: { usePointStyle: true, boxWidth: 8, padding: 20, font: { size: 11 } }
+    },
+    tooltip: {
+      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+      padding: 12,
+      cornerRadius: 8,
+      titleFont: { size: 13, weight: 'bold' },
+      displayColors: true,
+      usePointStyle: true
+    },
+    zoom: {
+      pan: { enabled: true, mode: 'x' },
+      zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+      limits: { x: {min: 'original', max: 'original'} }
+    }
   },
   scales: {
-    x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
-    y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(148, 163, 184, 0.1)' }, border: { display: false } },
-    y1: { type: 'linear', display: selectedMetric.value === 'performance' || selectedMetric.value === 'hydraulics', position: 'right', grid: { drawOnChartArea: false }, border: { display: false } },
+    x: {
+      grid: { display: false },
+      ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }
+    },
+    y: {
+      type: 'linear',
+      display: true,
+      position: 'left',
+      // Clean look for Bar chart vs Line chart
+      grid: { color: selectedMetric.value === 'alarms' ? 'transparent' : 'rgba(148, 163, 184, 0.1)' },
+      border: { display: false }
+    },
+    y1: {
+      type: 'linear',
+      display: selectedMetric.value === 'performance' || selectedMetric.value === 'hydraulics',
+      position: 'right',
+      grid: { drawOnChartArea: false },
+      border: { display: false }
+    },
   }
 }))
 
 const chartData = computed(() => {
   if (!rawResponse.value) return null
-  const labels = scadaList.value.map(d => new Date(d.reading_timestamp).toLocaleTimeString([], { month:'short', day:'numeric', hour: '2-digit', minute: '2-digit' }))
 
-  // Helper for datasets
-  const dataset = (label, data, color, yAxis = 'y', fill = false) => ({
-    label, data, borderColor: color, backgroundColor: fill ? 'rgba(139, 92, 246, 0.1)' : undefined,
+  const timeLabels = scadaList.value.map(d => new Date(d.reading_timestamp).toLocaleTimeString([], { month:'short', day:'numeric', hour: '2-digit', minute: '2-digit' }))
+
+  const dataset = (label, data, color, yAxis = 'y', fill = false, type = 'line') => ({
+    type, label, data, borderColor: color, backgroundColor: fill ? 'rgba(139, 92, 246, 0.1)' : undefined,
     fill, yAxisID: yAxis, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2
   })
 
-  if (selectedMetric.value === 'performance') return { labels, datasets: [
+  // --- 1. ALARM FREQUENCY (Bar Chart) ---
+  if (selectedMetric.value === 'alarms') {
+    const alarmStats = rawResponse.value?.alarms?.statistics
+    if (!alarmStats) return null
+
+    const compStats = alarmStats.most_common_components
+    const compLabels = Object.keys(compStats).map(k => k.replace(/_/g, ' ').toUpperCase())
+    const compData = Object.values(compStats)
+
+    return {
+      labels: compLabels,
+      datasets: [{
+        type: 'bar',
+        label: 'Alarm Frequency',
+        data: compData,
+        backgroundColor: ['rgba(248, 113, 113, 0.85)', 'rgba(96, 165, 250, 0.85)', 'rgba(251, 191, 36, 0.85)', 'rgba(52, 211, 153, 0.85)', 'rgba(167, 139, 250, 0.85)'],
+        borderRadius: 4,
+        barPercentage: 0.6,
+        categoryPercentage: 0.8
+      }]
+    }
+  }
+
+  // --- 2. TELEMETRY CHARTS ---
+  if (selectedMetric.value === 'performance') return { labels: timeLabels, datasets: [
       { ...dataset('Power Output (kW)', scadaList.value.map(d => d.power_kw), '#8b5cf6', 'y', true) },
       { ...dataset('Wind Speed (m/s)', scadaList.value.map(d => d.wind_speed_ms), '#3b82f6', 'y1'), borderDash: [4, 4] }
     ]}
 
-  if (selectedMetric.value === 'temperatures') return { labels, datasets: [
+  if (selectedMetric.value === 'temperatures') return { labels: timeLabels, datasets: [
       dataset('Gearbox', tempList.value.map(d => d.gearbox_bearing_temp_c), '#f97316'),
       dataset('Stator', tempList.value.map(d => d.generator_stator_temp_c), '#ef4444'),
       dataset('Main Bearing', tempList.value.map(d => d.main_bearing_temp_c), '#eab308')
     ]}
 
-  if (selectedMetric.value === 'vibration_bearings') return { labels, datasets: [
+  if (selectedMetric.value === 'vibration_bearings') return { labels: timeLabels, datasets: [
       dataset('Main Bearing', vibList.value.map(d => d.main_bearing_vibration_rms_mms), '#10b981'),
       dataset('Gearbox', vibList.value.map(d => d.gearbox_vibration_axial_mms), '#6366f1'),
       dataset('Generator', vibList.value.map(d => d.generator_vibration_de_mms), '#ec4899')
     ]}
 
-  if (selectedMetric.value === 'hydraulics') return { labels, datasets: [
+  if (selectedMetric.value === 'hydraulics') return { labels: timeLabels, datasets: [
       dataset('Hydraulic Pressure', hydroList.value.map(d => d.hydraulic_pressure_bar), '#06b6d4'),
       dataset('Gearbox Oil', hydroList.value.map(d => d.gearbox_oil_pressure_bar), '#84cc16', 'y1')
     ]}

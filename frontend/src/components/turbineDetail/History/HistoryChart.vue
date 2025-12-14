@@ -15,6 +15,7 @@
           <option value="temperatures">Component Temperatures</option>
           <option value="vibration_bearings">Bearing Vibrations</option>
           <option value="hydraulics">Hydraulic Pressures</option>
+          <option value="alarms">Alarm Analysis</option>
         </select>
       </div>
 

@@ -81,6 +81,7 @@ const historyStore = reactive({
             });
 
             console.log('✅ History data received:', response.data);
+            console.log(response.data.at().alarms);
             historyStore.data = response.data;
 
         } catch (err) {
