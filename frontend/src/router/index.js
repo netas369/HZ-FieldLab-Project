@@ -11,6 +11,7 @@ import AnalyticsPage from '@/views/AnalyticsPage.vue'
 import ReportsPage from '@/views/ReportsPage.vue'
 import SettingsPage from '@/views/SettingsPage.vue'
 import TurbineDetailPage from '@/views/TurbineDetailPage.vue'
+import LoginPage from '@/views/LoginPage.vue'
 
 const routes = [
   {
@@ -27,6 +28,15 @@ const routes = [
         component: OverviewPage,
         meta: { 
           title: 'Overview',
+          icon: 'dashboard'
+        }
+      },
+      {
+        path: 'login',
+        name: 'login',
+        component: LoginPage,
+        meta: {
+          title: 'login',
           icon: 'dashboard'
         }
       },
@@ -114,9 +124,9 @@ router.beforeEach((to, from, next) => {
     : baseTitle
 
   // You can add authentication checks here
-  // if (to.meta.requiresAuth && !isAuthenticated()) {
-  //   return next('/login')
-  // }
+  if (to.meta.requiresAuth && !isAuthenticated()) {
+    return next('/login')
+  }
 
   next()
 })
