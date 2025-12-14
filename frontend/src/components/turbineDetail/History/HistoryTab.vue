@@ -136,7 +136,7 @@ const resolvedTurbineId = computed(() => {
 // --- Loading Simulation ---
 const progressPercentage = ref(0)
 let progressInterval = null
-const SECONDS_PER_DAY = 0.85
+const SECONDS_PER_DAY = 0.07
 
 const dayCount = computed(() => {
   if (!form.start_date || !form.end_date) return 0

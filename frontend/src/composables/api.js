@@ -1,14 +1,9 @@
 import { reactive, computed } from 'vue'
 import axios from 'axios'
 
-// Create an Axios instance for cleaner config
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    }
-    // timeout: 10000 // Optional: good practice to add a timeout
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
 });
 
 // ============================================================================
@@ -30,19 +25,13 @@ const alarmStore = reactive({
     criticalCount: computed(() => alarmStore.alarms.filter(a => a.priority === 'Critical' && !a.acknowledged).length),
 
     acknowledgeAlarm: async (alarmId) => {
-        // Optimistic UI update
         const alarm = alarmStore.alarms.find(a => a.id === alarmId)
         if (alarm) alarm.acknowledged = true
-
         try {
-            // Axios automatically throws if status is not 2xx
             await apiClient.post(`/alarms/${alarmId}/acknowledge`)
         } catch (err) {
-            // Revert on failure
             if (alarm) alarm.acknowledged = false
-
             console.error('Failed to acknowledge alarm:', err)
-            // Axios stores the server response in err.response
             alarmStore.error = err.response?.data?.message || err.message
         }
     },
@@ -53,7 +42,6 @@ const historyStore = reactive({
     data: null,
     loading: false,
     error: null,
-
     fetchHistory: async (displayId, startDate, endDate) => {
         historyStore.loading = true;
         historyStore.error = null;
@@ -70,20 +58,11 @@ const historyStore = reactive({
 
         try {
             console.log('🔍 Fetching history for:', { turbineId, startDate, endDate });
-
-            // Axios handles query params automatically via the 'params' object
             const response = await apiClient.get('/turbine/allHistoricalData', {
-                params: {
-                    turbine_id: turbineId,
-                    start_date: startDate,
-                    end_date: endDate
-                }
+                params: { turbine_id: turbineId, start_date: startDate, end_date: endDate }
             });
-
-            console.log('✅ History data received:', response.data);
-            console.log(response.data.at().alarms);
+            console.log('✅ History data received');
             historyStore.data = response.data;
-
         } catch (err) {
             console.error('❌ History fetch error:', err);
             historyStore.error = err.response?.data?.message || err.message;
@@ -91,26 +70,18 @@ const historyStore = reactive({
             historyStore.loading = false;
         }
     },
-
-    clear: () => {
-        historyStore.data = null;
-        historyStore.error = null;
-    }
+    clear: () => { historyStore.data = null; historyStore.error = null; }
 });
 
 const maintenanceStore = reactive({
     logs: [],
     loading: false,
     error: null,
-
     addLog: async (log) => {
         const turbine = turbineStore.turbines.find(t => t.id === log.turbine)
         const apiTurbineId = turbine ? turbine._api_id : null
 
-        if (!apiTurbineId) {
-            console.error(`Could not find API ID for turbine ${log.turbine}`)
-            return
-        }
+        if (!apiTurbineId) return;
 
         const apiPayload = {
             turbine_id: apiTurbineId,
@@ -122,11 +93,8 @@ const maintenanceStore = reactive({
         }
 
         try {
-            // Axios automatically stringifies the body
             const response = await apiClient.post('/maintenance', apiPayload);
-
             const newLogFromApi = response.data;
-
             const newLogForStore = {
                 id: newLogFromApi.id,
                 turbine: log.turbine,
@@ -145,36 +113,22 @@ const maintenanceStore = reactive({
 });
 
 // ============================================================================
-// API FETCHING LOGIC (Dashboard)
+// API FETCHING LOGIC
 // ============================================================================
 
-const statusCodeMap = {
-    100: 'running', 200: 'idle', 300: 'maintenance', 400: 'stopped', 500: 'stopped',
-};
-
-const priorityMap = {
-    'failed': 'Critical', 'critical': 'Major', 'warning': 'Warning'
-};
+const statusCodeMap = { 100: 'running', 200: 'idle', 300: 'maintenance', 400: 'stopped', 500: 'stopped' };
+const priorityMap = { 'failed': 'Critical', 'critical': 'Major', 'warning': 'Warning' };
 
 async function fetchDashboard() {
     turbineStore.loading = true;
     alarmStore.loading = true;
-    turbineStore.error = null;
-    alarmStore.error = null;
-
     try {
         const response = await apiClient.get('/dashboard/all');
-
-        // Axios stores the parsed JSON in .data
-        const dashboardData = response.data;
-
         const turbines = [];
         const allAlarms = [];
 
-        for (const apiTurbine of dashboardData) {
+        for (const apiTurbine of response.data) {
             const displayId = apiTurbine.turbine_id;
-            const apiId = apiTurbine.id;
-
             const turbineData = {
                 id: displayId,
                 location: apiTurbine.location || 'Unknown Field',
@@ -184,25 +138,26 @@ async function fetchDashboard() {
                 vibrationData: apiTurbine.vibration || null,
                 temperatureData: apiTurbine.temperature || null,
                 scadaData: apiTurbine.scada || null,
+                healthData: null,
+                deteriorationData: null,
                 alarmSummary: null,
-                _api_id: apiId
+                _api_id: apiTurbine.id
             };
 
-            turbineData.metrics.power_mw = turbineData.scadaData.power_kw ? (turbineData.scadaData.power_kw / 1000) : 0;
-            turbineData.metrics.wind_ms = turbineData.scadaData.wind_speed_ms ? parseFloat(turbineData.scadaData.wind_speed_ms) : 0;
-            turbineData.metrics.wind_speed_ms = turbineData.scadaData.wind_speed_ms ? parseFloat(turbineData.scadaData.wind_speed_ms) : 0;
-            turbineData.metrics.rotor_rpm = turbineData.scadaData.rotor_speed_rpm ? parseFloat(turbineData.scadaData.rotor_speed_rpm) : 0;
-            turbineData.metrics.generator_rpm = turbineData.scadaData.generator_speed_rpm ? parseFloat(turbineData.scadaData.generator_speed_rpm) : 0;
-            turbineData.metrics.pitch_deg = turbineData.scadaData.pitch_angle_deg ? parseFloat(turbineData.scadaData.pitch_angle_deg) : 0;
-            turbineData.metrics.ambient_temp_c = turbineData.scadaData.ambient_temp_c ? parseFloat(turbineData.scadaData.ambient_temp_c) : 0;
+            turbineData.metrics.power_mw = turbineData.scadaData?.power_kw ? (turbineData.scadaData.power_kw / 1000) : 0;
+            turbineData.metrics.wind_ms = turbineData.scadaData?.wind_speed_ms ? parseFloat(turbineData.scadaData.wind_speed_ms) : 0;
+            turbineData.metrics.wind_speed_ms = turbineData.scadaData?.wind_speed_ms ? parseFloat(turbineData.scadaData.wind_speed_ms) : 0;
+            turbineData.metrics.rotor_rpm = turbineData.scadaData?.rotor_speed_rpm ? parseFloat(turbineData.scadaData.rotor_speed_rpm) : 0;
+            turbineData.metrics.generator_rpm = turbineData.scadaData?.generator_speed_rpm ? parseFloat(turbineData.scadaData.generator_speed_rpm) : 0;
+            turbineData.metrics.pitch_deg = turbineData.scadaData?.pitch_angle_deg ? parseFloat(turbineData.scadaData.pitch_angle_deg) : 0;
+            turbineData.metrics.ambient_temp_c = turbineData.scadaData?.ambient_temp_c ? parseFloat(turbineData.scadaData.ambient_temp_c) : 0;
 
             if (apiTurbine.alarms) {
                 turbineData.alarmSummary = {
                     total: apiTurbine.alarms.total_alarms,
                     counts: apiTurbine.alarms.counts_by_severity
                 };
-
-                if (apiTurbine.alarms.alarms && apiTurbine.alarms.alarms.length > 0) {
+                if (apiTurbine.alarms.alarms?.length > 0) {
                     const turbineAlarms = apiTurbine.alarms.alarms.map(apiAlarm => ({
                         id: apiAlarm.id,
                         title: apiAlarm.message,
@@ -217,30 +172,59 @@ async function fetchDashboard() {
             }
             turbines.push(turbineData);
         }
-
         turbineStore.turbines = turbines;
         alarmStore.alarms = allAlarms;
-
     } catch (err) {
-        // Handle Axios error structure
-        const message = err.response?.data?.message || err.message;
-        turbineStore.error = message;
-        alarmStore.error = message;
         console.error('Dashboard fetch error:', err);
+        turbineStore.error = err.response?.data?.message || err.message;
     } finally {
         turbineStore.loading = false;
         alarmStore.loading = false;
     }
 }
 
-async function fetchMaintenanceLogs() {
-    // Logic remains same...
-    return [];
+// === 1. COMPONENT HEALTH ===
+async function fetchTurbineHealth(displayId) {
+    // ID FIX APPLIED:
+    const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
+
+    if (!turbine) {
+        console.warn(`Turbine with API ID ${displayId} not found`);
+        return;
+    }
+
+    try {
+        console.log(`🏥 Fetching health for API ID: ${turbine._api_id}...`);
+        const response = await apiClient.get(`/turbines/${turbine._api_id}/component-health`);
+        turbine.healthData = response.data;
+        console.log('✅ Health data loaded');
+    } catch (err) {
+        console.error(`❌ Failed to load health data:`, err);
+    }
 }
 
-// ============================================================================
-// THE COMPOSABLE
-// ============================================================================
+// === 2. DETERIORATION TRENDS ===
+async function fetchDeteriorationTrends(displayId) {
+    // ID FIX APPLIED:
+    const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
+
+    if (!turbine) {
+        console.warn(`Turbine with API ID ${displayId} not found for trends`);
+        return;
+    }
+
+    try {
+        console.log(`📉 Fetching deterioration trends for API ID: ${turbine._api_id}...`);
+        const response = await apiClient.get(`/turbines/${turbine._api_id}/deterioration-trends`);
+        turbine.deteriorationData = response.data;
+        console.log('✅ Trend data loaded');
+    } catch (err) {
+        console.error(`❌ Failed to load trends:`, err);
+    }
+}
+
+async function fetchMaintenanceLogs() { return []; }
+
 export function useScadaService() {
     return {
         turbineStore,
@@ -249,5 +233,7 @@ export function useScadaService() {
         historyStore,
         fetchDashboard,
         fetchMaintenanceLogs,
+        fetchTurbineHealth,
+        fetchDeteriorationTrends
     };
 }
