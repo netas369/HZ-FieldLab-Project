@@ -123,6 +123,7 @@ async function fetchDashboard() {
     turbineStore.loading = true;
     alarmStore.loading = true;
     try {
+        // 1. Fetch Main Dashboard Data
         const response = await apiClient.get('/dashboard/all');
         const turbines = [];
         const allAlarms = [];
@@ -138,7 +139,7 @@ async function fetchDashboard() {
                 vibrationData: apiTurbine.vibration || null,
                 temperatureData: apiTurbine.temperature || null,
                 scadaData: apiTurbine.scada || null,
-                healthData: null,
+                healthData: null, // Will be populated by fetchHealthSummary
                 deteriorationData: null,
                 alarmSummary: null,
                 _api_id: apiTurbine.id
@@ -174,6 +175,11 @@ async function fetchDashboard() {
         }
         turbineStore.turbines = turbines;
         alarmStore.alarms = allAlarms;
+
+        // 2. Fetch Health Summary (Parallel Call)
+        // We call this AFTER populating turbines so we can map the data
+        await fetchHealthSummary();
+
     } catch (err) {
         console.error('Dashboard fetch error:', err);
         turbineStore.error = err.response?.data?.message || err.message;
@@ -183,41 +189,59 @@ async function fetchDashboard() {
     }
 }
 
-// === 1. COMPONENT HEALTH ===
-async function fetchTurbineHealth(displayId) {
-    // ID FIX APPLIED:
-    const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
-
-    if (!turbine) {
-        console.warn(`Turbine with API ID ${displayId} not found`);
-        return;
-    }
-
+// === NEW: FETCH HEALTH SUMMARY FOR ALL TURBINES ===
+async function fetchHealthSummary() {
     try {
-        console.log(`🏥 Fetching health for API ID: ${turbine._api_id}...`);
-        const response = await apiClient.get(`/turbines/${turbine._api_id}/component-health`);
-        turbine.healthData = response.data;
-        console.log('✅ Health data loaded');
+        console.log('🏥 Fetching health summary for all turbines...');
+        const response = await apiClient.get('/turbines/component-health/summary');
+
+        // Loop through the summary data and match it to our store
+        if (response.data?.turbines) {
+            response.data.turbines.forEach(summaryItem => {
+                // Find matching turbine in store (by Display ID 'WT001')
+                const turbine = turbineStore.turbines.find(t => t.id === summaryItem.turbine_id);
+                if (turbine) {
+                    // Inject the summary into healthData
+                    // We structure it to match the format of the detailed call so components don't break
+                    turbine.healthData = {
+                        overall_health: summaryItem.overall_health,
+                        components: {}, // Detailed components not available in summary
+                        period_days: response.data.period_days,
+                        calculation_timestamp: response.data.calculation_timestamp
+                    };
+                }
+            });
+            console.log('✅ Health summary integrated into store');
+        }
     } catch (err) {
-        console.error(`❌ Failed to load health data:`, err);
+        console.error('❌ Failed to fetch health summary:', err);
+        // We don't block the UI if this fails, just log it
     }
 }
 
-// === 2. DETERIORATION TRENDS ===
-async function fetchDeteriorationTrends(displayId) {
-    // ID FIX APPLIED:
+// === DETAILED FETCHES (When opening a tab) ===
+async function fetchTurbineHealth(displayId) {
     const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
-
-    if (!turbine) {
-        console.warn(`Turbine with API ID ${displayId} not found for trends`);
-        return;
-    }
+    if (!turbine) return;
 
     try {
-        console.log(`📉 Fetching deterioration trends for API ID: ${turbine._api_id}...`);
+        console.log(`🏥 Fetching detailed health for ${displayId}...`);
+        const response = await apiClient.get(`/turbines/${turbine._api_id}/component-health`);
+        // Overwrite the summary with full detail
+        turbine.healthData = response.data;
+    } catch (err) {
+        console.error(`❌ Failed to load detailed health:`, err);
+    }
+}
+
+async function fetchDeteriorationTrends(displayId) {
+    const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
+    if (!turbine) return;
+
+    try {
+        console.log(`📉 Fetching trends for ${displayId}...`);
         const response = await apiClient.get(`/turbines/${turbine._api_id}/deterioration-trends`);
         turbine.deteriorationData = response.data;
-        console.log('✅ Trend data loaded');
     } catch (err) {
         console.error(`❌ Failed to load trends:`, err);
     }
