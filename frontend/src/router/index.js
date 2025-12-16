@@ -12,6 +12,7 @@ import ReportsPage from '@/views/ReportsPage.vue'
 import SettingsPage from '@/views/SettingsPage.vue'
 import TurbineDetailPage from '@/views/TurbineDetailPage.vue'
 import LoginPage from '@/views/LoginPage.vue'
+import DataImportPage from "@/views/DataImportPage.vue";
 
 const routes = [
   {
@@ -47,6 +48,15 @@ const routes = [
         meta: { 
           title: 'Alarms',
           icon: 'alert'
+        }
+      },
+      {
+        path: 'import',
+        name: 'import',
+        component: DataImportPage,
+        meta: {
+          title: 'Import',
+          icon: 'import'
         }
       },
       {

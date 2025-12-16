@@ -22,6 +22,10 @@ class HistoryDataController extends Controller
     }
     public function loadAllHistoricalDataBetweenTwoPeriods(Request $request)
     {
+        // Increase execution time for large data requests
+        set_time_limit(300); // 5 minutes
+        ini_set('memory_limit', '512M');
+
         $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date',
