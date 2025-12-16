@@ -16,6 +16,7 @@
     "chart.js": "^4.5.1",
     "chartjs-plugin-zoom": "^2.2.0",
     "hammerjs": "^2.0.8",
+    "papaparse": "^5.5.3",
     "vue": "^3.5.18",
     "vue-chartjs": "^5.3.3",
     "vue-router": "^4.5.1"

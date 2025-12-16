@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ComponentHealthController;
 use App\Http\Controllers\Api\HistoryDataController;
 use App\Http\Controllers\Api\LiveDataController;
 use App\Http\Controllers\Api\TurbineController;
+use App\Http\Controllers\Api\DataImportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -58,3 +59,11 @@ Route::get('/component-health/{componentName}', [ComponentHealthController::clas
 
 // Get deterioration trends for a turbine
 Route::get('/turbines/{turbineId}/deterioration-trends', [ComponentHealthController::class, 'getDeteriorationTrends']);
+
+
+// ============================================
+// DATA Import Routes
+// ============================================
+Route::post('/data-import', [DataImportController::class, 'import']);
+Route::post('/data-import/preflight', [DataImportController::class, 'preflight']);
+

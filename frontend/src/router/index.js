@@ -52,7 +52,7 @@ const routes = [
       },
       {
         path: 'import',
-        name: 'import',
+        name: 'DataImport',
         component: DataImportPage,
         meta: {
           title: 'Import',

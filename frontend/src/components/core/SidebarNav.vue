@@ -84,18 +84,6 @@
             <p class="text-xs text-slate-500 dark:text-slate-400">Updated just now</p>
           </div>
         </div>
-
-        <!-- System Health Mini-Widget -->
-        <div class="grid grid-cols-2 gap-2">
-          <div class="bg-white dark:bg-slate-900 rounded-lg p-2 text-center border border-slate-200 dark:border-slate-700">
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Active</p>
-            <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400">6</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 rounded-lg p-2 text-center border border-slate-200 dark:border-slate-700">
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Offline</p>
-            <p class="text-lg font-bold text-slate-400 dark:text-slate-500">0</p>
-          </div>
-        </div>
       </div>
     </div>
   </aside>
@@ -120,6 +108,7 @@ const props = defineProps({
       { id: 'alarms', label: 'Alarms', icon: 'alert', badge: 3 },
       { id: 'maintenance', label: 'Maintenance', icon: 'wrench', badge: null },
       { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
+      { id: 'import', label: 'Imports', icon: 'import', badge: null },
       // { id: 'reports', label: 'Reports', icon: 'file', badge: null },
       // { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
     ]
