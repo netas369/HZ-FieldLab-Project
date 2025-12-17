@@ -167,9 +167,10 @@ export default {
     };
 
     const processFile = (file) => {
-      // Validate file size (10MB limit)
-      if (file.size > 10 * 1024 * 1024) {
-        error.value = 'File size exceeds 10MB limit';
+      // Validate file size (10GB limit)
+      // 10 GB = 10 * 1024 * 1024 * 1024 bytes
+      if (file.size > 10 * 1024 * 1024 * 1024) {
+        error.value = 'File size exceeds 10GB limit';
         return;
       }
 

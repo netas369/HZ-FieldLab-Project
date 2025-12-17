@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ComponentHealthController;
 use App\Http\Controllers\Api\HistoryDataController;
 use App\Http\Controllers\Api\LiveDataController;
+use App\Http\Controllers\api\SettingsController;
 use App\Http\Controllers\Api\TurbineController;
 use App\Http\Controllers\Api\DataImportController;
 use Illuminate\Http\Request;
@@ -66,4 +67,13 @@ Route::get('/turbines/{turbineId}/deterioration-trends', [ComponentHealthControl
 // ============================================
 Route::post('/data-import', [DataImportController::class, 'import']);
 Route::post('/data-import/preflight', [DataImportController::class, 'preflight']);
+Route::post('/data-import/chunked/init', [DataImportController::class, 'initChunkedImport']);
+Route::post('/data-import/chunked/process', [DataImportController::class, 'processChunk']);
+Route::get('/data-import/chunked/status/{importId}', [DataImportController::class, 'getChunkedStatus']);
+Route::delete('/data-import/chunked/{importId}', [DataImportController::class, 'cancelChunkedImport']);
 
+
+// ============================================
+// Settings routes
+// ============================================
+Route::post('/settings/delete-data', [SettingsController::class, 'deleteAllData']);

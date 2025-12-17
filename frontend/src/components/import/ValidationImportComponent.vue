@@ -173,15 +173,69 @@
         </div>
       </div>
 
+      <!-- REPLACE YOUR "Import in Progress" SECTION IN ValidationImportComponent.vue TEMPLATE WITH THIS: -->
+
       <!-- Import in Progress -->
-      <div v-if="importing" class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <h3 class="font-semibold text-blue-900 mb-2">Importing Data...</h3>
-        <p class="text-sm text-blue-700">Progress: {{ importProgress }}%</p>
-        <div class="w-full bg-gray-200 rounded-full h-2 mt-4">
-          <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="{ width: importProgress + '%' }"></div>
+      <div v-if="importing" class="space-y-4">
+        <!-- Regular Progress (small files) -->
+        <div v-if="totalChunks === 0" class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h3 class="font-semibold text-blue-900 mb-2">Importing Data...</h3>
+          <p class="text-sm text-blue-700">Processing {{ csvData.data.length.toLocaleString() }} rows</p>
+          <div class="w-full bg-gray-200 rounded-full h-2 mt-4 max-w-md mx-auto">
+            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="{ width: importProgress + '%' }"></div>
+          </div>
+          <p class="text-xs text-blue-600 mt-2">{{ importStatusMessage }}</p>
         </div>
-        <p class="text-xs text-blue-600 mt-2">{{ importStatusMessage }}</p>
+
+        <!-- Chunked Progress (large files) -->
+        <div v-else class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div class="flex items-start mb-4">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mr-4 flex-shrink-0"></div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-blue-900 mb-2">
+                Processing Large Import
+              </h3>
+              <p class="text-sm text-blue-700 mb-1">
+                Chunk {{ currentChunk }} of {{ totalChunks }}
+              </p>
+              <p class="text-xs text-blue-600">
+                Total rows: {{ csvData.data.length.toLocaleString() }} |
+                Processed: {{ Math.floor((chunkedProgress / 100) * csvData.data.length).toLocaleString() }}
+              </p>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-blue-900">
+                {{ chunkedProgress.toFixed(1) }}%
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-blue-200 rounded-full h-3 mb-3">
+            <div
+                class="bg-blue-600 h-3 rounded-full transition-all duration-300 flex items-center justify-end pr-2"
+                :style="{ width: chunkedProgress + '%' }"
+            >
+        <span v-if="chunkedProgress > 10" class="text-xs text-white font-medium">
+          {{ chunkedProgress.toFixed(0) }}%
+        </span>
+            </div>
+          </div>
+
+          <!-- Info Message -->
+          <div class="bg-blue-100 border border-blue-300 rounded-lg p-3 mt-4">
+            <div class="flex items-start">
+              <svg class="w-4 h-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              </svg>
+              <p class="text-xs text-blue-800">
+                Large file detected - using chunked processing to prevent timeouts.
+                This may take a few minutes. Please don't close this page.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -189,6 +243,8 @@
 
 <script>
 import { ref } from 'vue';
+import { useChunkedImport } from '@/composables/useChunkedImport'
+
 
 export default {
   name: 'ValidationImportComponent',
@@ -216,6 +272,8 @@ export default {
     const importStatusMessage = ref('');
     const showErrors = ref(false);
     const showWarnings = ref(false);
+
+    const { progress: chunkedProgress, currentChunk, totalChunks, startImport: startChunkedImport } = useChunkedImport()
 
     const validationResults = ref({
       totalRows: 0,
@@ -306,12 +364,11 @@ export default {
     };
 
     const startImport = async () => {
-      importing.value = true;
-      importProgress.value = 0;
-      importStatusMessage.value = 'Preparing data...';
+      importing.value = true
+      importProgress.value = 0
+      importStatusMessage.value = 'Preparing data...'
 
       try {
-        // FIXED: Convert Vue Proxy objects to plain objects using toRaw or JSON parse/stringify
         const requestData = {
           key_columns: {
             turbineIdMode: props.keyColumns.turbineIdMode,
@@ -323,58 +380,45 @@ export default {
           sensor_mapping: { ...props.sensorMapping.sensorMapping },
           data: props.csvData.data,
           file_name: props.csvData.fileName
-        };
-
-        console.log('Sending to backend:', {
-          key_columns: requestData.key_columns,
-          sensor_mapping: Object.keys(requestData.sensor_mapping),
-          data_rows: requestData.data.length
-        });
-
-        // Simulate progress
-        const progressInterval = setInterval(() => {
-          if (importProgress.value < 90) {
-            importProgress.value += 10;
-            if (importProgress.value < 30) {
-              importStatusMessage.value = 'Validating turbine IDs...';
-            } else if (importProgress.value < 60) {
-              importStatusMessage.value = 'Inserting data into tables...';
-            } else {
-              importStatusMessage.value = 'Finalizing import...';
-            }
-          }
-        }, 500);
-
-        const response = await fetch('http://localhost:8000/api/data-import', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestData)
-        });
-
-        clearInterval(progressInterval);
-        importProgress.value = 100;
-        importStatusMessage.value = 'Import complete!';
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Import failed');
         }
 
-        const result = await response.json();
+        console.log('Starting import:', {
+          rows: requestData.data.length,
+          mode: requestData.key_columns.turbineIdMode
+        })
+
+        // Estimate file size
+        const estimatedSize = JSON.stringify(requestData.data).length
+
+        // Use chunked import composable (automatically chooses chunked vs regular)
+        const result = await startChunkedImport(
+            requestData.key_columns,
+            requestData.sensor_mapping,
+            requestData.data,
+            requestData.file_name,
+            estimatedSize
+        )
+
+        // Update progress from chunked import
+        if (totalChunks.value > 0) {
+          importProgress.value = chunkedProgress.value
+          importStatusMessage.value = `Processing chunk ${currentChunk.value} of ${totalChunks.value}...`
+        } else {
+          importProgress.value = 100
+          importStatusMessage.value = 'Import complete!'
+        }
 
         setTimeout(() => {
-          importing.value = false;
-          emit('import-complete', result);
-        }, 1000);
+          importing.value = false
+          emit('import-complete', result)
+        }, 1000)
 
       } catch (error) {
-        importing.value = false;
-        alert('Import failed: ' + error.message);
-        console.error('Import error:', error);
+        importing.value = false
+        alert('Import failed: ' + error.message)
+        console.error('Import error:', error)
       }
-    };
+    }
 
     return {
       validationStarted,
@@ -387,7 +431,10 @@ export default {
       showErrors,
       showWarnings,
       startValidation,
-      startImport
+      startImport,
+      currentChunk,
+      totalChunks,
+      chunkedProgress
     };
   }
 };

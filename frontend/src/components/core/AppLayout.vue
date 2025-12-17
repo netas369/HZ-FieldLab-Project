@@ -272,7 +272,7 @@ const currentRoute = computed(() => {
     'Analytics': 'analytics',
     'DataImport': 'import',
     // 'Reports': 'reports',
-    // 'Settings': 'settings'
+    'Settings': 'settings'
   }
   return routeMap[route.name] || 'overview'
 })
@@ -284,7 +284,7 @@ const navItems = computed(() => [
   { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
   { id: 'import', label: 'Imports', icon: 'import', badge: null },
   // { id: 'reports', label: 'Reports', icon: 'file', badge: null },
-  // { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
+  { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
 ])
 
 const criticalAlarmsCount = computed(() => alarmStore.criticalCount)

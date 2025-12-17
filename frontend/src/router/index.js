@@ -86,15 +86,15 @@ const routes = [
       //     icon: 'file'
       //   }
       // },
-      // {
-      //   path: 'settings',
-      //   name: 'Settings',
-      //   component: SettingsPage,
-      //   meta: {
-      //     title: 'Settings',
-      //     icon: 'settings'
-      //   }
-      // },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: SettingsPage,
+        meta: {
+          title: 'Settings',
+          icon: 'settings'
+        }
+      },
       {
         path: 'turbine/:id',
         name: 'TurbineDetail',
