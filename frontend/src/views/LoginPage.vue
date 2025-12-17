@@ -98,18 +98,17 @@ export default {
             this.loading = true;
 
             try {
-                // Get CSRF token first (Laravel requirement)
                 await this.getCsrfToken();
 
-                // Make login request
-                const response = await fetch('/login', {
+                console.log('CSRF token obtained, proceeding to login.');
+                const response = await fetch('http://localhost:8000/user/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    credentials: 'same-origin',
+                    credentials: 'include',
                     body: JSON.stringify({
                         email: this.form.email,
                         password: this.form.password,
@@ -117,13 +116,12 @@ export default {
                     })
                 });
 
+                console.log('Login response received:', response);
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Successful login - redirect to dashboard
-                    window.location.href = data.redirect || '/dashboard';
+                    window.location.href = 'http://localhost:5173/overview';
                 } else {
-                    // Handle validation errors
                     if (data.errors) {
                         this.errors = data.errors;
                     } else {
@@ -139,9 +137,8 @@ export default {
         },
 
         async getCsrfToken() {
-            // Get CSRF cookie from Laravel
-            await fetch('/sanctum/csrf-cookie', {
-                credentials: 'same-origin'
+            await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+                credentials: 'include'
             });
         }
     }
