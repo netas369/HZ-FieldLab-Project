@@ -9,6 +9,7 @@
 
             <!-- Login Form -->
             <form @submit.prevent="handleSubmit">
+                
                 <!-- Email Input -->
                 <div class="mb-4">
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
@@ -98,18 +99,18 @@ export default {
             this.loading = true;
 
             try {
-                // Get CSRF token first (Laravel requirement)
                 await this.getCsrfToken();
+                const csrfToken = this.getCsrfTokenFromCookie();              
 
-                // Make login request
-                const response = await fetch('/login', {
+                const response = await fetch('http://localhost:8000/user/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
+                        'X-XSRF-TOKEN': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    credentials: 'same-origin',
+                    credentials: 'include',
                     body: JSON.stringify({
                         email: this.form.email,
                         password: this.form.password,
@@ -117,13 +118,16 @@ export default {
                     })
                 });
 
+
                 const data = await response.json();
+                console.log(response);
+
+                console.log('Login response data:', data);
 
                 if (response.ok) {
-                    // Successful login - redirect to dashboard
-                    window.location.href = data.redirect || '/dashboard';
+                    console.log('Login successful');
+                    window.location.href = 'http://localhost:5173';
                 } else {
-                    // Handle validation errors
                     if (data.errors) {
                         this.errors = data.errors;
                     } else {
@@ -139,10 +143,19 @@ export default {
         },
 
         async getCsrfToken() {
-            // Get CSRF cookie from Laravel
-            await fetch('/sanctum/csrf-cookie', {
-                credentials: 'same-origin'
+            await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+                credentials: 'include'
             });
+        },
+
+        getCsrfTokenFromCookie() {
+            const name = 'XSRF-TOKEN';
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return decodeURIComponent(parts.pop().split(';').shift());
+            }
+            return '';
         }
     }
 }
