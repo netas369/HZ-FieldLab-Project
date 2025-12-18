@@ -15,11 +15,34 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): Response
     {
-        $request->authenticate();
+        dd($request);
+        Log::info('Login attempt started', [
+            'email' => $request->email,
+            'ip' => $request->ip()
+        ]);
 
-        $request->session()->regenerate();
-
-        return response()->noContent();
+        try {
+            $request->authenticate();
+            $request->session()->regenerate();
+            
+            Log::info('Login successful', [
+                'user_id' => Auth::id(),
+                'email' => Auth::user()->email
+            ]);
+            
+            return response()->json([
+                'message' => 'Login successful',
+                'user' => Auth::user()
+            ], 200);
+            
+        } catch (\Exception $e) {
+            Log::error('Login failed', [
+                'email' => $request->email,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
+        }
     }
 
     /**
@@ -33,6 +56,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return response()->noContent();
+        return response()->json([
+            'message' => 'Logged out successfully'
+        ], 200);
     }
 }

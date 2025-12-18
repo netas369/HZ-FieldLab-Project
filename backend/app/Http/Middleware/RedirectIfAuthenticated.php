@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
+
+class RedirectIfAuthenticated
+{
+    public function handle(Request $request, Closure $next, string ...$guards): Response
+    {
+        $guards = empty($guards) ? [null] : $guards;
+
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                // If it's a JSON/API request, return JSON instead of redirecting
+                if ($request->expectsJson() || $request->is('api/*') || $request->is('user/*')) {
+                    return response()->json([
+                        'message' => 'Already authenticated',
+                        'user' => Auth::user()
+                    ], 200);
+                }
+                
+                // Otherwise, redirect as normal
+                return redirect('/dashboard');
+            }
+        }
+
+        return $next($request);
+    }
+}

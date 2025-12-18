@@ -9,6 +9,7 @@
 
             <!-- Login Form -->
             <form @submit.prevent="handleSubmit">
+                
                 <!-- Email Input -->
                 <div class="mb-4">
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
@@ -99,13 +100,14 @@ export default {
 
             try {
                 await this.getCsrfToken();
+                const csrfToken = this.getCsrfTokenFromCookie();              
 
-                console.log('CSRF token obtained, proceeding to login.');
                 const response = await fetch('http://localhost:8000/user/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
+                        'X-XSRF-TOKEN': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest'
                     },
                     credentials: 'include',
@@ -116,11 +118,15 @@ export default {
                     })
                 });
 
-                console.log('Login response received:', response);
+
                 const data = await response.json();
+                console.log(response);
+
+                console.log('Login response data:', data);
 
                 if (response.ok) {
-                    window.location.href = 'http://localhost:5173/overview';
+                    console.log('Login successful');
+                    window.location.href = 'http://localhost:5173';
                 } else {
                     if (data.errors) {
                         this.errors = data.errors;
@@ -140,6 +146,16 @@ export default {
             await fetch('http://localhost:8000/sanctum/csrf-cookie', {
                 credentials: 'include'
             });
+        },
+
+        getCsrfTokenFromCookie() {
+            const name = 'XSRF-TOKEN';
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return decodeURIComponent(parts.pop().split(';').shift());
+            }
+            return '';
         }
     }
 }
