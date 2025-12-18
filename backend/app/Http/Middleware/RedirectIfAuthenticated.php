@@ -22,7 +22,7 @@ class RedirectIfAuthenticated
                         'user' => Auth::user()
                     ], 200);
                 }
-                
+
                 // Otherwise, redirect as normal
                 return redirect('/dashboard');
             }
@@ -31,3 +31,5 @@ class RedirectIfAuthenticated
         return $next($request);
     }
 }
+
+
