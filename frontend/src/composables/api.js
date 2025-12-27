@@ -39,30 +39,45 @@ const alarmStore = reactive({
 });
 
 const historyStore = reactive({
-    data: null,
+    activeDataMap: {}, // Format: { turbineId: { id: entryId, payload: responseData } }
+    recentFetches: JSON.parse(localStorage.getItem('scada_history_v1') || '{}'),
     loading: false,
     error: null,
+
     fetchHistory: async (displayId, startDate, endDate) => {
         historyStore.loading = true;
         historyStore.error = null;
-        historyStore.data = null;
 
-        const turbine = turbineStore.turbines.find(t => t.id === displayId);
-        const turbineId = turbine?.id;
-
-        if (!turbineId) {
-            historyStore.error = `Could not find turbine ${displayId}`;
-            historyStore.loading = false;
-            return;
-        }
+        const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
+        const turbineId = turbine?.id || displayId;
 
         try {
-            console.log('🔍 Fetching history for:', { turbineId, startDate, endDate });
             const response = await apiClient.get('/turbine/allHistoricalData', {
                 params: { turbine_id: turbineId, start_date: startDate, end_date: endDate }
             });
-            console.log('✅ History data received');
-            historyStore.data = response.data;
+
+            const newEntry = {
+                id: Date.now(),
+                turbineId: displayId,
+                startDate,
+                endDate,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                payload: response.data
+            };
+
+            if (!historyStore.recentFetches[displayId]) {
+                historyStore.recentFetches[displayId] = [];
+            }
+
+            historyStore.recentFetches[displayId].unshift(newEntry);
+            if (historyStore.recentFetches[displayId].length > 10) {
+                historyStore.recentFetches[displayId].pop();
+            }
+
+            localStorage.setItem('scada_history_v1', JSON.stringify(historyStore.recentFetches));
+
+            // Set as active record
+            historyStore.activeDataMap[displayId] = { id: newEntry.id, payload: response.data };
         } catch (err) {
             console.error('❌ History fetch error:', err);
             historyStore.error = err.response?.data?.message || err.message;
@@ -70,7 +85,34 @@ const historyStore = reactive({
             historyStore.loading = false;
         }
     },
-    clear: () => { historyStore.data = null; historyStore.error = null; }
+
+    selectHistoryEntry: (turbineId, entry) => {
+        historyStore.activeDataMap[turbineId] = { id: entry.id, payload: entry.payload };
+    },
+
+    removeFromHistory: (turbineId, entryId) => {
+        if (historyStore.recentFetches[turbineId]) {
+            historyStore.recentFetches[turbineId] = historyStore.recentFetches[turbineId].filter(e => e.id !== entryId);
+            localStorage.setItem('scada_history_v1', JSON.stringify(historyStore.recentFetches));
+
+            // Fix: Only clear active data if we are deleting the CURRENTLY viewed record
+            if (historyStore.activeDataMap[turbineId]?.id === entryId) {
+                delete historyStore.activeDataMap[turbineId];
+            }
+        }
+    },
+
+    clearAllForTurbine: (turbineId) => {
+        if (historyStore.recentFetches[turbineId]) {
+            delete historyStore.recentFetches[turbineId];
+            localStorage.setItem('scada_history_v1', JSON.stringify(historyStore.recentFetches));
+        }
+        delete historyStore.activeDataMap[turbineId];
+    },
+
+    clear: () => {
+        historyStore.error = null;
+    }
 });
 
 const maintenanceStore = reactive({
@@ -112,10 +154,6 @@ const maintenanceStore = reactive({
     }
 });
 
-// ============================================================================
-// API FETCHING LOGIC
-// ============================================================================
-
 const statusCodeMap = { 100: 'running', 200: 'idle', 300: 'maintenance', 400: 'stopped', 500: 'stopped' };
 const priorityMap = { 'failed': 'Critical', 'critical': 'Major', 'warning': 'Warning' };
 
@@ -123,7 +161,6 @@ async function fetchDashboard() {
     turbineStore.loading = true;
     alarmStore.loading = true;
     try {
-        // 1. Fetch Main Dashboard Data
         const response = await apiClient.get('/dashboard/all');
         const turbines = [];
         const allAlarms = [];
@@ -139,7 +176,7 @@ async function fetchDashboard() {
                 vibrationData: apiTurbine.vibration || null,
                 temperatureData: apiTurbine.temperature || null,
                 scadaData: apiTurbine.scada || null,
-                healthData: null, // Will be populated by fetchHealthSummary
+                healthData: null,
                 deteriorationData: null,
                 alarmSummary: null,
                 _api_id: apiTurbine.id
@@ -176,8 +213,6 @@ async function fetchDashboard() {
         turbineStore.turbines = turbines;
         alarmStore.alarms = allAlarms;
 
-        // 2. Fetch Health Summary (Parallel Call)
-        // We call this AFTER populating turbines so we can map the data
         await fetchHealthSummary();
 
     } catch (err) {
@@ -189,62 +224,43 @@ async function fetchDashboard() {
     }
 }
 
-// === NEW: FETCH HEALTH SUMMARY FOR ALL TURBINES ===
 async function fetchHealthSummary() {
     try {
-        console.log('🏥 Fetching health summary for all turbines...');
         const response = await apiClient.get('/turbines/component-health/summary');
-
-        // Loop through the summary data and match it to our store
         if (response.data?.turbines) {
             response.data.turbines.forEach(summaryItem => {
-                // Find matching turbine in store (by Display ID 'WT001')
                 const turbine = turbineStore.turbines.find(t => t.id === summaryItem.turbine_id);
                 if (turbine) {
-                    // Inject the summary into healthData
-                    // We structure it to match the format of the detailed call so components don't break
                     turbine.healthData = {
                         overall_health: summaryItem.overall_health,
-                        components: {}, // Detailed components not available in summary
+                        components: {},
                         period_days: response.data.period_days,
                         calculation_timestamp: response.data.calculation_timestamp
                     };
                 }
             });
-            console.log('✅ Health summary integrated into store');
         }
     } catch (err) {
         console.error('❌ Failed to fetch health summary:', err);
-        // We don't block the UI if this fails, just log it
     }
 }
 
-// === DETAILED FETCHES (When opening a tab) ===
 async function fetchTurbineHealth(displayId) {
     const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
     if (!turbine) return;
-
     try {
-        console.log(`🏥 Fetching detailed health for ${displayId}...`);
         const response = await apiClient.get(`/turbines/${turbine._api_id}/component-health`);
-        // Overwrite the summary with full detail
         turbine.healthData = response.data;
-    } catch (err) {
-        console.error(`❌ Failed to load detailed health:`, err);
-    }
+    } catch (err) { console.error(err); }
 }
 
 async function fetchDeteriorationTrends(displayId) {
     const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
     if (!turbine) return;
-
     try {
-        console.log(`📉 Fetching trends for ${displayId}...`);
         const response = await apiClient.get(`/turbines/${turbine._api_id}/deterioration-trends`);
         turbine.deteriorationData = response.data;
-    } catch (err) {
-        console.error(`❌ Failed to load trends:`, err);
-    }
+    } catch (err) { console.error(err); }
 }
 
 async function fetchMaintenanceLogs() { return []; }

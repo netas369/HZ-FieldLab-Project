@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+  <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 relative">
 
     <div class="mb-6 border-b border-slate-200 dark:border-slate-700 pb-6">
       <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
@@ -12,27 +12,15 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <div>
           <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Start Date</label>
-          <input
-              type="date"
-              v-model="form.start_date"
-              class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
-          >
+          <input type="date" v-model="form.start_date" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm">
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">End Date</label>
-          <input
-              type="date"
-              v-model="form.end_date"
-              class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
-          >
+          <input type="date" v-model="form.end_date" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm">
         </div>
 
-        <button
-            @click="initiateFetch"
-            :disabled="historyStore.loading || !form.start_date || !form.end_date"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95"
-        >
+        <button @click="initiateFetch" :disabled="historyStore.loading || !form.start_date || !form.end_date" class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95">
           <svg v-if="historyStore.loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -42,34 +30,22 @@
       </div>
     </div>
 
-    <HistoryLoader
-        v-if="historyStore.loading"
-        :day-count="dayCount"
-        :estimated-wait="estimatedDuration"
-        :progress="progressPercentage"
+    <HistoryRecords
+        v-if="currentTurbineHistory.length > 0"
+        :turbine-id="turbineId"
+        :records="currentTurbineHistory"
+        :active-entry-id="activeEntryId"
+        @select="loadFromHistory"
+        @remove="historyStore.removeFromHistory(turbineId, $event)"
+        @clearAll="historyStore.clearAllForTurbine(turbineId)"
     />
 
-    <div v-else-if="historyStore.data && chartData" class="space-y-6">
+    <HistoryLoader v-if="historyStore.loading" :day-count="dayCount" :estimated-wait="estimatedDuration" :progress="progressPercentage" />
 
-      <HistoryChart
-          :chart-data="chartData"
-          :chart-options="chartOptions"
-          v-model:metric="selectedMetric"
-          v-model:resolution="resolution"
-      />
-
-      <HistoryStats
-          v-if="selectedMetric !== 'alarms'"
-          :stats="telemetryStats"
-          :displayed-points="displayedDataCount"
-          :total-points="rawDataCount"
-      />
-
-      <HistoryAlarms
-          v-else
-          :alarms="rawResponse.alarms"
-      />
-
+    <div v-else-if="activeTurbinePayload && chartData" class="space-y-6">
+      <HistoryChart :chart-data="chartData" :chart-options="chartOptions" v-model:metric="selectedMetric" v-model:resolution="resolution" />
+      <HistoryStats v-if="selectedMetric !== 'alarms'" :stats="telemetryStats" :displayed-points="displayedDataCount" :total-points="rawDataCount" />
+      <HistoryAlarms v-else :alarms="rawResponse.alarms" />
     </div>
 
     <div v-else-if="historyStore.error" class="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900 rounded-xl p-8 text-center">
@@ -85,9 +61,7 @@
         </svg>
       </div>
       <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-1">No Data Selected</h3>
-      <p class="text-slate-500 dark:text-slate-400 max-w-sm">Select a start and end date above to visualize the historical performance of this turbine.</p>
     </div>
-
   </div>
 </template>
 
@@ -95,43 +69,34 @@
 import { reactive, onUnmounted, ref, computed } from 'vue'
 import { useScadaService } from '@/composables/api.js'
 
-// --- CHART.JS SETUP ---
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import 'hammerjs'
 
-// --- SUB COMPONENTS ---
+import HistoryRecords from './HistoryRecords.vue'
 import HistoryChart from './HistoryChart.vue'
 import HistoryStats from './HistoryStats.vue'
 import HistoryLoader from './HistoryLoader.vue'
-import HistoryAlarms from './Alarms/HistoryAlarms.vue' // <--- NEW COMPONENT
+import HistoryAlarms from './Alarms/HistoryAlarms.vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler, zoomPlugin)
 
 const props = defineProps({ turbineId: { type: String, required: true } })
-const { historyStore, turbineStore } = useScadaService()
+const { historyStore } = useScadaService()
 
 const form = reactive({ start_date: '', end_date: '' })
 const selectedMetric = ref('performance')
 const resolution = ref(200)
 
-// --- ID Logic ---
-const resolvedTurbineId = computed(() => {
-  if (props.turbineId.startsWith('WT')) return props.turbineId
-  const turbine = turbineStore.turbines.find(t => t._api_id == props.turbineId)
-  return turbine?.id || props.turbineId
-})
+const currentTurbineHistory = computed(() => historyStore.recentFetches[props.turbineId] || [])
+const activeTurbinePayload = computed(() => historyStore.activeDataMap[props.turbineId]?.payload || null)
+const activeEntryId = computed(() => historyStore.activeDataMap[props.turbineId]?.id || null)
+
+const loadFromHistory = (entry) => {
+  form.start_date = entry.startDate
+  form.end_date = entry.endDate
+  historyStore.selectHistoryEntry(props.turbineId, entry)
+}
 
 // --- Loading Simulation ---
 const progressPercentage = ref(0)
@@ -156,19 +121,16 @@ const initiateFetch = async () => {
     if (progressPercentage.value < 90) progressPercentage.value += stepSize
   }, 100)
 
-  await historyStore.fetchHistory(resolvedTurbineId.value, form.start_date, form.end_date)
+  await historyStore.fetchHistory(props.turbineId, form.start_date, form.end_date)
 
   clearInterval(progressInterval)
   progressPercentage.value = 100
 }
 
-onUnmounted(() => {
-  historyStore.clear()
-  if (progressInterval) clearInterval(progressInterval)
-})
+onUnmounted(() => { if (progressInterval) clearInterval(progressInterval) })
 
 // --- Data Parsing ---
-const rawResponse = computed(() => historyStore.data?.[0] || null)
+const rawResponse = computed(() => activeTurbinePayload.value?.[0] || null)
 const rawDataCount = computed(() => rawResponse.value?.scada?.scada_data?.length || 0)
 
 const downsample = (dataArray) => {
@@ -184,124 +146,55 @@ const vibList = computed(() => downsample(rawResponse.value?.vibration?.vibratio
 const hydroList = computed(() => downsample(rawResponse.value?.hydraulic?.hydraulic_data))
 const displayedDataCount = computed(() => scadaList.value.length)
 
-// --- Stats Logic (Telemetry Only) ---
-// Alarm stats are now handled inside HistoryAlarms.vue
 const telemetryStats = computed(() => {
   const fullScada = rawResponse.value?.scada?.scada_data || []
   if (!fullScada.length) return { type: 'telemetry', avgPower: 0, maxWind: 0, avgTemp: 0 }
-
   const avgPower = (fullScada.reduce((sum, d) => sum + parseFloat(d.power_kw), 0) / fullScada.length).toFixed(0)
   const maxWind = Math.max(...fullScada.map(d => parseFloat(d.wind_speed_ms))).toFixed(1)
   const avgTemp = (fullScada.reduce((sum, d) => sum + parseFloat(d.ambient_temp_c), 0) / fullScada.length).toFixed(1)
-
   return { type: 'telemetry', avgPower, maxWind, avgTemp }
 })
 
-// --- Chart Configuration ---
+// --- Chart Options ---
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   animation: false,
   interaction: { mode: 'index', intersect: false },
   plugins: {
-    legend: {
-      position: 'top',
-      align: 'end',
-      labels: { usePointStyle: true, boxWidth: 8, padding: 20, font: { size: 11 } }
-    },
-    tooltip: {
-      backgroundColor: 'rgba(15, 23, 42, 0.9)',
-      padding: 12,
-      cornerRadius: 8,
-      titleFont: { size: 13, weight: 'bold' },
-      displayColors: true,
-      usePointStyle: true
-    },
-    zoom: {
-      pan: { enabled: true, mode: 'x' },
-      zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
-      limits: { x: {min: 'original', max: 'original'} }
-    }
+    legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8, padding: 20, font: { size: 11 } } },
+    tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12, cornerRadius: 8, titleFont: { size: 13, weight: 'bold' }, displayColors: true, usePointStyle: true },
+    zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, limits: { x: {min: 'original', max: 'original'} } }
   },
   scales: {
-    x: {
-      grid: { display: false },
-      ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }
-    },
-    y: {
-      type: 'linear',
-      display: true,
-      position: 'left',
-      // Clean look for Bar chart vs Line chart
-      grid: { color: selectedMetric.value === 'alarms' ? 'transparent' : 'rgba(148, 163, 184, 0.1)' },
-      border: { display: false }
-    },
-    y1: {
-      type: 'linear',
-      display: selectedMetric.value === 'performance' || selectedMetric.value === 'hydraulics',
-      position: 'right',
-      grid: { drawOnChartArea: false },
-      border: { display: false }
-    },
+    x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
+    y: { type: 'linear', display: true, position: 'left', grid: { color: selectedMetric.value === 'alarms' ? 'transparent' : 'rgba(148, 163, 184, 0.1)' }, border: { display: false } },
+    y1: { type: 'linear', display: selectedMetric.value === 'performance' || selectedMetric.value === 'hydraulics', position: 'right', grid: { drawOnChartArea: false }, border: { display: false } },
   }
 }))
 
 const chartData = computed(() => {
   if (!rawResponse.value) return null
-
   const timeLabels = scadaList.value.map(d => new Date(d.reading_timestamp).toLocaleTimeString([], { month:'short', day:'numeric', hour: '2-digit', minute: '2-digit' }))
-
   const dataset = (label, data, color, yAxis = 'y', fill = false, type = 'line') => ({
     type, label, data, borderColor: color, backgroundColor: fill ? 'rgba(139, 92, 246, 0.1)' : undefined,
     fill, yAxisID: yAxis, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2
   })
 
-  // --- 1. ALARM FREQUENCY (Bar Chart) ---
   if (selectedMetric.value === 'alarms') {
     const alarmStats = rawResponse.value?.alarms?.statistics
     if (!alarmStats) return null
-
     const compStats = alarmStats.most_common_components
-    const compLabels = Object.keys(compStats).map(k => k.replace(/_/g, ' ').toUpperCase())
-    const compData = Object.values(compStats)
-
     return {
-      labels: compLabels,
-      datasets: [{
-        type: 'bar',
-        label: 'Alarm Frequency',
-        data: compData,
-        backgroundColor: ['rgba(248, 113, 113, 0.85)', 'rgba(96, 165, 250, 0.85)', 'rgba(251, 191, 36, 0.85)', 'rgba(52, 211, 153, 0.85)', 'rgba(167, 139, 250, 0.85)'],
-        borderRadius: 4,
-        barPercentage: 0.6,
-        categoryPercentage: 0.8
-      }]
+      labels: Object.keys(compStats).map(k => k.replace(/_/g, ' ').toUpperCase()),
+      datasets: [{ type: 'bar', label: 'Alarm Frequency', data: Object.values(compStats), backgroundColor: ['#f87171', '#60a5fa', '#fbbf24', '#34d399', '#a78bfa'], borderRadius: 4 }]
     }
   }
 
-  // --- 2. TELEMETRY CHARTS ---
-  if (selectedMetric.value === 'performance') return { labels: timeLabels, datasets: [
-      { ...dataset('Power Output (kW)', scadaList.value.map(d => d.power_kw), '#8b5cf6', 'y', true) },
-      { ...dataset('Wind Speed (m/s)', scadaList.value.map(d => d.wind_speed_ms), '#3b82f6', 'y1'), borderDash: [4, 4] }
-    ]}
-
-  if (selectedMetric.value === 'temperatures') return { labels: timeLabels, datasets: [
-      dataset('Gearbox', tempList.value.map(d => d.gearbox_bearing_temp_c), '#f97316'),
-      dataset('Stator', tempList.value.map(d => d.generator_stator_temp_c), '#ef4444'),
-      dataset('Main Bearing', tempList.value.map(d => d.main_bearing_temp_c), '#eab308')
-    ]}
-
-  if (selectedMetric.value === 'vibration_bearings') return { labels: timeLabels, datasets: [
-      dataset('Main Bearing', vibList.value.map(d => d.main_bearing_vibration_rms_mms), '#10b981'),
-      dataset('Gearbox', vibList.value.map(d => d.gearbox_vibration_axial_mms), '#6366f1'),
-      dataset('Generator', vibList.value.map(d => d.generator_vibration_de_mms), '#ec4899')
-    ]}
-
-  if (selectedMetric.value === 'hydraulics') return { labels: timeLabels, datasets: [
-      dataset('Hydraulic Pressure', hydroList.value.map(d => d.hydraulic_pressure_bar), '#06b6d4'),
-      dataset('Gearbox Oil', hydroList.value.map(d => d.gearbox_oil_pressure_bar), '#84cc16', 'y1')
-    ]}
-
+  if (selectedMetric.value === 'performance') return { labels: timeLabels, datasets: [dataset('Power Output (kW)', scadaList.value.map(d => d.power_kw), '#8b5cf6', 'y', true), dataset('Wind Speed (m/s)', scadaList.value.map(d => d.wind_speed_ms), '#3b82f6', 'y1')] }
+  if (selectedMetric.value === 'temperatures') return { labels: timeLabels, datasets: [dataset('Gearbox', tempList.value.map(d => d.gearbox_bearing_temp_c), '#f97316'), dataset('Stator', tempList.value.map(d => d.generator_stator_temp_c), '#ef4444'), dataset('Main Bearing', tempList.value.map(d => d.main_bearing_temp_c), '#eab308')] }
+  if (selectedMetric.value === 'vibration_bearings') return { labels: timeLabels, datasets: [dataset('Main Bearing', vibList.value.map(d => d.main_bearing_vibration_rms_mms), '#10b981'), dataset('Gearbox', vibList.value.map(d => d.gearbox_vibration_axial_mms), '#6366f1'), dataset('Generator', vibList.value.map(d => d.generator_vibration_de_mms), '#ec4899')] }
+  if (selectedMetric.value === 'hydraulics') return { labels: timeLabels, datasets: [dataset('Hydraulic Pressure', hydroList.value.map(d => d.hydraulic_pressure_bar), '#06b6d4'), dataset('Gearbox Oil', hydroList.value.map(d => d.gearbox_oil_pressure_bar), '#84cc16', 'y1')] }
   return null
 })
 </script>
