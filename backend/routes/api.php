@@ -78,8 +78,3 @@ Route::delete('/data-import/chunked/{importId}', [DataImportController::class, '
 // ============================================
 Route::post('/settings/delete-data', [SettingsController::class, 'deleteAllData']);
 
-
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});

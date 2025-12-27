@@ -10,6 +10,10 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function () {
+            Route::middleware('web')
+                ->group(__DIR__.'/../routes/api.php');
+        }
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
@@ -17,11 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
-        // $middleware->alias([
-        //     'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-        // ]);
+        $middleware->validateCsrfTokens(except: [
+            'user/*',
+        ]);
 
-        //
+        $middleware->alias
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
