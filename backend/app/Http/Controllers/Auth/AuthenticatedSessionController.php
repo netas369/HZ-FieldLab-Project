@@ -18,31 +18,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): JsonResponse
     {
-        Log::info('Login attempt started', [
-            'email' => $request->email,
-            'ip' => $request->ip()
-        ]);
-
         try {
             $request->authenticate();
             $request->session()->regenerate();
 
-            Log::info('Login successful', [
-                'user_id' => Auth::id(),
-                'email' => Auth::user()->email
-            ]);
-
             return response()->json([
                 'message' => 'Login successful',
-                'user' => Auth::user()
+                'user' => [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'role' => $request->user()->role, 
+                ]
             ], 200);
 
         } catch (\Exception $e) {
-            Log::error('Login failed', [
-                'email' => $request->email,
-                'error' => $e->getMessage()
-            ]);
-
             throw $e;
         }
     }

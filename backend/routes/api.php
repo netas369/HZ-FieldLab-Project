@@ -65,21 +65,30 @@ Route::get('/turbines/{turbineId}/deterioration-trends', [ComponentHealthControl
 // ============================================
 // DATA Import Routes
 // ============================================
-Route::post('/data-import', [DataImportController::class, 'import']);
-Route::post('/data-import/preflight', [DataImportController::class, 'preflight']);
-Route::post('/data-import/chunked/init', [DataImportController::class, 'initChunkedImport']);
-Route::post('/data-import/chunked/process', [DataImportController::class, 'processChunk']);
-Route::get('/data-import/chunked/status/{importId}', [DataImportController::class, 'getChunkedStatus']);
-Route::delete('/data-import/chunked/{importId}', [DataImportController::class, 'cancelChunkedImport']);
+Route::middleware(['auth:sanctum', 'role:admin, data_analyst'])->group(function () {
+    Route::post('/data-import', [DataImportController::class, 'import']);
+    Route::post('/data-import/preflight', [DataImportController::class, 'preflight']);
+    Route::post('/data-import/chunked/init', [DataImportController::class, 'initChunkedImport']);
+    Route::post('/data-import/chunked/process', [DataImportController::class, 'processChunk']);
+    Route::get('/data-import/chunked/status/{importId}', [DataImportController::class, 'getChunkedStatus']);
+    Route::delete('/data-import/chunked/{importId}', [DataImportController::class, 'cancelChunkedImport']);
+});
 
 
 // ============================================
 // Settings routes
 // ============================================
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 Route::post('/settings/delete-data', [SettingsController::class, 'deleteAllData']);
+});
 
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+    return response()->json([
+        'id' => $request->user()->id,
+        'name' => $request->user()->name,
+        'email' => $request->user()->email,
+        'role' => $request->user()->role,
+    ]);
 });

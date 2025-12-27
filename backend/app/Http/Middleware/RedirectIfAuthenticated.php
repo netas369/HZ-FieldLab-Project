@@ -15,7 +15,6 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                // If it's a JSON/API request, return JSON instead of redirecting
                 if ($request->expectsJson() || $request->is('api/*') || $request->is('user/*')) {
                     return response()->json([
                         'message' => 'Already authenticated',

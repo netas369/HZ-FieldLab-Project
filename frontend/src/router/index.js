@@ -38,7 +38,8 @@ const routes = [
         component: LoginPage,
         meta: {
           title: 'login',
-          icon: 'dashboard'
+          icon: 'dashboard',
+          requiresAuth: false
         }
       },
       {
@@ -47,7 +48,8 @@ const routes = [
         component: AlarmsPage,
         meta: { 
           title: 'Alarms',
-          icon: 'alert'
+          icon: 'alert',
+          requiresAuth: true 
         }
       },
       {
@@ -56,7 +58,9 @@ const routes = [
         component: DataImportPage,
         meta: {
           title: 'Import',
-          icon: 'import'
+          icon: 'import',
+          requiresAuth: true,
+          roles: ['admin', 'data_analyst']
         }
       },
       {
@@ -65,7 +69,8 @@ const routes = [
         component: MaintenancePage,
         meta: { 
           title: 'Maintenance',
-          icon: 'wrench'
+          icon: 'wrench',
+          requiresAuth: true 
         }
       },
       {
@@ -74,7 +79,8 @@ const routes = [
         component: AnalyticsPage,
         meta: { 
           title: 'Analytics',
-          icon: 'chart'
+          icon: 'chart',
+          requiresAuth: true 
         }
       },
       // {
@@ -92,7 +98,9 @@ const routes = [
         component: SettingsPage,
         meta: {
           title: 'Settings',
-          icon: 'settings'
+          icon: 'settings',
+          requiresAuth: true,
+          roles: ['admin']
         }
       },
       {
@@ -102,7 +110,8 @@ const routes = [
         meta: { 
           title: 'Turbine Details'
         },
-        props: true // Pass route params as props
+        props: true,
+        requiresAuth: true 
       }
     ]
   },
@@ -125,7 +134,6 @@ const router = createRouter({
   }
 })
 
-// Global navigation guard
 router.beforeEach((to, from, next) => {
   // Update document title
   const baseTitle = 'WindFlow SCADA'
@@ -133,9 +141,14 @@ router.beforeEach((to, from, next) => {
     ? `${to.meta.title} - ${baseTitle}` 
     : baseTitle
 
-  // You can add authentication checks here
-  if (to.meta.requiresAuth && !isAuthenticated()) {
-    return next('/login')
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  if (to.meta.requiresAuth && !user) {
+    return next('login')
+  }
+
+  if (to.meta.roles && !to.meta.roles.includes(user?.role)) {
+    return next('/dashboard');
   }
 
   next()

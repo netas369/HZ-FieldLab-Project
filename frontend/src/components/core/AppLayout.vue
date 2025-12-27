@@ -242,7 +242,7 @@ const {
 const state = reactive({
   currentUser: {
     name: 'John Smith',
-    role: 'Supervisor',
+    role: JSON.parse(localStorage.getItem('user'))?.role,
     avatar: null
   },
   selectedTurbine: null,

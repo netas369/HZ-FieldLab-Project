@@ -120,13 +120,18 @@ export default {
 
 
                 const data = await response.json();
-                console.log(response);
-
-                console.log('Login response data:', data);
 
                 if (response.ok) {
                     console.log('Login successful');
-                    window.location.href = 'http://localhost:5173';
+                    
+                    if (data.user) {
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                    }
+                    
+                    if (data.token) {
+                        localStorage.setItem('token', data.token);
+                    }
+                    window.location.href = 'http://localhost:5173/dashboard';
                 } else {
                     if (data.errors) {
                         this.errors = data.errors;

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,28 +13,32 @@ class DatabaseSeeder extends Seeder
      * Seed the application's database.
      */
     public function run(): void
-    {
-
-        User::create([
+{
+    User::updateOrCreate(
+        ['email' => 'admin@example.com'],  // ← Find by email
+        [
             'name' => 'Admin',
-            'email' => 'admin@example.com',
             'password' => bcrypt('worldclassmaintenance'),
             'role' => 'admin',
-        ]);
-
-        User::create([
+        ]  // ← Update/Create these fields
+    );
+    
+    User::updateOrCreate(
+        ['email' => 'data@example.com'],
+        [
             'name' => 'Data analyst',
-            'email' => 'data@example.com',
             'password' => bcrypt('dataanalysis'),
-            'role' => 'user',
-        ]);
-
-
-        User::create([
+            'role' => 'data_analyst',
+        ]
+    );
+    
+    User::updateOrCreate(
+        ['email' => 'user@example.com'],
+        [
             'name' => 'user',
-            'email' => 'user@example.com',
             'password' => bcrypt('userpassword'),
             'role' => 'user',
-        ]);
-    }
+        ]
+    );
+}
 }

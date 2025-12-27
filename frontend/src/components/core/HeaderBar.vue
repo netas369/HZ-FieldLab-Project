@@ -143,12 +143,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 
 const props = defineProps({
   user: {
     type: Object,
-    default: () => ({ name: 'John Smith', role: 'Supervisor' })
+    default: () => ({ name: 'John Smith', role: 'user' })
   },
   activeAlarmsCount: {
     type: Number,
@@ -197,21 +197,55 @@ const handleMenuAction = (action) => {
   // Implement navigation or actions here
 }
 
-const handleLogout = () => {
+const handleLogout = async () => {
   showUserMenu.value = false
-  console.log('Logging out...')
-  // Implement logout logic
+
+  try {
+    const csrfToken = getCsrfTokenFromCookie()
+
+    // Call Laravel logout endpoint
+    const response = await fetch('http://localhost:8000/user/logout', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'X-XSRF-TOKEN': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'include' // Important: sends cookies
+    })
+
+    if (response.ok) {
+      console.log('Logout successful')
+    }
+  } catch (error) {
+    console.error('Logout error:', error)
+  } finally {
+    // Always clear localStorage and redirect, even if API call fails
+    localStorage.clear()
+    window.location.href = 'http://localhost:5173/login'
+  }
+}
+
+const getCsrfTokenFromCookie = () => {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; XSRF-TOKEN=`)
+  if (parts.length === 2) {
+    return decodeURIComponent(parts.pop().split(';').shift())
+  }
+  return ''
 }
 
 // Click outside directive (simple implementation)
 const vClickOutside = {
   mounted(el, binding) {
+    setTimeout(() => {
     el.clickOutsideEvent = (event) => {
       if (!(el === event.target || el.contains(event.target))) {
         binding.value()
       }
     }
     document.addEventListener('click', el.clickOutsideEvent)
+    }, 0)
   },
   unmounted(el) {
     document.removeEventListener('click', el.clickOutsideEvent)
