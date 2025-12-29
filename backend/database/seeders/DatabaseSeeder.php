@@ -14,6 +14,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
 {
+    $this->call([
+        ThresholdSeeder::class,
+        // Add other seeders here
+    ]);
+
     User::updateOrCreate(
         ['email' => 'admin@example.com'],  // ← Find by email
         [
@@ -22,7 +27,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]  // ← Update/Create these fields
     );
-    
+
     User::updateOrCreate(
         ['email' => 'data@example.com'],
         [
@@ -31,7 +36,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'data_analyst',
         ]
     );
-    
+
     User::updateOrCreate(
         ['email' => 'user@example.com'],
         [
