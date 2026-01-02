@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\AlarmController;
+use App\Http\Controllers\Api\MaintenanceController;
 use App\Http\Controllers\Api\ComponentHealthController;
 use App\Http\Controllers\Api\HistoryDataController;
 use App\Http\Controllers\Api\LiveDataController;
@@ -28,6 +30,30 @@ Route::get('turbine/{turbineId}/vibrations', [LiveDataController::class, 'getVib
 Route::get('turbine/{turbineId}/latestTemperatures', [LiveDataController::class, 'getTemperatureData']);
 
 Route::get('turbine/{turbineId}/alarms', [LiveDataController::class, 'getAlarmsData']);
+
+// Alarm status update (requires authentication)
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::patch('turbines/{turbineId}/alarms/{alarmId}', [AlarmController::class, 'updateStatus']);
+});
+
+// ============================================
+// MAINTENANCE ROUTES
+// ============================================
+Route::middleware(['auth:sanctum'])->group(function () {
+    // CRUD routes
+    Route::get('maintenances', [MaintenanceController::class, 'index']);
+    Route::get('maintenances/my-tasks', [MaintenanceController::class, 'myTasks']);
+    Route::get('maintenances/{id}', [MaintenanceController::class, 'show']);
+    Route::post('maintenances', [MaintenanceController::class, 'store']);
+    Route::put('maintenances/{id}', [MaintenanceController::class, 'update']);
+    Route::delete('maintenances/{id}', [MaintenanceController::class, 'destroy']);
+
+    // Turbine-specific maintenance
+    Route::get('turbines/{turbineId}/maintenances', [MaintenanceController::class, 'forTurbine']);
+
+    // Create maintenance from alarm
+    Route::post('alarms/{alarmId}/maintenance', [MaintenanceController::class, 'createFromAlarm']);
+});
 
 Route::get('dashboard/all', [LiveDataController::class, 'getAllTurbinesData']);
 
@@ -91,4 +117,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         'email' => $request->user()->email,
         'role' => $request->user()->role,
     ]);
+});
+
+// Get list of users (for assignment dropdowns)
+Route::middleware('auth:sanctum')->get('/users', function () {
+    return response()->json(
+        \App\Models\User::select('id', 'name', 'email', 'role')->get()
+    );
 });
