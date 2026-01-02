@@ -54,7 +54,7 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/overview'
+        redirect: '/login'
       },
       {
         path: 'overview',
