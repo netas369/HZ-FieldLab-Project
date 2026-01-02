@@ -3,6 +3,7 @@
     <div class="h-screen flex flex-col">
       <!-- Header -->
       <HeaderBar
+      v-if="route.meta.requiresAuth !== false"
           :user="state.currentUser"
           :active-alarms-count="criticalAlarmsCount"
           @open-maintenance-form="state.showMaintenanceForm = true"
@@ -12,6 +13,7 @@
       <div class="flex-1 flex overflow-hidden">
         <!-- Sidebar -->
         <SidebarNav
+        v-if="route.meta.requiresAuth !== false"
             :active-tab="currentRoute"
             :tabs="navItems"
             :search-query="state.searchQuery"
@@ -241,7 +243,7 @@ const {
 
 const state = reactive({
   currentUser: {
-    name: 'John Smith',
+    name: JSON.parse(localStorage.getItem('user'))?.name,
     role: JSON.parse(localStorage.getItem('user'))?.role,
     avatar: null
   },

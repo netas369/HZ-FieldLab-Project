@@ -112,7 +112,7 @@
                   <p class="text-xs text-slate-500 dark:text-slate-400">{{ user.role }}</p>
                 </div>
 
-                <button
+                <!-- <button
                     v-for="item in userMenuItems"
                     :key="item.label"
                     @click="handleMenuAction(item.action)"
@@ -120,7 +120,7 @@
                 >
                   <component :is="item.icon" class="w-5 h-5" />
                   <span>{{ item.label }}</span>
-                </button>
+                </button> -->
 
                 <div class="border-t border-slate-200 dark:border-slate-700 my-2"></div>
 
@@ -220,7 +220,6 @@ const handleLogout = async () => {
   } catch (error) {
     console.error('Logout error:', error)
   } finally {
-    // Always clear localStorage and redirect, even if API call fails
     localStorage.clear()
     window.location.href = 'http://localhost:5173/login'
   }
