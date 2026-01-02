@@ -96,13 +96,27 @@
                 </div>
               </div>
 
-              <div class="flex gap-3 pt-4">
+              <div class="flex flex-wrap gap-3 pt-4">
                 <button
-                    v-if="!state.selectedAlarm.acknowledged"
+                    v-if="!state.selectedAlarm.acknowledged && state.selectedAlarm.status !== 'resolved'"
                     @click="handleAcknowledgeAlarm(state.selectedAlarm)"
-                    class="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                    class="flex-1 min-w-[140px] px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Acknowledge Alarm
+                  Acknowledge
+                </button>
+                <button
+                    v-if="state.selectedAlarm.status !== 'resolved'"
+                    @click="handleResolveAlarm(state.selectedAlarm)"
+                    class="flex-1 min-w-[140px] px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Resolve
+                </button>
+                <button
+                    v-if="state.selectedAlarm.status !== 'resolved'"
+                    @click="handleCreateMaintenanceFromAlarm(state.selectedAlarm)"
+                    class="flex-1 min-w-[140px] px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Create Maintenance
                 </button>
                 <button
                     @click="state.selectedAlarm = null"
@@ -213,12 +227,103 @@
           </div>
         </div>
       </div>
+
+      <!-- Create Maintenance From Alarm Modal -->
+      <div
+          v-if="state.showMaintenanceModal"
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          @click.self="handleCloseMaintenanceModal"
+      >
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Create Maintenance Task</h3>
+          </div>
+          <form @submit.prevent="handleSubmitMaintenanceFromAlarm" class="p-6 space-y-4">
+            <!-- Linked Alarm Notice -->
+            <div v-if="newMaintenanceTask.alarm_id" class="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <div class="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span class="font-medium">Creating from alarm</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Turbine *</label>
+                <select v-model="newMaintenanceTask.turbine_id" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
+                  <option value="">Select turbine</option>
+                  <option v-for="t in turbineStore.turbines" :key="t._api_id" :value="t._api_id">{{ t.id }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Assign To</label>
+                <select v-model="newMaintenanceTask.assigned_to" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
+                  <option value="">Unassigned</option>
+                  <option v-for="user in usersStore.users" :key="user.id" :value="user.id">
+                    {{ user.name }} ({{ user.role }})
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title *</label>
+              <input v-model="newMaintenanceTask.title" required type="text" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" placeholder="e.g., Gearbox inspection" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+              <textarea v-model="newMaintenanceTask.description" rows="3" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" placeholder="Detailed description of the task..."></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Priority</label>
+                <select v-model="newMaintenanceTask.priority" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
+                <select v-model="newMaintenanceTask.status" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
+                  <option value="scheduled">Scheduled</option>
+                  <option value="in_progress">In Progress</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Scheduled Date</label>
+                <input v-model="newMaintenanceTask.scheduled_date" type="datetime-local" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
+                <input v-model="newMaintenanceTask.due_date" type="datetime-local" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Duration (minutes)</label>
+              <input v-model.number="newMaintenanceTask.estimated_duration_minutes" type="number" min="1" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" placeholder="e.g., 120" />
+            </div>
+            <div class="flex justify-end gap-3 pt-4">
+              <button type="button" @click="handleCloseMaintenanceModal" class="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                Cancel
+              </button>
+              <button type="submit" :disabled="creatingMaintenance" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50">
+                {{ creatingMaintenance ? 'Creating...' : 'Create Task' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </Teleport>
   </div>
 </template>
 
 <script setup>
-import { reactive, computed, onMounted, watch } from 'vue'
+import { reactive, ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import HeaderBar from '@/components/core/HeaderBar.vue'
 import SidebarNav from '@/components/core/SidebarNav.vue'
@@ -232,9 +337,11 @@ const {
   turbineStore,
   alarmStore,
   maintenanceStore,
+  usersStore,
   fetchDashboard,
   fetchAlarms,
-  fetchMaintenanceLogs
+  fetchMaintenanceLogs,
+  fetchUsers
 } = useScadaService()
 
 // ============================================================================
@@ -250,6 +357,8 @@ const state = reactive({
   selectedTurbine: null,
   selectedAlarm: null,
   showMaintenanceForm: false,
+  showMaintenanceModal: false,
+  maintenancePrefillData: null,
   searchQuery: '',
   theme: localStorage.getItem('theme') || 'dark'
 })
@@ -260,6 +369,22 @@ const maintenanceForm = reactive({
   description: '',
   technician: state.currentUser.name
 })
+
+// Form for new maintenance task (from alarm)
+const newMaintenanceTask = reactive({
+  turbine_id: '',
+  alarm_id: null,
+  assigned_to: '',
+  title: '',
+  description: '',
+  priority: 'medium',
+  status: 'scheduled',
+  scheduled_date: '',
+  due_date: '',
+  estimated_duration_minutes: null
+})
+
+const creatingMaintenance = ref(false)
 
 // ============================================================================
 // COMPUTED
@@ -329,9 +454,78 @@ const handleShowAlarm = (alarm) => {
 }
 
 const handleAcknowledgeAlarm = async (alarm) => {
-  await alarmStore.acknowledgeAlarm(alarm.id)
+  await alarmStore.acknowledgeAlarm(alarm.id, alarm.turbineId)
   state.selectedAlarm = null
-  console.log('✓ Alarm acknowledged')
+  console.log('Alarm acknowledged')
+}
+
+const handleResolveAlarm = async (alarm, notes = null) => {
+  await alarmStore.resolveAlarm(alarm.id, alarm.turbineId, notes)
+  state.selectedAlarm = null
+  console.log('Alarm resolved')
+}
+
+const handleCreateMaintenanceFromAlarm = (alarm) => {
+  // Map alarm severity to maintenance priority
+  const priorityMap = {
+    'failed': 'urgent',
+    'critical': 'high',
+    'warning': 'medium'
+  }
+
+  // Populate the form with alarm data
+  newMaintenanceTask.turbine_id = alarm.turbineId
+  newMaintenanceTask.alarm_id = alarm.id
+  newMaintenanceTask.title = `Maintenance: ${alarm.component || alarm.title}`
+  newMaintenanceTask.description = alarm.description || alarm.title
+  newMaintenanceTask.priority = priorityMap[alarm.severity] || 'medium'
+  newMaintenanceTask.assigned_to = ''
+  newMaintenanceTask.status = 'scheduled'
+  newMaintenanceTask.scheduled_date = ''
+  newMaintenanceTask.due_date = ''
+  newMaintenanceTask.estimated_duration_minutes = null
+
+  // Close alarm modal and show maintenance modal
+  state.selectedAlarm = null
+  state.showMaintenanceModal = true
+}
+
+const handleCloseMaintenanceModal = () => {
+  state.showMaintenanceModal = false
+  // Reset form
+  Object.assign(newMaintenanceTask, {
+    turbine_id: '',
+    alarm_id: null,
+    assigned_to: '',
+    title: '',
+    description: '',
+    priority: 'medium',
+    status: 'scheduled',
+    scheduled_date: '',
+    due_date: '',
+    estimated_duration_minutes: null
+  })
+}
+
+const handleSubmitMaintenanceFromAlarm = async () => {
+  creatingMaintenance.value = true
+  try {
+    const taskData = { ...newMaintenanceTask }
+    // Remove empty values
+    if (!taskData.assigned_to) delete taskData.assigned_to
+    if (!taskData.alarm_id) delete taskData.alarm_id
+    if (!taskData.scheduled_date) delete taskData.scheduled_date
+    if (!taskData.due_date) delete taskData.due_date
+    if (!taskData.estimated_duration_minutes) delete taskData.estimated_duration_minutes
+
+    await maintenanceStore.createTask(taskData)
+    handleCloseMaintenanceModal()
+    console.log('Maintenance task created from alarm')
+  } catch (err) {
+    console.error('Failed to create maintenance from alarm:', err)
+  } finally {
+    creatingMaintenance.value = false
+  }
 }
 
 const handleAddMaintenance = (turbine) => {
@@ -341,7 +535,17 @@ const handleAddMaintenance = (turbine) => {
 }
 
 const handleMaintenanceSubmit = async () => {
-  await maintenanceStore.addLog({ ...maintenanceForm })
+  try {
+    await maintenanceStore.createTask({
+      turbine_id: state.selectedTurbine?._api_id,
+      title: maintenanceForm.type + ' maintenance',
+      description: maintenanceForm.description,
+      priority: 'medium',
+      status: 'scheduled'
+    })
+  } catch (err) {
+    console.error('Failed to create maintenance:', err)
+  }
   state.showMaintenanceForm = false
 
   // Reset form
@@ -349,7 +553,7 @@ const handleMaintenanceSubmit = async () => {
   maintenanceForm.type = 'Preventive'
   maintenanceForm.description = ''
 
-  console.log('✓ Maintenance log saved')
+  console.log('Maintenance task created')
 }
 
 const handleQuickLink = (action) => {
@@ -382,7 +586,8 @@ onMounted(async () => {
   await fetchDashboard()
   await Promise.all([
     // fetchAlarms(),
-    fetchMaintenanceLogs()
+    fetchMaintenanceLogs(),
+    fetchUsers()
   ]);
 })
 

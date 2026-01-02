@@ -21,7 +21,9 @@ class Alarm extends Model
         'data',
         'detected_at',
         'acknowledged_at',
+        'acknowledged_by',
         'resolved_at',
+        'resolved_by',
         'resolution_notes'
     ];
 
