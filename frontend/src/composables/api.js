@@ -3,7 +3,32 @@ import axios from 'axios'
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+    },
+    withCredentials: true  // Send cookies with requests (needed for Sanctum)
+});
+
+// Add auth token and CSRF token to all requests
+apiClient.interceptors.request.use((config) => {
+    // Add Bearer token if available
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Add CSRF token from cookie if available
+    const xsrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('XSRF-TOKEN='))
+        ?.split('=')[1];
+    if (xsrfToken) {
+        config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
+    }
+
+    return config;
 });
 
 // ============================================================================
@@ -21,20 +46,44 @@ const alarmStore = reactive({
     alarms: [],
     loading: false,
     error: null,
-    activeAlarms: computed(() => alarmStore.alarms.filter(a => !a.acknowledged)),
+    activeAlarms: computed(() => alarmStore.alarms.filter(a => !a.acknowledged && a.status !== 'resolved')),
     criticalCount: computed(() => alarmStore.alarms.filter(a => a.priority === 'Critical' && !a.acknowledged).length),
 
-    acknowledgeAlarm: async (alarmId) => {
+    updateAlarmStatus: async (alarmId, turbineId, status, resolutionNotes = null) => {
         const alarm = alarmStore.alarms.find(a => a.id === alarmId)
-        if (alarm) alarm.acknowledged = true
+        const previousStatus = alarm?.status
+        const previousAcknowledged = alarm?.acknowledged
+
+        // Optimistic update
+        if (alarm) {
+            alarm.status = status
+            alarm.acknowledged = status === 'acknowledged' || status === 'resolved'
+        }
+
         try {
-            await apiClient.post(`/alarms/${alarmId}/acknowledge`)
+            const payload = { status }
+            if (resolutionNotes) payload.resolution_notes = resolutionNotes
+            await apiClient.patch(`/turbines/${turbineId}/alarms/${alarmId}`, payload)
         } catch (err) {
-            if (alarm) alarm.acknowledged = false
-            console.error('Failed to acknowledge alarm:', err)
+            // Rollback on error
+            if (alarm) {
+                alarm.status = previousStatus
+                alarm.acknowledged = previousAcknowledged
+            }
+            console.error('Failed to update alarm status:', err)
             alarmStore.error = err.response?.data?.message || err.message
+            throw err
         }
     },
+
+    acknowledgeAlarm: async (alarmId, turbineId) => {
+        return alarmStore.updateAlarmStatus(alarmId, turbineId, 'acknowledged')
+    },
+
+    resolveAlarm: async (alarmId, turbineId, notes = null) => {
+        return alarmStore.updateAlarmStatus(alarmId, turbineId, 'resolved', notes)
+    },
+
     recentAlarms: (count) => alarmStore.alarms.slice(0, count)
 });
 
@@ -116,40 +165,159 @@ const historyStore = reactive({
 });
 
 const maintenanceStore = reactive({
-    logs: [],
+    tasks: [],
+    myTasks: [],
     loading: false,
     error: null,
-    addLog: async (log) => {
-        const turbine = turbineStore.turbines.find(t => t.id === log.turbine)
-        const apiTurbineId = turbine ? turbine._api_id : null
 
-        if (!apiTurbineId) return;
+    // Computed-like getters
+    getScheduledTasks: () => maintenanceStore.tasks.filter(t => t.status === 'scheduled'),
+    getInProgressTasks: () => maintenanceStore.tasks.filter(t => t.status === 'in_progress'),
+    getCompletedTasks: () => maintenanceStore.tasks.filter(t => t.status === 'completed'),
+    getOverdueTasks: () => maintenanceStore.tasks.filter(t => t.status === 'overdue' ||
+        (t.status !== 'completed' && t.status !== 'canceled' && t.due_date && new Date(t.due_date) < new Date())),
 
-        const apiPayload = {
-            turbine_id: apiTurbineId,
-            type: log.type.toLowerCase(),
-            notes: log.description,
-            user: log.technician,
-            log_date: new Date().toISOString(),
-            status: 'completed'
-        }
-
+    // Fetch all maintenance tasks
+    fetchTasks: async (filters = {}) => {
+        maintenanceStore.loading = true
+        maintenanceStore.error = null
         try {
-            const response = await apiClient.post('/maintenance', apiPayload);
-            const newLogFromApi = response.data;
-            const newLogForStore = {
-                id: newLogFromApi.id,
-                turbine: log.turbine,
-                type: log.type,
-                description: newLogFromApi.notes,
-                date: new Date(newLogFromApi.log_date).toISOString(),
-                status: newLogFromApi.status,
-                technician: newLogFromApi.user
-            }
-            maintenanceStore.logs.unshift(newLogForStore)
+            const params = new URLSearchParams()
+            if (filters.status) params.append('status', filters.status)
+            if (filters.turbine_id) params.append('turbine_id', filters.turbine_id)
+            if (filters.assigned_to) params.append('assigned_to', filters.assigned_to)
+            if (filters.priority) params.append('priority', filters.priority)
+
+            const response = await apiClient.get(`/maintenances?${params.toString()}`)
+            maintenanceStore.tasks = response.data.data || response.data
         } catch (err) {
-            console.error('Failed to add maintenance log:', err)
+            console.error('Failed to fetch maintenance tasks:', err)
             maintenanceStore.error = err.response?.data?.message || err.message
+        } finally {
+            maintenanceStore.loading = false
+        }
+    },
+
+    // Fetch my assigned tasks
+    fetchMyTasks: async () => {
+        maintenanceStore.loading = true
+        try {
+            const response = await apiClient.get('/maintenances/my-tasks')
+            maintenanceStore.myTasks = response.data.maintenances || []
+        } catch (err) {
+            console.error('Failed to fetch my tasks:', err)
+            maintenanceStore.error = err.response?.data?.message || err.message
+        } finally {
+            maintenanceStore.loading = false
+        }
+    },
+
+    // Fetch tasks for a specific turbine
+    fetchTurbineTasks: async (turbineId) => {
+        try {
+            const response = await apiClient.get(`/turbines/${turbineId}/maintenances`)
+            return response.data.maintenances || []
+        } catch (err) {
+            console.error('Failed to fetch turbine tasks:', err)
+            throw err
+        }
+    },
+
+    // Create new maintenance task
+    createTask: async (taskData) => {
+        maintenanceStore.loading = true
+        try {
+            const response = await apiClient.post('/maintenances', taskData)
+            const newTask = response.data.maintenance
+            maintenanceStore.tasks.unshift(newTask)
+            return newTask
+        } catch (err) {
+            console.error('Failed to create maintenance task:', err)
+            maintenanceStore.error = err.response?.data?.message || err.message
+            throw err
+        } finally {
+            maintenanceStore.loading = false
+        }
+    },
+
+    // Create maintenance from alarm
+    createFromAlarm: async (alarmId, taskData = {}) => {
+        maintenanceStore.loading = true
+        try {
+            const response = await apiClient.post(`/alarms/${alarmId}/maintenance`, taskData)
+            const newTask = response.data.maintenance
+            maintenanceStore.tasks.unshift(newTask)
+            return newTask
+        } catch (err) {
+            console.error('Failed to create maintenance from alarm:', err)
+            maintenanceStore.error = err.response?.data?.message || err.message
+            throw err
+        } finally {
+            maintenanceStore.loading = false
+        }
+    },
+
+    // Update maintenance task
+    updateTask: async (taskId, updates) => {
+        try {
+            const response = await apiClient.put(`/maintenances/${taskId}`, updates)
+            const updatedTask = response.data.maintenance
+            const index = maintenanceStore.tasks.findIndex(t => t.id === taskId)
+            if (index !== -1) {
+                maintenanceStore.tasks[index] = updatedTask
+            }
+            return updatedTask
+        } catch (err) {
+            console.error('Failed to update maintenance task:', err)
+            maintenanceStore.error = err.response?.data?.message || err.message
+            throw err
+        }
+    },
+
+    // Delete maintenance task
+    deleteTask: async (taskId) => {
+        try {
+            await apiClient.delete(`/maintenances/${taskId}`)
+            maintenanceStore.tasks = maintenanceStore.tasks.filter(t => t.id !== taskId)
+        } catch (err) {
+            console.error('Failed to delete maintenance task:', err)
+            maintenanceStore.error = err.response?.data?.message || err.message
+            throw err
+        }
+    },
+
+    // Quick status updates
+    startTask: async (taskId) => {
+        return maintenanceStore.updateTask(taskId, { status: 'in_progress' })
+    },
+
+    completeTask: async (taskId, notes = null) => {
+        const updates = { status: 'completed' }
+        if (notes) updates.notes = notes
+        return maintenanceStore.updateTask(taskId, updates)
+    },
+
+    cancelTask: async (taskId) => {
+        return maintenanceStore.updateTask(taskId, { status: 'canceled' })
+    }
+});
+
+const usersStore = reactive({
+    users: [],
+    loading: false,
+    error: null,
+
+    fetchUsers: async () => {
+        usersStore.loading = true
+        usersStore.error = null
+        try {
+            const response = await apiClient.get('/users')
+            usersStore.users = response.data
+        } catch (err) {
+            console.error('Failed to fetch users:', err)
+            usersStore.error = err.response?.data?.message || err.message
+        } finally {
+            usersStore.loading = false
         }
     }
 });
@@ -198,12 +366,18 @@ async function fetchDashboard() {
                 if (apiTurbine.alarms.alarms?.length > 0) {
                     const turbineAlarms = apiTurbine.alarms.alarms.map(apiAlarm => ({
                         id: apiAlarm.id,
+                        turbineId: apiTurbine.id,  // API turbine ID for API calls
                         title: apiAlarm.message,
                         priority: priorityMap[apiAlarm.severity] || 'Warning',
+                        severity: apiAlarm.severity,
                         description: apiAlarm.message,
+                        component: apiAlarm.component,
                         turbine: displayId,
                         time: new Date(apiAlarm.detected_at).toLocaleString(),
-                        acknowledged: !!apiAlarm.acknowledged_at
+                        detectedAt: apiAlarm.detected_at,
+                        status: apiAlarm.status,
+                        acknowledged: apiAlarm.status === 'acknowledged' || apiAlarm.status === 'resolved',
+                        resolved: apiAlarm.status === 'resolved'
                     }));
                     allAlarms.push(...turbineAlarms);
                 }
@@ -263,7 +437,16 @@ async function fetchDeteriorationTrends(displayId) {
     } catch (err) { console.error(err); }
 }
 
-async function fetchMaintenanceLogs() { return []; }
+async function fetchMaintenance(filters = {}) {
+    return maintenanceStore.fetchTasks(filters);
+}
+
+// Alias for backwards compatibility
+const fetchMaintenanceLogs = fetchMaintenance;
+
+async function fetchUsers() {
+    return usersStore.fetchUsers();
+}
 
 export function useScadaService() {
     return {
@@ -271,8 +454,11 @@ export function useScadaService() {
         alarmStore,
         maintenanceStore,
         historyStore,
+        usersStore,
         fetchDashboard,
+        fetchMaintenance,
         fetchMaintenanceLogs,
+        fetchUsers,
         fetchTurbineHealth,
         fetchDeteriorationTrends
     };
