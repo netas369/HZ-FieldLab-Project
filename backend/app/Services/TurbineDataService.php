@@ -3,94 +3,127 @@
 namespace App\Services;
 
 use App\Models\ScadaReading;
+use App\Models\Threshold;
+use Illuminate\Support\Facades\Cache;
 
 class TurbineDataService
 {
+    /**
+     * Get threshold from database with caching
+     */
+    private function getThreshold(string $componentName)
+    {
+        return Threshold::where('component_name', $componentName)->first();
+    }
 
     /**
      * Get gearbox oil pressure status
-     * Documentation: 2.3-2.5 bar = Normal, 2.0-2.3 = Warning, 1.8-2.0 = Critical, <1.8 = Failed
      */
     public function getGearboxPressureStatus($pressure, $turbineId)
     {
-        $scadaData = ScadaReading::where('turbine_id', $turbineId)->latest('reading_timestamp')->first();
+        $scadaData = ScadaReading::where('turbine_id', $turbineId)
+            ->latest('reading_timestamp')
+            ->first();
+
         if ($scadaData && $scadaData->status_code !== 100) {
             return 'Turbine is not running';
         }
 
-        if ($pressure >= 2.3) {
-            return [
+        $threshold = $this->getThreshold('gearbox_oil_pressure');
+
+        if (!$threshold) {
+            return $this->getGearboxPressureStatusFallback($pressure);
+        }
+
+        // ✅ USE MODEL METHOD - handles min/max correctly
+        $status = $threshold->getStatus($pressure);
+
+        return match($status) {
+            'normal' => [
                 'status' => 'normal',
                 'label' => 'Normal',
                 'color' => 'green',
                 'description' => 'Adequate lubrication pressure'
-            ];
-        } elseif ($pressure >= 2.0 && $pressure < 2.3) {
-            return [
+            ],
+            'warning' => [
                 'status' => 'warning',
                 'label' => 'Low Pressure',
                 'color' => 'yellow',
                 'description' => 'Monitor lubrication system'
-            ];
-        } elseif ($pressure >= 1.8 && $pressure < 2.0) {
-            return [
+            ],
+            'critical' => [
                 'status' => 'critical',
                 'label' => 'Very Low Pressure',
                 'color' => 'orange',
                 'description' => 'Lubrication failure risk'
-            ];
-        } else {
-            return [
+            ],
+            'failed' => [
                 'status' => 'failed',
                 'label' => 'Critically Low',
                 'color' => 'red',
                 'description' => 'Lubrication system failure'
-            ];
-        }
+            ],
+            default => [
+                'status' => 'unknown',
+                'label' => 'Unknown',
+                'color' => 'gray',
+                'description' => 'Unable to determine status'
+            ]
+        };
     }
 
     /**
      * Get hydraulic pressure status
-     * Documentation: 160-180 bar = Normal, 150-160 = Warning, 140-150 = Critical, <140 = Failed
      */
     public function getHydraulicPressureStatus($pressure)
     {
-        if ($pressure >= 155 && $pressure <= 165) { // ✅ CORRECTED
-            return [
+        $threshold = $this->getThreshold('hydraulic_pressure');
+
+        if (!$threshold) {
+            return $this->getHydraulicPressureStatusFallback($pressure);
+        }
+
+        // ✅ USE MODEL METHOD
+        $status = $threshold->getStatus($pressure);
+
+        return match($status) {
+            'normal' => [
                 'status' => 'normal',
                 'label' => 'Normal',
                 'color' => 'green',
                 'description' => 'Optimal pitch system pressure'
-            ];
-        } elseif ($pressure >= 150 && $pressure < 155) { // ✅ ADJUSTED
-            return [
+            ],
+            'warning' => [
                 'status' => 'warning',
                 'label' => 'Below Normal',
                 'color' => 'yellow',
                 'description' => 'Pitch response may be slower'
-            ];
-        } elseif ($pressure >= 140 && $pressure < 150) {
-            return [
+            ],
+            'critical' => [
                 'status' => 'critical',
                 'label' => 'Low Pressure',
                 'color' => 'orange',
                 'description' => 'Pitch system compromised'
-            ];
-        } else {
-            return [
+            ],
+            'failed' => [
                 'status' => 'failed',
                 'label' => 'Pressure Critical',
                 'color' => 'red',
                 'description' => 'Pitch system failure - emergency shutdown required'
-            ];
-        }
+            ],
+            default => [
+                'status' => 'unknown',
+                'label' => 'Unknown',
+                'color' => 'gray',
+                'description' => 'Unable to determine status'
+            ]
+        };
     }
 
     /**
      * Get vibration status based on ISO 10816 standard
-     * Documentation: <4.5 = Normal, 4.5-7.1 = Warning, 7.1-11.2 = Critical, >11.2 = Failed
      */
-    public function getVibrationStatus($vibration_mms)
+    public function getVibrationStatus($vibration_mms, $componentName = 'main_bearing_vibration_rms')
     {
         if ($vibration_mms === null) {
             return [
@@ -102,44 +135,56 @@ class TurbineDataService
             ];
         }
 
-        // ISO 10816 Zones - Aligned with documentation thresholds
-        if ($vibration_mms <= 4.5) {
-            return [
+        $threshold = $this->getThreshold($componentName);
+
+        if (!$threshold) {
+            return $this->getVibrationStatusFallback($vibration_mms);
+        }
+
+        // ✅ USE MODEL METHOD
+        $status = $threshold->getStatus($vibration_mms);
+
+        return match($status) {
+            'normal' => [
                 'status' => 'normal',
                 'label' => 'Good',
                 'zone' => 'Zone A',
                 'color' => 'green',
                 'severity' => 'none',
                 'description' => 'Acceptable for long-term operation'
-            ];
-        } elseif ($vibration_mms > 4.5 && $vibration_mms <= 7.1) {
-            return [
+            ],
+            'warning' => [
                 'status' => 'warning',
                 'label' => 'Caution',
                 'zone' => 'Zone B',
                 'color' => 'yellow',
                 'severity' => 'warning',
                 'description' => 'Monitor closely - plan maintenance'
-            ];
-        } elseif ($vibration_mms > 7.1 && $vibration_mms <= 11.2) {
-            return [
+            ],
+            'critical' => [
                 'status' => 'critical',
                 'label' => 'Critical',
                 'zone' => 'Zone C',
                 'color' => 'orange',
                 'severity' => 'critical',
                 'description' => 'Urgent maintenance required'
-            ];
-        } else {
-            return [
+            ],
+            'failed' => [
                 'status' => 'failed',
                 'label' => 'Damage Imminent',
                 'zone' => 'Zone D',
                 'color' => 'red',
                 'severity' => 'failed',
                 'description' => 'Component failure - immediate shutdown'
-            ];
-        }
+            ],
+            default => [
+                'status' => 'unknown',
+                'label' => 'Unknown',
+                'zone' => 'N/A',
+                'color' => 'gray',
+                'severity' => 'none'
+            ]
+        };
     }
 
     /**
@@ -194,7 +239,6 @@ class TurbineDataService
 
     /**
      * Get acoustic level status
-     * Documentation: <102 dB = Normal, 102-105 = Warning, >105 = Failed
      */
     public function getAcousticStatus($db_level)
     {
@@ -206,28 +250,40 @@ class TurbineDataService
             ];
         }
 
-        if ($db_level < 102) {
-            return [
+        $threshold = $this->getThreshold('acoustic_level');
+
+        if (!$threshold) {
+            return $this->getAcousticStatusFallback($db_level);
+        }
+
+        // ✅ USE MODEL METHOD
+        $status = $threshold->getStatus($db_level);
+
+        return match($status) {
+            'normal' => [
                 'status' => 'normal',
                 'label' => 'Normal',
                 'color' => 'green',
                 'description' => 'Typical noise level'
-            ];
-        } elseif ($db_level >= 102 && $db_level <= 105) {
-            return [
+            ],
+            'warning' => [
                 'status' => 'warning',
                 'label' => 'Elevated',
                 'color' => 'yellow',
                 'description' => 'Higher than usual - investigate'
-            ];
-        } else {
-            return [
-                'status' => 'failed',
+            ],
+            'critical' => [
+                'status' => 'critical',
                 'label' => 'Excessive',
                 'color' => 'red',
                 'description' => 'Excessive noise - investigate immediately'
-            ];
-        }
+            ],
+            default => [
+                'status' => 'unknown',
+                'label' => 'Unknown',
+                'color' => 'gray'
+            ]
+        };
     }
 
     /**
@@ -236,28 +292,45 @@ class TurbineDataService
     public function getOverallVibrationStatus($vibration)
     {
         $components = [
-            'main_bearing' => $vibration->main_bearing_vibration_rms_mms,
-            'gearbox' => max(
-                $vibration->gearbox_vibration_axial_mms ?? 0,
-                $vibration->gearbox_vibration_radial_mms ?? 0
-            ),
-            'generator' => max(
-                $vibration->generator_vibration_de_mms ?? 0,
-                $vibration->generator_vibration_nde_mms ?? 0
-            ),
-            'tower' => max(
-                $vibration->tower_vibration_fa_mms ?? 0,
-                $vibration->tower_vibration_ss_mms ?? 0
-            ),
+            'main_bearing' => [
+                'value' => $vibration->main_bearing_vibration_rms_mms,
+                'name' => 'main_bearing_vibration_rms'
+            ],
+            'gearbox' => [
+                'value' => max(
+                    $vibration->gearbox_vibration_axial_mms ?? 0,
+                    $vibration->gearbox_vibration_radial_mms ?? 0
+                ),
+                'name' => 'gearbox_vibration_axial'
+            ],
+            'generator' => [
+                'value' => max(
+                    $vibration->generator_vibration_de_mms ?? 0,
+                    $vibration->generator_vibration_nde_mms ?? 0
+                ),
+                'name' => 'generator_vibration_de'
+            ],
+            'tower' => [
+                'value' => max(
+                    $vibration->tower_vibration_fa_mms ?? 0,
+                    $vibration->tower_vibration_ss_mms ?? 0
+                ),
+                'name' => 'tower_vibration_fa'
+            ],
         ];
 
         $criticalCount = 0;
         $warningCount = 0;
 
-        foreach ($components as $name => $value) {
-            if ($value >= 11.2) {
+        foreach ($components as $component) {
+            $threshold = $this->getThreshold($component['name']);
+            if (!$threshold) continue;
+
+            $status = $threshold->getStatus($component['value']);
+
+            if ($status === 'critical' || $status === 'failed') {
                 $criticalCount++;
-            } elseif ($value >= 7.1) {
+            } elseif ($status === 'warning') {
                 $warningCount++;
             }
         }
@@ -288,7 +361,6 @@ class TurbineDataService
 
     /**
      * Get nacelle temperature status
-     * Documentation: <50°C = Normal, 50-70°C = Warning, 70-80°C = Critical, >80°C = Failed
      */
     public function getNacelleTemperatureStatus($temp)
     {
@@ -296,15 +368,22 @@ class TurbineDataService
             return $this->getStatusStructure('unknown', 'No Data', 'gray');
         }
 
-        if ($temp < 50) {
-            return $this->getStatusStructure('normal', 'Normal', 'green', 'Acceptable nacelle temperature');
-        } elseif ($temp >= 50 && $temp < 70) {
-            return $this->getStatusStructure('warning', 'Warm', 'yellow', 'Higher than typical');
-        } elseif ($temp >= 70 && $temp < 80) {
-            return $this->getStatusStructure('critical', 'Hot', 'orange', 'Check cooling system');
-        } else {
-            return $this->getStatusStructure('failed', 'Very Hot', 'red', 'Excessive nacelle heat - shutdown risk');
+        $threshold = $this->getThreshold('nacelle_temp');
+
+        if (!$threshold) {
+            return $this->getNacelleTemperatureStatusFallback($temp);
         }
+
+        // ✅ USE MODEL METHOD
+        $status = $threshold->getStatus($temp);
+
+        return match($status) {
+            'normal' => $this->getStatusStructure('normal', 'Normal', 'green', 'Acceptable nacelle temperature'),
+            'warning' => $this->getStatusStructure('warning', 'Warm', 'yellow', 'Higher than typical'),
+            'critical' => $this->getStatusStructure('critical', 'Hot', 'orange', 'Check cooling system'),
+            'failed' => $this->getStatusStructure('failed', 'Very Hot', 'red', 'Excessive nacelle heat - shutdown risk'),
+            default => $this->getStatusStructure('unknown', 'No Data', 'gray')
+        };
     }
 
     /**
@@ -316,23 +395,26 @@ class TurbineDataService
             return $this->getStatusStructure('unknown', 'No Data', 'gray');
         }
 
-        $expectedTemp = $ambient + (30 * $loadFactor);
-        $deviation = $temp - $expectedTemp;
+        $threshold = $this->getThreshold('gearbox_bearing_temp');
 
-        if ($deviation < 10) {
-            return $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range');
-        } elseif ($deviation >= 10 && $deviation < 20) {
-            return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Monitor - trending warm');
-        } elseif ($deviation >= 20 && $deviation < 30) {
-            return $this->getStatusStructure('critical', 'High', 'orange', 'Urgent - plan maintenance');
-        } else {
-            return $this->getStatusStructure('failed', 'Very High', 'red', 'Critical overheating');
+        if (!$threshold) {
+            return $this->getGearboxBearingTempStatusFallback($temp, $ambient, $loadFactor);
         }
+
+        // ✅ USE MODEL METHOD
+        $status = $threshold->getStatus($temp);
+
+        return match($status) {
+            'normal' => $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range'),
+            'warning' => $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Monitor - trending warm'),
+            'critical' => $this->getStatusStructure('critical', 'High', 'orange', 'Urgent - plan maintenance'),
+            'failed' => $this->getStatusStructure('failed', 'Very High', 'red', 'Critical overheating'),
+            default => $this->getStatusStructure('unknown', 'No Data', 'gray')
+        };
     }
 
     /**
      * Get gearbox oil temperature status
-     * Documentation: <70°C = Normal, 70-75°C = Warning, 75-85°C = Critical, >85°C = Failed
      */
     public function getGearboxOilTempStatus($temp)
     {
@@ -340,23 +422,26 @@ class TurbineDataService
             return $this->getStatusStructure('unknown', 'No Data', 'gray');
         }
 
-        if ($temp < 65) { // ✅ CORRECTED
-            return $this->getStatusStructure('normal', 'Normal', 'green', 'Optimal operating temperature');
-        } elseif ($temp >= 65 && $temp < 70) { // ✅ NEW WARNING RANGE
-            return $this->getStatusStructure('warning', 'Warm', 'yellow', 'Approaching warning level');
-        } elseif ($temp >= 70 && $temp < 75) { // ✅ ADJUSTED
-            return $this->getStatusStructure('warning', 'Hot', 'yellow', 'Higher than optimal');
-        } elseif ($temp >= 75 && $temp < 85) {
-            return $this->getStatusStructure('critical', 'Very Hot', 'orange', 'Check cooling system');
-        } else {
-            return $this->getStatusStructure('failed', 'Critical', 'red', 'Oil degradation risk');
+        $threshold = $this->getThreshold('gearbox_oil_temp');
+
+        if (!$threshold) {
+            return $this->getGearboxOilTempStatusFallback($temp);
         }
+
+        // ✅ USE MODEL METHOD
+        $status = $threshold->getStatus($temp);
+
+        return match($status) {
+            'normal' => $this->getStatusStructure('normal', 'Normal', 'green', 'Optimal operating temperature'),
+            'warning' => $this->getStatusStructure('warning', 'Warm', 'yellow', 'Approaching warning level'),
+            'critical' => $this->getStatusStructure('critical', 'Very Hot', 'orange', 'Check cooling system'),
+            'failed' => $this->getStatusStructure('failed', 'Critical', 'red', 'Oil degradation risk'),
+            default => $this->getStatusStructure('unknown', 'No Data', 'gray')
+        };
     }
 
     /**
      * Get generator temperature status
-     * Documentation: Expected = Ambient + (55 × load_factor)
-     * Deviation: +10-20°C = Warning, +20-30°C = Critical, >30°C = Failed
      */
     public function getGeneratorTemperatureStatus($statorTemp, $ambient, $loadFactor)
     {
@@ -364,24 +449,29 @@ class TurbineDataService
             return $this->getStatusStructure('unknown', 'No Data', 'gray');
         }
 
+        $threshold = $this->getThreshold('generator_stator_temp');
+
+        if (!$threshold) {
+            return $this->getGeneratorTemperatureStatusFallback($statorTemp, $ambient, $loadFactor);
+        }
+
+        // ✅ USE MODEL METHOD
+        $status = $threshold->getStatus($statorTemp);
+
         $expectedTemp = $ambient + (55 * $loadFactor);
         $deviation = $statorTemp - $expectedTemp;
 
-        if ($deviation < 10) {
-            return $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range');
-        } elseif ($deviation >= 10 && $deviation < 20) {
-            return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Above expected by ' . round($deviation) . '°C');
-        } elseif ($deviation >= 20 && $deviation < 30) {
-            return $this->getStatusStructure('critical', 'High', 'orange', 'Critical - implement power curtailment');
-        } else {
-            return $this->getStatusStructure('failed', 'Failed', 'red', 'Component failure risk');
-        }
+        return match($status) {
+            'normal' => $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range'),
+            'warning' => $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Above expected by ' . round($deviation) . '°C'),
+            'critical' => $this->getStatusStructure('critical', 'High', 'orange', 'Critical - implement power curtailment'),
+            'failed' => $this->getStatusStructure('failed', 'Failed', 'red', 'Component failure risk'),
+            default => $this->getStatusStructure('unknown', 'No Data', 'gray')
+        };
     }
 
     /**
      * Get main bearing temperature status
-     * Documentation: Expected = Ambient + (30 × load_factor)
-     * Deviation: +10-20°C = Warning, +20-30°C = Critical, >30°C = Failed
      */
     public function getMainBearingTempStatus($temp, $ambient, $loadFactor)
     {
@@ -389,18 +479,22 @@ class TurbineDataService
             return $this->getStatusStructure('unknown', 'No Data', 'gray');
         }
 
-        $expectedTemp = $ambient + (30 * $loadFactor);
-        $deviation = $temp - $expectedTemp;
+        $threshold = $this->getThreshold('main_bearing_temp');
 
-        if ($deviation < 10) {
-            return $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range');
-        } elseif ($deviation >= 10 && $deviation < 20) {
-            return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Monitor bearing condition');
-        } elseif ($deviation >= 20 && $deviation < 30) {
-            return $this->getStatusStructure('critical', 'High', 'orange', 'Check lubrication system');
-        } else {
-            return $this->getStatusStructure('failed', 'Very High', 'red', 'Bearing damage risk');
+        if (!$threshold) {
+            return $this->getMainBearingTempStatusFallback($temp, $ambient, $loadFactor);
         }
+
+        // ✅ USE MODEL METHOD
+        $status = $threshold->getStatus($temp);
+
+        return match($status) {
+            'normal' => $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range'),
+            'warning' => $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Monitor bearing condition'),
+            'critical' => $this->getStatusStructure('critical', 'High', 'orange', 'Check lubrication system'),
+            'failed' => $this->getStatusStructure('failed', 'Very High', 'red', 'Bearing damage risk'),
+            default => $this->getStatusStructure('unknown', 'No Data', 'gray')
+        };
     }
 
     /**
@@ -412,24 +506,24 @@ class TurbineDataService
         $warningComponents = [];
 
         $checks = [
-            'Generator Stator' => $temperature->generator_stator_temp_c,
-            'Gearbox Bearing' => $temperature->gearbox_bearing_temp_c,
-            'Gearbox Oil' => $temperature->gearbox_oil_temp_c,
-            'Main Bearing' => $temperature->main_bearing_temp_c,
+            'Generator Stator' => ['value' => $temperature->generator_stator_temp_c, 'threshold' => 'generator_stator_temp'],
+            'Gearbox Bearing' => ['value' => $temperature->gearbox_bearing_temp_c, 'threshold' => 'gearbox_bearing_temp'],
+            'Gearbox Oil' => ['value' => $temperature->gearbox_oil_temp_c, 'threshold' => 'gearbox_oil_temp'],
+            'Main Bearing' => ['value' => $temperature->main_bearing_temp_c, 'threshold' => 'main_bearing_temp'],
         ];
 
-        foreach ($checks as $component => $temp) {
-            if ($temp === null) continue;
+        foreach ($checks as $component => $data) {
+            if ($data['value'] === null) continue;
 
-            if ($component === 'Generator Stator') {
-                if ($temp >= 115) $criticalComponents[] = $component;
-                elseif ($temp >= 100) $warningComponents[] = $component;
-            } elseif ($component === 'Gearbox Oil') {
-                if ($temp >= 85) $criticalComponents[] = $component;
-                elseif ($temp >= 70) $warningComponents[] = $component;
-            } else {
-                if ($temp >= 100) $criticalComponents[] = $component;
-                elseif ($temp >= 80) $warningComponents[] = $component;
+            $threshold = $this->getThreshold($data['threshold']);
+            if (!$threshold) continue;
+
+            $status = $threshold->getStatus($data['value']);
+
+            if ($status === 'critical' || $status === 'failed') {
+                $criticalComponents[] = $component;
+            } elseif ($status === 'warning') {
+                $warningComponents[] = $component;
             }
         }
 
@@ -471,6 +565,98 @@ class TurbineDataService
             'color' => $color,
             'description' => $description
         ];
+    }
+
+    // ========== FALLBACK METHODS (unchanged) ==========
+
+    private function getGearboxPressureStatusFallback($pressure)
+    {
+        if ($pressure >= 2.3) {
+            return ['status' => 'normal', 'label' => 'Normal', 'color' => 'green', 'description' => 'Adequate lubrication pressure'];
+        } elseif ($pressure >= 2.0) {
+            return ['status' => 'warning', 'label' => 'Low Pressure', 'color' => 'yellow', 'description' => 'Monitor lubrication system'];
+        } elseif ($pressure >= 1.8) {
+            return ['status' => 'critical', 'label' => 'Very Low Pressure', 'color' => 'orange', 'description' => 'Lubrication failure risk'];
+        } else {
+            return ['status' => 'failed', 'label' => 'Critically Low', 'color' => 'red', 'description' => 'Lubrication system failure'];
+        }
+    }
+
+    private function getHydraulicPressureStatusFallback($pressure)
+    {
+        if ($pressure >= 155) {
+            return ['status' => 'normal', 'label' => 'Normal', 'color' => 'green', 'description' => 'Optimal pitch system pressure'];
+        } elseif ($pressure >= 150) {
+            return ['status' => 'warning', 'label' => 'Below Normal', 'color' => 'yellow', 'description' => 'Pitch response may be slower'];
+        } elseif ($pressure >= 140) {
+            return ['status' => 'critical', 'label' => 'Low Pressure', 'color' => 'orange', 'description' => 'Pitch system compromised'];
+        } else {
+            return ['status' => 'failed', 'label' => 'Pressure Critical', 'color' => 'red', 'description' => 'Pitch system failure'];
+        }
+    }
+
+    private function getVibrationStatusFallback($vibration_mms)
+    {
+        if ($vibration_mms <= 4.5) {
+            return ['status' => 'normal', 'label' => 'Good', 'zone' => 'Zone A', 'color' => 'green', 'severity' => 'none'];
+        } elseif ($vibration_mms <= 7.1) {
+            return ['status' => 'warning', 'label' => 'Caution', 'zone' => 'Zone B', 'color' => 'yellow', 'severity' => 'warning'];
+        } elseif ($vibration_mms <= 11.2) {
+            return ['status' => 'critical', 'label' => 'Critical', 'zone' => 'Zone C', 'color' => 'orange', 'severity' => 'critical'];
+        } else {
+            return ['status' => 'failed', 'label' => 'Damage Imminent', 'zone' => 'Zone D', 'color' => 'red', 'severity' => 'failed'];
+        }
+    }
+
+    private function getAcousticStatusFallback($db_level)
+    {
+        if ($db_level < 102) {
+            return ['status' => 'normal', 'label' => 'Normal', 'color' => 'green', 'description' => 'Typical noise level'];
+        } elseif ($db_level <= 105) {
+            return ['status' => 'warning', 'label' => 'Elevated', 'color' => 'yellow', 'description' => 'Higher than usual'];
+        } else {
+            return ['status' => 'failed', 'label' => 'Excessive', 'color' => 'red', 'description' => 'Excessive noise'];
+        }
+    }
+
+    private function getNacelleTemperatureStatusFallback($temp)
+    {
+        if ($temp < 50) return $this->getStatusStructure('normal', 'Normal', 'green', 'Acceptable nacelle temperature');
+        elseif ($temp < 70) return $this->getStatusStructure('warning', 'Warm', 'yellow', 'Higher than typical');
+        elseif ($temp < 80) return $this->getStatusStructure('critical', 'Hot', 'orange', 'Check cooling system');
+        else return $this->getStatusStructure('failed', 'Very Hot', 'red', 'Excessive nacelle heat');
+    }
+
+    private function getGearboxBearingTempStatusFallback($temp, $ambient, $loadFactor)
+    {
+        if ($temp < 80) return $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range');
+        elseif ($temp < 90) return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Monitor - trending warm');
+        elseif ($temp < 100) return $this->getStatusStructure('critical', 'High', 'orange', 'Urgent - plan maintenance');
+        else return $this->getStatusStructure('failed', 'Very High', 'red', 'Critical overheating');
+    }
+
+    private function getGearboxOilTempStatusFallback($temp)
+    {
+        if ($temp < 65) return $this->getStatusStructure('normal', 'Normal', 'green', 'Optimal operating temperature');
+        elseif ($temp < 75) return $this->getStatusStructure('warning', 'Warm', 'yellow', 'Approaching warning level');
+        elseif ($temp < 85) return $this->getStatusStructure('critical', 'Very Hot', 'orange', 'Check cooling system');
+        else return $this->getStatusStructure('failed', 'Critical', 'red', 'Oil degradation risk');
+    }
+
+    private function getGeneratorTemperatureStatusFallback($statorTemp, $ambient, $loadFactor)
+    {
+        if ($statorTemp < 120) return $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range');
+        elseif ($statorTemp < 140) return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Above expected');
+        elseif ($statorTemp < 155) return $this->getStatusStructure('critical', 'High', 'orange', 'Critical - implement power curtailment');
+        else return $this->getStatusStructure('failed', 'Failed', 'red', 'Component failure risk');
+    }
+
+    private function getMainBearingTempStatusFallback($temp, $ambient, $loadFactor)
+    {
+        if ($temp < 80) return $this->getStatusStructure('normal', 'Normal', 'green', 'Within expected range');
+        elseif ($temp < 90) return $this->getStatusStructure('warning', 'Elevated', 'yellow', 'Monitor bearing condition');
+        elseif ($temp < 100) return $this->getStatusStructure('critical', 'High', 'orange', 'Check lubrication system');
+        else return $this->getStatusStructure('failed', 'Very High', 'red', 'Bearing damage risk');
     }
 
     // Keep existing utility methods unchanged

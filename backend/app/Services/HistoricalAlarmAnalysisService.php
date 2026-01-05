@@ -156,9 +156,10 @@ class HistoricalAlarmAnalysisService
         $alarms = [];
 
         foreach ($readings as $reading) {
-            // Check Main Bearing
+            // ✅ Check Main Bearing - PASS COMPONENT NAME
             $mainBearingStatus = $this->turbineDataService->getVibrationStatus(
-                $reading->main_bearing_vibration_rms_mms
+                $reading->main_bearing_vibration_rms_mms,
+                'main_bearing_vibration_rms'  // ✅ FIXED
             );
             if (in_array($mainBearingStatus['status'], ['warning', 'critical', 'failed'])) {
                 $alarms[] = $this->createVirtualAlarmFromStatus(
@@ -171,12 +172,15 @@ class HistoricalAlarmAnalysisService
                 );
             }
 
-            // Check Gearbox
+            // ✅ Check Gearbox - PASS COMPONENT NAME
             $gearboxVibration = max(
                 $reading->gearbox_vibration_axial_mms ?? 0,
                 $reading->gearbox_vibration_radial_mms ?? 0
             );
-            $gearboxStatus = $this->turbineDataService->getVibrationStatus($gearboxVibration);
+            $gearboxStatus = $this->turbineDataService->getVibrationStatus(
+                $gearboxVibration,
+                'gearbox_vibration_axial'  // ✅ FIXED
+            );
             if (in_array($gearboxStatus['status'], ['warning', 'critical', 'failed'])) {
                 $alarms[] = $this->createVirtualAlarmFromStatus(
                     $turbineId,
@@ -188,12 +192,15 @@ class HistoricalAlarmAnalysisService
                 );
             }
 
-            // Check Generator
+            // ✅ Check Generator - PASS COMPONENT NAME
             $generatorVibration = max(
                 $reading->generator_vibration_de_mms ?? 0,
                 $reading->generator_vibration_nde_mms ?? 0
             );
-            $generatorStatus = $this->turbineDataService->getVibrationStatus($generatorVibration);
+            $generatorStatus = $this->turbineDataService->getVibrationStatus(
+                $generatorVibration,
+                'generator_vibration_de'  // ✅ FIXED
+            );
             if (in_array($generatorStatus['status'], ['warning', 'critical', 'failed'])) {
                 $alarms[] = $this->createVirtualAlarmFromStatus(
                     $turbineId,
@@ -205,12 +212,15 @@ class HistoricalAlarmAnalysisService
                 );
             }
 
-            // Check Tower
+            // ✅ Check Tower - PASS COMPONENT NAME
             $towerVibration = max(
                 $reading->tower_vibration_fa_mms ?? 0,
                 $reading->tower_vibration_ss_mms ?? 0
             );
-            $towerStatus = $this->turbineDataService->getVibrationStatus($towerVibration);
+            $towerStatus = $this->turbineDataService->getVibrationStatus(
+                $towerVibration,
+                'tower_vibration_fa'  // ✅ FIXED
+            );
             if (in_array($towerStatus['status'], ['warning', 'critical', 'failed'])) {
                 $alarms[] = $this->createVirtualAlarmFromStatus(
                     $turbineId,

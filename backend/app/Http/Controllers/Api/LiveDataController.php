@@ -192,15 +192,33 @@ class LiveDataController extends Controller
 
         if (!$vibration) return null;
 
-        $mainBearingStatus = $this->service->getVibrationStatus($vibration->main_bearing_vibration_rms_mms);
-        $gearboxStatus = $this->service->getVibrationStatus($vibration->gearbox_vibration_axial_mms);
-        $generatorStatus = $this->service->getVibrationStatus($vibration->generator_vibration_de_mms);
-        $towerStatus = $this->service->getVibrationStatus($vibration->tower_vibration_fa_mms);
+        // ✅ PASS COMPONENT NAMES
+        $mainBearingStatus = $this->service->getVibrationStatus(
+            $vibration->main_bearing_vibration_rms_mms,
+            'main_bearing_vibration_rms'  // ✅ ADD THIS
+        );
+
+        $gearboxStatus = $this->service->getVibrationStatus(
+            $vibration->gearbox_vibration_axial_mms,
+            'gearbox_vibration_axial'  // ✅ ADD THIS
+        );
+
+        $generatorStatus = $this->service->getVibrationStatus(
+            $vibration->generator_vibration_de_mms,
+            'generator_vibration_de'  // ✅ ADD THIS
+        );
+
+        $towerStatus = $this->service->getVibrationStatus(
+            $vibration->tower_vibration_fa_mms,
+            'tower_vibration_fa'  // ✅ ADD THIS
+        );
+
         $bladeStatus = $this->service->getBladeVibrationStatus(
             $vibration->blade1_vibration_mms,
             $vibration->blade2_vibration_mms,
             $vibration->blade3_vibration_mms
         );
+
         $acousticStatus = $this->service->getAcousticStatus($vibration->acoustic_level_db);
 
         return [
