@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ComponentHealthController;
 use App\Http\Controllers\Api\HistoryDataController;
 use App\Http\Controllers\Api\LiveDataController;
 use App\Http\Controllers\api\SettingsController;
+use App\Http\Controllers\Api\ThresholdController;
 use App\Http\Controllers\Api\TurbineController;
 use App\Http\Controllers\Api\DataImportController;
 use Illuminate\Http\Request;
@@ -108,6 +109,18 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 Route::post('/settings/delete-data', [SettingsController::class, 'deleteAllData']);
 });
 
+// ============================================
+// THRESHOLD MANAGEMENT ROUTES (TEMP: No auth for testing)
+// ============================================
+// Keep these protected
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::put('/thresholds/{id}', [ThresholdController::class, 'update']);
+    Route::post('/thresholds/{id}/reset', [ThresholdController::class, 'reset']);
+    Route::post('/thresholds/{id}/test', [ThresholdController::class, 'testValue']);
+    Route::get('/thresholds', [ThresholdController::class, 'index']);
+    Route::get('/thresholds/type/{type}', [ThresholdController::class, 'byType']);
+    Route::get('/thresholds/{id}', [ThresholdController::class, 'show']);
+});
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

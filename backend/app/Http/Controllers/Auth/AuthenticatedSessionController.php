@@ -22,14 +22,20 @@ class AuthenticatedSessionController extends Controller
             $request->authenticate();
             $request->session()->regenerate();
 
+            $user = $request->user();
+
+            // ✅ CRITICAL FIX: Generate Sanctum token
+            $token = $user->createToken('auth-token')->plainTextToken;
+
             return response()->json([
                 'message' => 'Login successful',
                 'user' => [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'role' => $request->user()->role, 
-                ]
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+                'token' => $token  // ✅ Add token to response
             ], 200);
 
         } catch (\Exception $e) {
@@ -42,6 +48,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
+        // ✅ ADDED: Revoke all tokens for the user
+        $request->user()->tokens()->delete();
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
