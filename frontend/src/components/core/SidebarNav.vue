@@ -74,7 +74,7 @@
       </nav>
 
       <!-- Footer Info -->
-      <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+      <!-- <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
         <div class="flex items-center gap-3 mb-3">
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
@@ -84,7 +84,7 @@
             <p class="text-xs text-slate-500 dark:text-slate-400">Updated just now</p>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </aside>
 </template>
