@@ -58,6 +58,129 @@ class LiveDataController extends Controller
     }
 
     /**
+     * Get analytics data with time range support
+     */
+    public function getAnalyticsData(Request $request)
+    {
+        // Check if custom date range is provided
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = \Carbon\Carbon::parse($request->input('start_date'));
+            $endDate = \Carbon\Carbon::parse($request->input('end_date'))->endOfDay();
+            $timeRange = 'custom';
+        } else {
+            $timeRange = $request->input('time_range', '7d');
+
+            // Calculate date range based on time_range parameter
+            $endDate = now();
+            $startDate = match($timeRange) {
+                '24h' => now()->subHours(24),
+                '7d' => now()->subDays(7),
+                '30d' => now()->subDays(30),
+                '90d' => now()->subDays(90),
+                default => now()->subDays(7),
+            };
+        }
+
+        $turbines = Turbine::all();
+        $result = [
+            'time_range' => $timeRange,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'turbines' => [],
+            'aggregated_metrics' => []
+        ];
+
+        foreach ($turbines as $turbine) {
+            // Get current status
+            $this->alarmService->checkAndCreateAlarms($turbine->id);
+            $this->alarmService->updateTurbineStatus($turbine->id);
+            $turbine->refresh();
+
+            // Get latest readings for current state
+            $latestScada = $this->buildScadaData($turbine->id);
+            $latestHydraulic = $this->buildHydraulicData($turbine->id);
+            $latestVibration = $this->buildVibrationData($turbine->id);
+            $latestTemperature = $this->buildTemperatureData($turbine->id);
+
+            // Get historical SCADA data for the time range
+            $historicalScada = ScadaReading::where('turbine_id', $turbine->id)
+                ->whereBetween('reading_timestamp', [$startDate, $endDate])
+                ->get();
+
+            // Calculate aggregated metrics
+            $avgPower = $historicalScada->avg('power_kw') ?? 0;
+            $maxPower = $historicalScada->max('power_kw') ?? 0;
+            $minPower = $historicalScada->min('power_kw') ?? 0;
+            $avgWindSpeed = $historicalScada->avg('wind_speed_ms') ?? 0;
+            $maxWindSpeed = $historicalScada->max('wind_speed_ms') ?? 0;
+
+            // Get alarms in time range
+            $alarmsInRange = $this->alarmService->getAllAlarms($turbine->id)
+                ->filter(function($alarm) use ($startDate, $endDate) {
+                    $detectedAt = \Carbon\Carbon::parse($alarm->detected_at);
+                    return $detectedAt->between($startDate, $endDate);
+                })
+                ->map(function($alarm) {
+                    return [
+                        'id' => $alarm->id,
+                        'alarm_code' => $alarm->alarm_code,
+                        'alarm_type' => $alarm->alarm_type,
+                        'component' => $alarm->component,
+                        'severity' => $alarm->severity,
+                        'status' => $alarm->status,
+                        'message' => $alarm->message,
+                        'data' => $alarm->data,
+                        'detected_at' => $alarm->detected_at,
+                        'alarm_details' => $alarm->getAlarmDetails(),
+                    ];
+                })->values();
+
+            $turbineData = [
+                'id' => $turbine->id,
+                'turbine_id' => $turbine->turbine_id,
+                'status' => $turbine->status,
+                'current_readings' => [
+                    'scada' => $latestScada,
+                    'hydraulic' => $latestHydraulic,
+                    'vibration' => $latestVibration,
+                    'temperature' => $latestTemperature,
+                ],
+                'aggregated_metrics' => [
+                    'avg_power_kw' => round($avgPower, 2),
+                    'max_power_kw' => round($maxPower, 2),
+                    'min_power_kw' => round($minPower, 2),
+                    'avg_wind_speed_ms' => round($avgWindSpeed, 2),
+                    'max_wind_speed_ms' => round($maxWindSpeed, 2),
+                    'data_points' => $historicalScada->count(),
+                ],
+                'alarms' => $alarmsInRange
+            ];
+
+            $result['turbines'][] = $turbineData;
+        }
+
+        // Calculate fleet-wide aggregated metrics
+        $totalTurbines = count($result['turbines']);
+        $runningTurbines = collect($result['turbines'])->where('status', 100)->count();
+        $totalAlarms = collect($result['turbines'])->sum(fn($t) => count($t['alarms']));
+        $avgFleetPower = collect($result['turbines'])->avg('aggregated_metrics.avg_power_kw') ?? 0;
+        $totalFleetPower = collect($result['turbines'])->sum('aggregated_metrics.avg_power_kw') ?? 0;
+        $avgFleetWindSpeed = collect($result['turbines'])->avg('aggregated_metrics.avg_wind_speed_ms') ?? 0;
+
+        $result['aggregated_metrics'] = [
+            'total_turbines' => $totalTurbines,
+            'running_turbines' => $runningTurbines,
+            'fleet_availability_percent' => $totalTurbines > 0 ? round(($runningTurbines / $totalTurbines) * 100, 2) : 0,
+            'total_alarms' => $totalAlarms,
+            'avg_fleet_power_kw' => round($avgFleetPower, 2),
+            'total_fleet_power_kw' => round($totalFleetPower, 2),
+            'avg_fleet_wind_speed_ms' => round($avgFleetWindSpeed, 2),
+        ];
+
+        return response()->json($result);
+    }
+
+    /**
      * API ENDPOINTS (keep for individual turbine requests)
      */
 
@@ -312,7 +435,7 @@ class LiveDataController extends Controller
 
     private function buildAlarmsData($turbineId)
     {
-        $alarms = $this->alarmService->getActiveAlarms($turbineId)->map(function($alarm) {
+        $alarms = $this->alarmService->getAllAlarms($turbineId)->map(function($alarm) {
             return [
                 'id' => $alarm->id,
                 'alarm_code' => $alarm->alarm_code,  // ✅ ADD THIS

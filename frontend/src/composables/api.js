@@ -462,7 +462,90 @@ async function fetchUsers() {
     return usersStore.fetchUsers();
 }
 
+const analyticsStore = reactive({
+    data: null,
+    loading: false,
+    error: null,
+    recentFetches: JSON.parse(localStorage.getItem('analytics_history_v1') || '[]'),
+    currentFetch: JSON.parse(localStorage.getItem('analytics_current_v1') || 'null'),
 
+    fetchAnalytics: async (timeRange = '7d', startDate = null, endDate = null) => {
+        analyticsStore.loading = true
+        analyticsStore.error = null
+        try {
+            const params = {}
+
+            if (timeRange === 'custom' && startDate && endDate) {
+                params.start_date = startDate
+                params.end_date = endDate
+            } else {
+                params.time_range = timeRange
+            }
+
+            const response = await apiClient.get('/analytics', { params })
+            analyticsStore.data = response.data
+
+            // Create history entry
+            const historyEntry = {
+                id: Date.now(),
+                timeRange: timeRange,
+                startDate: timeRange === 'custom' ? startDate : response.data.start_date,
+                endDate: timeRange === 'custom' ? endDate : response.data.end_date,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                fullTimestamp: new Date().toISOString(),
+                payload: response.data
+            }
+
+            // Only save custom ranges to history (predefined ranges are always available as buttons)
+            if (timeRange === 'custom') {
+                // Add to recent fetches (limit to 10 custom fetches)
+                analyticsStore.recentFetches.unshift(historyEntry)
+                if (analyticsStore.recentFetches.length > 10) {
+                    analyticsStore.recentFetches.pop()
+                }
+
+                // Save to localStorage
+                localStorage.setItem('analytics_history_v1', JSON.stringify(analyticsStore.recentFetches))
+            }
+
+            // Set as current fetch (for both custom and predefined)
+            analyticsStore.currentFetch = historyEntry
+            localStorage.setItem('analytics_current_v1', JSON.stringify(historyEntry))
+
+            return response.data
+        } catch (err) {
+            console.error('Failed to fetch analytics:', err)
+            analyticsStore.error = err.response?.data?.message || err.message
+            throw err
+        } finally {
+            analyticsStore.loading = false
+        }
+    },
+
+    loadFromHistory: (entry) => {
+        analyticsStore.data = entry.payload
+        analyticsStore.currentFetch = entry
+        localStorage.setItem('analytics_current_v1', JSON.stringify(entry))
+    },
+
+    removeFromHistory: (entryId) => {
+        analyticsStore.recentFetches = analyticsStore.recentFetches.filter(e => e.id !== entryId)
+        localStorage.setItem('analytics_history_v1', JSON.stringify(analyticsStore.recentFetches))
+
+        // If we're deleting the currently viewed entry, clear current
+        if (analyticsStore.currentFetch?.id === entryId) {
+            analyticsStore.currentFetch = null
+            localStorage.removeItem('analytics_current_v1')
+        }
+    },
+
+    clearAllHistory: () => {
+        analyticsStore.recentFetches = []
+        localStorage.removeItem('analytics_history_v1')
+        analyticsStore.currentFetch = null
+        localStorage.removeItem('analytics_current_v1')
+    }
+})
 
 export function useScadaService() {
     return {
@@ -471,6 +554,7 @@ export function useScadaService() {
         maintenanceStore,
         historyStore,
         usersStore,
+        analyticsStore,
         fetchDashboard,
         fetchMaintenance,
         fetchMaintenanceLogs,

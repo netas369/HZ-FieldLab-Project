@@ -5,7 +5,7 @@
       'bg-white dark:bg-slate-800 rounded-xl border-2',
       'hover:shadow-xl hover:-translate-y-0.5',
       borderColorClass,
-      alarm.acknowledged ? 'opacity-70 hover:opacity-85' : '',
+      alarm.status === 'resolved' ? 'opacity-60 hover:opacity-75' : alarm.acknowledged ? 'opacity-70 hover:opacity-85' : '',
       'cursor-pointer'
     ]"
       @click="$emit('click')"
@@ -51,18 +51,34 @@
             <span class="uppercase tracking-wider">{{ alarm.priority }}</span>
           </div>
 
-          <!-- Acknowledged Checkmark -->
-          <transition name="scale">
-            <div
-                v-if="alarm.acknowledged"
-                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold"
-            >
-              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-              <span>ACK</span>
-            </div>
-          </transition>
+          <!-- Status Badges -->
+          <div class="flex items-center gap-2">
+            <!-- Resolved Badge -->
+            <transition name="scale">
+              <div
+                  v-if="alarm.status === 'resolved'"
+                  class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold"
+              >
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span>RESOLVED</span>
+              </div>
+            </transition>
+
+            <!-- Acknowledged Checkmark -->
+            <transition name="scale">
+              <div
+                  v-if="alarm.acknowledged && alarm.status !== 'resolved'"
+                  class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold"
+              >
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span>ACK</span>
+              </div>
+            </transition>
+          </div>
         </div>
 
         <!-- Quick Actions -->
