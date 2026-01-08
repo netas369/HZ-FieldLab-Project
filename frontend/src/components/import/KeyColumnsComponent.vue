@@ -62,9 +62,7 @@
       <div class="border border-gray-300 dark:border-slate-600 rounded-lg p-6 transition-colors">
         <div class="flex items-start justify-between mb-4">
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Turbine ID Column
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Turbine ID Column</h3>
             <p class="text-sm text-gray-600 dark:text-slate-400 mt-1">
               Select the column that contains turbine identifiers (e.g., T001, T002, WTG-1)
             </p>
@@ -80,13 +78,12 @@
                 type="radio"
                 value="column"
                 class="w-4 h-4 text-blue-600 dark:text-blue-500 bg-gray-100 dark:bg-slate-700 border-gray-300 dark:border-slate-600"
+              />
+              <span class="font-medium text-gray-900 dark:text-slate-200"
+                >CSV contains a turbine ID column</span
               >
-              <span class="font-medium text-gray-900 dark:text-slate-200">CSV contains a turbine ID column</span>
             </label>
-            <div
-              v-if="turbineIdMode === 'column'"
-              class="ml-7 mt-3"
-            >
+            <div v-if="turbineIdMode === 'column'" class="ml-7 mt-3">
               <select
                 v-model="selectedTurbineColumn"
                 class="w-full max-w-md px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-white transition-colors"
@@ -96,14 +93,8 @@
                     : 'border-gray-300 dark:border-slate-600'
                 "
               >
-                <option value="">
-                  -- Select Turbine Column --
-                </option>
-                <option
-                  v-for="header in csvData.headers"
-                  :key="header"
-                  :value="header"
-                >
+                <option value="">-- Select Turbine Column --</option>
+                <option v-for="header in csvData.headers" :key="header" :value="header">
                   {{ header }}
                 </option>
               </select>
@@ -140,13 +131,12 @@
                 type="radio"
                 value="single"
                 class="w-4 h-4 text-blue-600 dark:text-blue-500 bg-gray-100 dark:bg-slate-700 border-gray-300 dark:border-slate-600"
+              />
+              <span class="font-medium text-gray-900 dark:text-slate-200"
+                >This CSV is for a single turbine</span
               >
-              <span class="font-medium text-gray-900 dark:text-slate-200">This CSV is for a single turbine</span>
             </label>
-            <div
-              v-if="turbineIdMode === 'single'"
-              class="ml-7 mt-3"
-            >
+            <div v-if="turbineIdMode === 'single'" class="ml-7 mt-3">
               <select
                 v-model="selectedSingleTurbine"
                 class="w-full max-w-md px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-white transition-colors"
@@ -156,9 +146,7 @@
                     : 'border-gray-300 dark:border-slate-600'
                 "
               >
-                <option value="">
-                  -- Select Turbine --
-                </option>
+                <option value="">-- Select Turbine --</option>
                 <option
                   v-for="turbine in existingTurbines"
                   :key="turbine.id"
@@ -178,9 +166,7 @@
       <div class="border border-gray-300 dark:border-slate-600 rounded-lg p-6 transition-colors">
         <div class="flex items-start justify-between mb-4">
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Timestamp Column
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Timestamp Column</h3>
             <p class="text-sm text-gray-600 dark:text-slate-400 mt-1">
               Select the column that contains reading timestamps
             </p>
@@ -197,14 +183,8 @@
               : 'border-gray-300 dark:border-slate-600'
           "
         >
-          <option value="">
-            -- Select Timestamp Column --
-          </option>
-          <option
-            v-for="header in csvData.headers"
-            :key="header"
-            :value="header"
-          >
+          <option value="">-- Select Timestamp Column --</option>
+          <option v-for="header in csvData.headers" :key="header" :value="header">
             {{ header }}
           </option>
         </select>
@@ -245,14 +225,9 @@
             />
           </svg>
           <div>
-            <h4 class="font-semibold text-red-900 dark:text-red-200">
-              Validation Errors
-            </h4>
+            <h4 class="font-semibold text-red-900 dark:text-red-200">Validation Errors</h4>
             <ul class="text-sm text-red-800 dark:text-red-300 mt-2 space-y-1 list-disc list-inside">
-              <li
-                v-for="(error, index) in validationErrors"
-                :key="index"
-              >
+              <li v-for="(error, index) in validationErrors" :key="index">
                 {{ error }}
               </li>
             </ul>

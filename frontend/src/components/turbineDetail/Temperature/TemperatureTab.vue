@@ -112,12 +112,7 @@
       class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
     >
       <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-        <svg
-          class="w-5 h-5 text-indigo-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"

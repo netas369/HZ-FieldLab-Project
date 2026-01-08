@@ -1,16 +1,11 @@
 <template>
   <div class="space-y-6">
-    <div
-      v-if="loading"
-      class="flex items-center justify-center py-20"
-    >
+    <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center">
         <div
           class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"
         />
-        <p class="text-slate-600 dark:text-slate-400">
-          Loading turbine data...
-        </p>
+        <p class="text-slate-600 dark:text-slate-400">Loading turbine data...</p>
       </div>
     </div>
 
@@ -33,9 +28,7 @@
           />
         </svg>
         <div>
-          <h3 class="font-semibold text-red-900 dark:text-red-300">
-            Failed to load turbine data
-          </h3>
+          <h3 class="font-semibold text-red-900 dark:text-red-300">Failed to load turbine data</h3>
           <p class="text-sm text-red-700 dark:text-red-400 mt-1">
             {{ error }}
           </p>
@@ -62,9 +55,7 @@
           />
         </svg>
         <div>
-          <h3 class="font-semibold text-yellow-900 dark:text-yellow-300">
-            Turbine not found
-          </h3>
+          <h3 class="font-semibold text-yellow-900 dark:text-yellow-300">Turbine not found</h3>
           <p class="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
             Turbine ID "{{ turbineId }}" does not exist
           </p>
@@ -79,44 +70,15 @@
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div class="flex items-start gap-4">
             <div class="relative w-24 h-24 flex-shrink-0">
-              <svg
-                viewBox="0 0 100 100"
-                :class="['w-full h-full', iconColor]"
-              >
-                <rect
-                  x="47"
-                  y="45"
-                  width="6"
-                  height="45"
-                  fill="currentColor"
-                  opacity="0.3"
-                />
-                <ellipse
-                  cx="50"
-                  cy="42"
-                  rx="6"
-                  ry="6"
-                  fill="currentColor"
-                  opacity="0.4"
-                />
-                <circle
-                  cx="50"
-                  cy="42"
-                  r="3.5"
-                  fill="currentColor"
-                />
+              <svg viewBox="0 0 100 100" :class="['w-full h-full', iconColor]">
+                <rect x="47" y="45" width="6" height="45" fill="currentColor" opacity="0.3" />
+                <ellipse cx="50" cy="42" rx="6" ry="6" fill="currentColor" opacity="0.4" />
+                <circle cx="50" cy="42" r="3.5" fill="currentColor" />
                 <g
                   :class="{ 'animate-spin-slow': turbineData.status === 'running' }"
                   style="transform-origin: 50px 42px"
                 >
-                  <ellipse
-                    cx="50"
-                    cy="20"
-                    rx="3"
-                    ry="18"
-                    fill="currentColor"
-                    opacity="0.9"
-                  />
+                  <ellipse cx="50" cy="20" rx="3" ry="18" fill="currentColor" opacity="0.9" />
                   <ellipse
                     cx="50"
                     cy="20"
@@ -163,12 +125,7 @@
                 </span>
               </div>
               <p class="text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -216,12 +173,7 @@
               class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm"
               @click="$emit('add-maintenance', turbineData)"
             >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -261,44 +213,20 @@
         </div>
 
         <div class="p-6">
-          <section
-            v-show="currentTab === 'scada'"
-            class="space-y-4"
-          >
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">
-              SCADA Data
-            </h3>
-            <ScadaTab
-              v-if="turbineData?.scadaData"
-              :scada="turbineData.scadaData"
-            />
-            <div
-              v-else
-              class="text-center py-8 text-slate-500"
-            >
-              No SCADA data available
-            </div>
+          <section v-show="currentTab === 'scada'" class="space-y-4">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">SCADA Data</h3>
+            <ScadaTab v-if="turbineData?.scadaData" :scada="turbineData.scadaData" />
+            <div v-else class="text-center py-8 text-slate-500">No SCADA data available</div>
           </section>
 
-          <section
-            v-show="currentTab === 'health'"
-            class="space-y-4"
-          >
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">
-              Health Analysis
-            </h3>
-            <HealthTab
-              v-if="turbineData?.healthData"
-              :health-data="turbineData.healthData"
-            />
+          <section v-show="currentTab === 'health'" class="space-y-4">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Health Analysis</h3>
+            <HealthTab v-if="turbineData?.healthData" :health-data="turbineData.healthData" />
             <div
               v-else
               class="text-center py-12 text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 border-dashed"
             >
-              <div
-                v-if="loadingHealth"
-                class="flex flex-col items-center gap-3"
-              >
+              <div v-if="loadingHealth" class="flex flex-col items-center gap-3">
                 <div
                   class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"
                 />
@@ -308,10 +236,7 @@
             </div>
           </section>
 
-          <section
-            v-show="currentTab === 'predictive'"
-            class="space-y-4"
-          >
+          <section v-show="currentTab === 'predictive'" class="space-y-4">
             <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">
               Predictive Forecast
             </h3>
@@ -323,10 +248,7 @@
               v-else
               class="text-center py-12 text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 border-dashed"
             >
-              <div
-                v-if="loadingHealth"
-                class="flex flex-col items-center gap-3"
-              >
+              <div v-if="loadingHealth" class="flex flex-col items-center gap-3">
                 <div
                   class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"
                 />
@@ -343,10 +265,7 @@
             />
           </section>
           <section v-show="currentTab === 'vibration'">
-            <VibrationTab
-              v-if="turbineData?.vibrationData"
-              :turbine="turbineData.vibrationData"
-            />
+            <VibrationTab v-if="turbineData?.vibrationData" :turbine="turbineData.vibrationData" />
           </section>
           <section v-show="currentTab === 'temperature'">
             <TemperatureTab

@@ -3,9 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-          Settings
-        </h2>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Settings</h2>
         <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
           Manage application settings, thresholds, and database
         </p>
@@ -41,10 +39,7 @@
     </div>
 
     <!-- Database Tab -->
-    <div
-      v-if="activeTab === 'database'"
-      class="max-w-3xl"
-    >
+    <div v-if="activeTab === 'database'" class="max-w-3xl">
       <div
         class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700"
       >
@@ -84,12 +79,7 @@
                 <h4
                   class="font-semibold text-red-900 dark:text-red-400 mb-2 flex items-center gap-2"
                 >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -105,10 +95,7 @@
               </div>
             </div>
 
-            <div
-              v-if="!showConfirmation"
-              class="mt-4"
-            >
+            <div v-if="!showConfirmation" class="mt-4">
               <button
                 class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all shadow-lg"
                 @click="showConfirmation = true"
@@ -129,7 +116,7 @@
                 type="text"
                 placeholder="DELETE"
                 class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-2 rounded-lg font-mono mb-3"
-              >
+              />
               <div class="flex gap-3">
                 <button
                   :disabled="confirmText !== 'DELETE' || isResetting"

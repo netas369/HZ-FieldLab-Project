@@ -3,26 +3,15 @@
     <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
       <!-- Logo/Header -->
       <div class="mb-6 text-center">
-        <h1 class="text-2xl font-bold text-gray-800">
-          Set New Password
-        </h1>
-        <p class="text-sm text-gray-600 mt-1">
-          Enter your reset token and new password
-        </p>
+        <h1 class="text-2xl font-bold text-gray-800">Set New Password</h1>
+        <p class="text-sm text-gray-600 mt-1">Enter your reset token and new password</p>
       </div>
 
       <!-- Success State -->
-      <div
-        v-if="success"
-        class="space-y-4"
-      >
+      <div v-if="success" class="space-y-4">
         <div class="p-4 bg-green-50 border border-green-200 rounded-md">
-          <p class="text-sm text-green-800 font-medium mb-2">
-            ✓ Password reset successful!
-          </p>
-          <p class="text-sm text-green-700">
-            You can now log in with your new password.
-          </p>
+          <p class="text-sm text-green-800 font-medium mb-2">✓ Password reset successful!</p>
+          <p class="text-sm text-green-700">You can now log in with your new password.</p>
         </div>
 
         <button
@@ -34,16 +23,10 @@
       </div>
 
       <!-- Reset Form -->
-      <form
-        v-else
-        @submit.prevent="handleSubmit"
-      >
+      <form v-else @submit.prevent="handleSubmit">
         <!-- Token Input -->
         <div class="mb-4">
-          <label
-            for="token"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label for="token" class="block text-sm font-medium text-gray-700 mb-1">
             Reset Token
           </label>
           <input
@@ -55,21 +38,15 @@
             placeholder="Enter your reset token"
             required
             autofocus
-          >
-          <p
-            v-if="errors.token"
-            class="mt-1 text-sm text-red-600"
-          >
+          />
+          <p v-if="errors.token" class="mt-1 text-sm text-red-600">
             {{ errors.token }}
           </p>
         </div>
 
         <!-- Email Input -->
         <div class="mb-4">
-          <label
-            for="email"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          > Email </label>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1"> Email </label>
           <input
             id="email"
             v-model="form.email"
@@ -77,21 +54,15 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border"
             :class="{ 'border-red-500': errors.email }"
             required
-          >
-          <p
-            v-if="errors.email"
-            class="mt-1 text-sm text-red-600"
-          >
+          />
+          <p v-if="errors.email" class="mt-1 text-sm text-red-600">
             {{ errors.email }}
           </p>
         </div>
 
         <!-- New Password Input -->
         <div class="mb-4">
-          <label
-            for="password"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
             New Password
           </label>
           <input
@@ -101,24 +72,16 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border"
             :class="{ 'border-red-500': errors.password }"
             required
-          >
-          <p
-            v-if="errors.password"
-            class="mt-1 text-sm text-red-600"
-          >
+          />
+          <p v-if="errors.password" class="mt-1 text-sm text-red-600">
             {{ errors.password }}
           </p>
-          <p class="mt-1 text-xs text-gray-500">
-            Must be at least 8 characters long
-          </p>
+          <p class="mt-1 text-xs text-gray-500">Must be at least 8 characters long</p>
         </div>
 
         <!-- Confirm Password Input -->
         <div class="mb-4">
-          <label
-            for="password_confirmation"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
             Confirm Password
           </label>
           <input
@@ -128,20 +91,14 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border"
             :class="{ 'border-red-500': errors.password_confirmation }"
             required
-          >
-          <p
-            v-if="errors.password_confirmation"
-            class="mt-1 text-sm text-red-600"
-          >
+          />
+          <p v-if="errors.password_confirmation" class="mt-1 text-sm text-red-600">
             {{ errors.password_confirmation }}
           </p>
         </div>
 
         <!-- Error Message -->
-        <div
-          v-if="errors.general"
-          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md"
-        >
+        <div v-if="errors.general" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p class="text-sm text-red-600">
             {{ errors.general }}
           </p>
@@ -154,10 +111,7 @@
             :disabled="loading"
             class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span
-              v-if="loading"
-              class="mr-2"
-            >
+            <span v-if="loading" class="mr-2">
               <svg
                 class="animate-spin h-4 w-4 text-white"
                 xmlns="http://www.w3.org/2000/svg"

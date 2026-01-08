@@ -3,9 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-          Settings
-        </h2>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Settings</h2>
         <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
           Manage application settings, thresholds, and database
         </p>
@@ -25,12 +23,7 @@
           @click="activeTab = 'database'"
         >
           <div class="flex items-center gap-2">
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -51,12 +44,7 @@
           @click="activeTab = 'thresholds'"
         >
           <div class="flex items-center gap-2">
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"

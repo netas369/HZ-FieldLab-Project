@@ -29,16 +29,8 @@
           class="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded text-xs font-medium border border-indigo-100 dark:border-indigo-800 animate-in fade-in slide-in-from-left-2"
         >
           <span>Focus: {{ focusedComponent.replace(/_/g, ' ') }}</span>
-          <button
-            class="hover:text-indigo-800 dark:hover:text-indigo-200"
-            @click="clearFocus"
-          >
-            <svg
-              class="w-3 h-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+          <button class="hover:text-indigo-800 dark:hover:text-indigo-200" @click="clearFocus">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -48,10 +40,7 @@
             </svg>
           </button>
         </div>
-        <div
-          v-else
-          class="text-xs text-slate-500 mt-0.5 font-mono hidden sm:block"
-        >
+        <div v-else class="text-xs text-slate-500 mt-0.5 font-mono hidden sm:block">
           Window: {{ (totalHours / 24).toFixed(1) }} days
         </div>
       </div>
@@ -64,34 +53,20 @@
           class="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600 dark:text-slate-400"
           @click.stop="zoomOut"
         >
-          <svg
-            class="w-3.5 h-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M20 12H4"
-            />
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
           </svg>
         </button>
         <span
           class="text-[10px] font-bold font-mono w-10 text-center text-slate-600 dark:text-slate-300 select-none"
-        >{{ Math.round(currentZoom * 100) }}%</span>
+          >{{ Math.round(currentZoom * 100) }}%</span
+        >
         <button
           :disabled="zoomIndex === zoomLevels.length - 1"
           class="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600 dark:text-slate-400"
           @click.stop="zoomIn"
         >
-          <svg
-            class="w-3.5 h-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -105,12 +80,7 @@
           class="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-all text-slate-600 dark:text-slate-400"
           @click.stop="resetZoom"
         >
-          <svg
-            class="w-3.5 h-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -132,10 +102,7 @@
       @mouseup="stopDrag"
       @mousemove="onDrag"
     >
-      <div
-        class="relative min-w-full h-full"
-        :style="{ width: `${currentZoom * 100}%` }"
-      >
+      <div class="relative min-w-full h-full" :style="{ width: `${currentZoom * 100}%` }">
         <div class="absolute inset-0 pointer-events-none z-0">
           <div
             v-for="(tick, i) in axisTicks"
@@ -216,10 +183,7 @@
             </div>
           </div>
 
-          <div
-            v-if="visibleComponents.length === 0"
-            class="text-center py-10 text-slate-400"
-          >
+          <div v-if="visibleComponents.length === 0" class="text-center py-10 text-slate-400">
             No data found
           </div>
         </div>
@@ -255,12 +219,7 @@
           class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           @click="closePopover"
         >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -284,12 +243,11 @@
         </div>
         <div class="flex justify-between pt-1">
           <span class="text-slate-500">Duration:</span>
-          <span class="font-mono text-slate-700 dark:text-slate-300">{{ selectedAlarm.duration_minutes }} min</span>
+          <span class="font-mono text-slate-700 dark:text-slate-300"
+            >{{ selectedAlarm.duration_minutes }} min</span
+          >
         </div>
-        <div
-          v-if="selectedAlarm.data?.value"
-          class="flex justify-between pt-1"
-        >
+        <div v-if="selectedAlarm.data?.value" class="flex justify-between pt-1">
           <span class="text-slate-500">Value:</span>
           <span class="font-mono font-bold text-slate-900 dark:text-white">{{
             selectedAlarm.data.value

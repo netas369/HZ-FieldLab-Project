@@ -3,22 +3,15 @@
     <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
       <!-- Logo/Header -->
       <div class="mb-6 text-center">
-        <h1 class="text-2xl font-bold text-gray-800">
-          Turbine Maintenance System
-        </h1>
-        <p class="text-sm text-gray-600 mt-1">
-          Sign in to your account
-        </p>
+        <h1 class="text-2xl font-bold text-gray-800">Turbine Maintenance System</h1>
+        <p class="text-sm text-gray-600 mt-1">Sign in to your account</p>
       </div>
 
       <!-- Login Form -->
       <form @submit.prevent="handleSubmit">
         <!-- Email Input -->
         <div class="mb-4">
-          <label
-            for="email"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          > Email </label>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1"> Email </label>
           <input
             id="email"
             v-model="form.email"
@@ -27,21 +20,15 @@
             :class="{ 'border-red-500': errors.email }"
             required
             autofocus
-          >
-          <p
-            v-if="errors.email"
-            class="mt-1 text-sm text-red-600"
-          >
+          />
+          <p v-if="errors.email" class="mt-1 text-sm text-red-600">
             {{ errors.email }}
           </p>
         </div>
 
         <!-- Password Input -->
         <div class="mb-4">
-          <label
-            for="password"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
             Password
           </label>
           <input
@@ -51,11 +38,8 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border"
             :class="{ 'border-red-500': errors.password }"
             required
-          >
-          <p
-            v-if="errors.password"
-            class="mt-1 text-sm text-red-600"
-          >
+          />
+          <p v-if="errors.password" class="mt-1 text-sm text-red-600">
             {{ errors.password }}
           </p>
         </div>
@@ -67,18 +51,12 @@
             v-model="form.remember"
             type="checkbox"
             class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-          >
-          <label
-            for="remember"
-            class="ml-2 block text-sm text-gray-700"
-          > Remember me </label>
+          />
+          <label for="remember" class="ml-2 block text-sm text-gray-700"> Remember me </label>
         </div>
 
         <!-- Error Message -->
-        <div
-          v-if="errors.general"
-          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md"
-        >
+        <div v-if="errors.general" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p class="text-sm text-red-600">
             {{ errors.general }}
           </p>
@@ -86,10 +64,7 @@
 
         <!-- Submit Button -->
         <div class="flex items-center justify-between">
-          <router-link
-            to="/forgot-password"
-            class="text-sm text-indigo-600 hover:text-indigo-500"
-          >
+          <router-link to="/forgot-password" class="text-sm text-indigo-600 hover:text-indigo-500">
             Forgot password?
           </router-link>
           <button
@@ -97,10 +72,7 @@
             :disabled="loading"
             class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span
-              v-if="loading"
-              class="mr-2"
-            >
+            <span v-if="loading" class="mr-2">
               <svg
                 class="animate-spin h-4 w-4 text-white"
                 xmlns="http://www.w3.org/2000/svg"

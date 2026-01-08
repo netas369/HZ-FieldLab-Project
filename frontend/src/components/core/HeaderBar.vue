@@ -19,12 +19,7 @@
                 class="w-8 h-8 text-white animate-spin-slow"
                 aria-hidden="true"
               >
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="4"
-                  fill="currentColor"
-                />
+                <circle cx="50" cy="50" r="4" fill="currentColor" />
                 <path
                   d="M50 10 L50 40 L35 25 M50 40 L65 25"
                   stroke="currentColor"
@@ -53,12 +48,8 @@
           </div>
 
           <div>
-            <h1 class="text-xl font-bold text-slate-900 dark:text-white">
-              Zephyros Fieldlab
-            </h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
-              Turbine Monitoring System
-            </p>
+            <h1 class="text-xl font-bold text-slate-900 dark:text-white">Zephyros Fieldlab</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Turbine Monitoring System</p>
           </div>
         </div>
 
@@ -70,12 +61,7 @@
             aria-label="Notifications"
             @click="showNotifications = !showNotifications"
           >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -149,12 +135,7 @@
                 d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
-            <svg
-              class="w-6 h-6 dark:hidden"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-6 h-6 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -237,12 +218,7 @@
                   class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   @click="handleLogout"
                 >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"

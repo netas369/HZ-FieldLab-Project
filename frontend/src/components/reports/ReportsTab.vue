@@ -3,9 +3,7 @@
     <!-- Header with Actions -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-          Reports & Analytics
-        </h2>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Reports & Analytics</h2>
         <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
           Generate and download operational reports
         </p>
@@ -15,12 +13,7 @@
         class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-indigo-500/30"
         @click="showGenerateModal = true"
       >
-        <svg
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -42,10 +35,7 @@
       >
         <div class="flex items-start justify-between mb-4">
           <div :class="['p-3 rounded-lg', template.bgColor]">
-            <component
-              :is="template.icon"
-              class="w-6 h-6 text-white"
-            />
+            <component :is="template.icon" class="w-6 h-6 text-white" />
           </div>
           <span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{
             template.frequency
@@ -83,9 +73,7 @@
       class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700"
     >
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
-          Recent Reports
-        </h3>
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Recent Reports</h3>
         <div class="flex items-center gap-2">
           <button
             v-for="filter in ['All', 'Performance', 'Maintenance', 'Financial']"
@@ -111,12 +99,7 @@
         >
           <!-- Icon -->
           <div :class="['p-3 rounded-lg flex-shrink-0', getReportTypeColor(report.type)]">
-            <svg
-              class="w-6 h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -143,12 +126,7 @@
             </div>
             <div class="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
               <span class="flex items-center gap-1">
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -159,12 +137,7 @@
                 {{ formatDate(report.date) }}
               </span>
               <span class="flex items-center gap-1">
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -175,12 +148,7 @@
                 {{ report.author }}
               </span>
               <span class="flex items-center gap-1">
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -200,12 +168,7 @@
               title="View"
               @click="viewReport(report)"
             >
-              <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -225,12 +188,7 @@
               title="Download"
               @click="downloadReport(report)"
             >
-              <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -244,12 +202,7 @@
               title="Delete"
               @click="deleteReport(report)"
             >
-              <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -275,9 +228,7 @@
       class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700"
     >
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
-          Scheduled Reports
-        </h3>
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Scheduled Reports</h3>
         <button class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
           Manage Schedules
         </button>
@@ -315,11 +266,7 @@
             </div>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              :checked="schedule.enabled"
-              class="sr-only peer"
-            >
+            <input type="checkbox" :checked="schedule.enabled" class="sr-only peer" />
             <div
               class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-600"
             />
@@ -361,10 +308,7 @@
               </button>
             </div>
 
-            <form
-              class="space-y-4"
-              @submit.prevent="handleGenerate"
-            >
+            <form class="space-y-4" @submit.prevent="handleGenerate">
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -374,18 +318,10 @@
                     v-model="generateForm.type"
                     class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="performance">
-                      Performance
-                    </option>
-                    <option value="maintenance">
-                      Maintenance
-                    </option>
-                    <option value="financial">
-                      Financial
-                    </option>
-                    <option value="custom">
-                      Custom
-                    </option>
+                    <option value="performance">Performance</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="financial">Financial</option>
+                    <option value="custom">Custom</option>
                   </select>
                 </div>
 
@@ -397,21 +333,11 @@
                     v-model="generateForm.period"
                     class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="day">
-                      Last 24 Hours
-                    </option>
-                    <option value="week">
-                      Last Week
-                    </option>
-                    <option value="month">
-                      Last Month
-                    </option>
-                    <option value="quarter">
-                      Last Quarter
-                    </option>
-                    <option value="year">
-                      Last Year
-                    </option>
+                    <option value="day">Last 24 Hours</option>
+                    <option value="week">Last Week</option>
+                    <option value="month">Last Month</option>
+                    <option value="quarter">Last Quarter</option>
+                    <option value="year">Last Year</option>
                   </select>
                 </div>
               </div>
@@ -425,7 +351,7 @@
                   type="text"
                   class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   placeholder="My Custom Report"
-                >
+                />
               </div>
 
               <div>
@@ -441,8 +367,10 @@
                       type="checkbox"
                       value="summary"
                       class="rounded"
+                    />
+                    <span class="text-sm text-slate-700 dark:text-slate-300"
+                      >Executive Summary</span
                     >
-                    <span class="text-sm text-slate-700 dark:text-slate-300">Executive Summary</span>
                   </label>
                   <label
                     class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -452,7 +380,7 @@
                       type="checkbox"
                       value="metrics"
                       class="rounded"
-                    >
+                    />
                     <span class="text-sm text-slate-700 dark:text-slate-300">Key Metrics</span>
                   </label>
                   <label
@@ -463,7 +391,7 @@
                       type="checkbox"
                       value="charts"
                       class="rounded"
-                    >
+                    />
                     <span class="text-sm text-slate-700 dark:text-slate-300">Charts & Graphs</span>
                   </label>
                   <label
@@ -474,7 +402,7 @@
                       type="checkbox"
                       value="details"
                       class="rounded"
-                    >
+                    />
                     <span class="text-sm text-slate-700 dark:text-slate-300">Detailed Data</span>
                   </label>
                 </div>

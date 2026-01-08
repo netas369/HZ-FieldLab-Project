@@ -1,13 +1,8 @@
 <template>
   <div class="transition-colors duration-200">
-    <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-      Step 2: Upload CSV File
-    </h2>
+    <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Step 2: Upload CSV File</h2>
 
-    <div
-      v-if="!csvParsed"
-      class="space-y-4"
-    >
+    <div v-if="!csvParsed" class="space-y-4">
       <div
         class="border-2 border-dashed rounded-lg p-8 text-center transition-colors dark:bg-slate-800/50"
         :class="
@@ -33,13 +28,11 @@
           />
         </svg>
         <div class="mt-4">
-          <label
-            for="file-upload"
-            class="cursor-pointer"
-          >
+          <label for="file-upload" class="cursor-pointer">
             <span
               class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-            >Upload a file</span>
+              >Upload a file</span
+            >
             <span class="text-gray-600 dark:text-slate-400"> or drag and drop</span>
             <input
               id="file-upload"
@@ -48,12 +41,10 @@
               accept=".csv"
               class="sr-only"
               @change="handleFileSelect"
-            >
+            />
           </label>
         </div>
-        <p class="text-xs text-gray-500 dark:text-slate-500 mt-2">
-          CSV files only, up to 10MB
-        </p>
+        <p class="text-xs text-gray-500 dark:text-slate-500 mt-2">CSV files only, up to 10MB</p>
       </div>
 
       <div
@@ -85,9 +76,7 @@
             />
           </svg>
           <div>
-            <h4 class="font-semibold text-red-900 dark:text-red-200">
-              Error
-            </h4>
+            <h4 class="font-semibold text-red-900 dark:text-red-200">Error</h4>
             <p class="text-sm text-red-800 dark:text-red-300 mt-1">
               {{ error }}
             </p>
@@ -96,10 +85,7 @@
       </div>
     </div>
 
-    <div
-      v-if="csvParsed && !error"
-      class="space-y-4"
-    >
+    <div v-if="csvParsed && !error" class="space-y-4">
       <div
         class="bg-green-50 dark:bg-emerald-900/20 border border-green-200 dark:border-emerald-800 rounded-lg p-4"
       >
@@ -142,9 +128,7 @@
       </div>
 
       <div>
-        <h3 class="font-semibold text-gray-900 dark:text-white mb-2">
-          Preview (First 10 Rows)
-        </h3>
+        <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Preview (First 10 Rows)</h3>
         <div class="overflow-x-auto border border-gray-300 dark:border-slate-700 rounded-lg">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
             <thead class="bg-gray-50 dark:bg-slate-800">

@@ -58,13 +58,7 @@
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-              <svg
-                v-else
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -80,15 +74,9 @@
             v-model="sortBy"
             class="px-3 py-2 bg-slate-100 dark:bg-slate-700 border-0 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
           >
-            <option value="time">
-              Most Recent
-            </option>
-            <option value="priority">
-              Priority
-            </option>
-            <option value="turbine">
-              Turbine
-            </option>
+            <option value="time">Most Recent</option>
+            <option value="priority">Priority</option>
+            <option value="turbine">Turbine</option>
           </select>
 
           <!-- Refresh Button -->
@@ -97,12 +85,7 @@
             title="Refresh alarms"
             @click="$emit('refresh')"
           >
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -136,10 +119,7 @@
               @click="toggleStatusFilter(statusFilter.value)"
             >
               <span class="flex items-center gap-2">
-                <component
-                  :is="statusFilter.icon"
-                  class="w-4 h-4"
-                />
+                <component :is="statusFilter.icon" class="w-4 h-4" />
                 {{ statusFilter.label }}
                 <span
                   :class="[
@@ -195,10 +175,7 @@
 
     <!-- Alarms Content -->
     <div class="flex-1 overflow-hidden">
-      <transition
-        name="fade"
-        mode="out-in"
-      >
+      <transition name="fade" mode="out-in">
         <!-- Empty State -->
         <div
           v-if="filteredAndSortedAlarms.length === 0"
@@ -221,9 +198,7 @@
               />
             </svg>
           </div>
-          <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-            All Clear!
-          </h3>
+          <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">All Clear!</h3>
           <p class="text-slate-600 dark:text-slate-400 text-center max-w-md">
             {{
               hasActiveFilters ? 'No alarms match your current filters' : 'No alarms at the moment'
@@ -243,10 +218,7 @@
           v-else-if="currentView === 'list'"
           class="space-y-3 overflow-y-auto h-full pr-2 scrollbar-thin"
         >
-          <transition-group
-            name="list"
-            tag="div"
-          >
+          <transition-group name="list" tag="div">
             <AlarmCard
               v-for="alarm in filteredAndSortedAlarms"
               :key="alarm.id"
@@ -265,11 +237,7 @@
           v-else
           class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto h-full pr-2 scrollbar-thin"
         >
-          <transition-group
-            name="grid"
-            tag="div"
-            class="contents"
-          >
+          <transition-group name="grid" tag="div" class="contents">
             <AlarmCard
               v-for="alarm in filteredAndSortedAlarms"
               :key="alarm.id"

@@ -7,7 +7,9 @@
       </span>
       <span class="text-slate-500 dark:text-slate-400">
         Estimated wait:
-        <span class="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{{ estimatedWait }}s</span>
+        <span class="font-mono text-indigo-600 dark:text-indigo-400 font-bold"
+          >{{ estimatedWait }}s</span
+        >
       </span>
     </div>
 
@@ -66,18 +68,16 @@
             />
             <span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-500" />
           </span>
-          <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Synchronizing Timestamp {{ progress.toFixed(0) }}%</span>
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-200"
+            >Synchronizing Timestamp {{ progress.toFixed(0) }}%</span
+          >
         </div>
       </div>
     </div>
 
     <!-- Stats Skeleton -->
     <div class="grid grid-cols-4 gap-4 animate-pulse">
-      <div
-        v-for="i in 4"
-        :key="i"
-        class="h-16 bg-slate-100 dark:bg-slate-800 rounded-lg"
-      />
+      <div v-for="i in 4" :key="i" class="h-16 bg-slate-100 dark:bg-slate-800 rounded-lg" />
     </div>
   </div>
 </template>

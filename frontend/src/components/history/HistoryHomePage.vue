@@ -1,17 +1,10 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold text-gray-800 text-center mb-8">
-      Turbines Data History
-    </h1>
+    <h1 class="text-4xl font-bold text-gray-800 text-center mb-8">Turbines Data History</h1>
 
     <!-- Loading State -->
-    <div
-      v-if="loading"
-      class="text-center py-20"
-    >
-      <div class="text-blue-500 text-xl">
-        Loading turbines...
-      </div>
+    <div v-if="loading" class="text-center py-20">
+      <div class="text-blue-500 text-xl">Loading turbines...</div>
     </div>
 
     <!-- Error State -->
@@ -43,12 +36,8 @@
           <h3 class="text-xl font-bold text-gray-800 mb-2">
             {{ turbine.turbine_id }}
           </h3>
-          <p class="text-gray-600 text-sm mb-1">
-            ID: {{ turbine.id }}
-          </p>
-          <p class="text-gray-400 text-xs">
-            Added: {{ formatDate(turbine.created_at) }}
-          </p>
+          <p class="text-gray-600 text-sm mb-1">ID: {{ turbine.id }}</p>
+          <p class="text-gray-400 text-xs">Added: {{ formatDate(turbine.created_at) }}</p>
         </div>
       </div>
 

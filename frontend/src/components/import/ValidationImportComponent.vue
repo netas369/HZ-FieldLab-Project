@@ -5,16 +5,11 @@
     </h2>
 
     <div class="space-y-6">
-      <div
-        v-if="!validationStarted"
-        class="space-y-4"
-      >
+      <div v-if="!validationStarted" class="space-y-4">
         <div
           class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6"
         >
-          <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-4">
-            Import Summary
-          </h3>
+          <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-4">Import Summary</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <p class="text-sm text-blue-800 dark:text-blue-200 mb-2">
@@ -67,9 +62,7 @@
         <div
           class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"
         />
-        <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-          Validating Data...
-        </h3>
+        <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Validating Data...</h3>
         <p class="text-sm text-blue-700 dark:text-blue-300">
           Checking {{ csvData.rowCount }} rows for errors
         </p>
@@ -80,9 +73,7 @@
           <div
             class="bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg p-4"
           >
-            <div class="text-sm text-gray-600 dark:text-slate-400">
-              Total Rows
-            </div>
+            <div class="text-sm text-gray-600 dark:text-slate-400">Total Rows</div>
             <div class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ validationResults.totalRows }}
             </div>
@@ -90,9 +81,7 @@
           <div
             class="bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-800 rounded-lg p-4"
           >
-            <div class="text-sm text-green-700 dark:text-green-300">
-              Valid Rows
-            </div>
+            <div class="text-sm text-green-700 dark:text-green-300">Valid Rows</div>
             <div class="text-2xl font-bold text-green-700 dark:text-green-400">
               {{ validationResults.validRows }}
             </div>
@@ -100,9 +89,7 @@
           <div
             class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-800 rounded-lg p-4"
           >
-            <div class="text-sm text-yellow-700 dark:text-yellow-300">
-              Warnings
-            </div>
+            <div class="text-sm text-yellow-700 dark:text-yellow-300">Warnings</div>
             <div class="text-2xl font-bold text-yellow-700 dark:text-yellow-400">
               {{ validationResults.warningRows }}
             </div>
@@ -110,19 +97,14 @@
           <div
             class="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg p-4"
           >
-            <div class="text-sm text-red-700 dark:text-red-300">
-              Invalid Rows
-            </div>
+            <div class="text-sm text-red-700 dark:text-red-300">Invalid Rows</div>
             <div class="text-2xl font-bold text-red-700 dark:text-red-400">
               {{ validationResults.invalidRows }}
             </div>
           </div>
         </div>
 
-        <div
-          v-if="validationResults.errors.length > 0"
-          class="mb-6"
-        >
+        <div v-if="validationResults.errors.length > 0" class="mb-6">
           <div
             class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4"
           >
@@ -180,10 +162,7 @@
                 <tbody
                   class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800"
                 >
-                  <tr
-                    v-for="(error, index) in validationResults.errors.slice(0, 50)"
-                    :key="index"
-                  >
+                  <tr v-for="(error, index) in validationResults.errors.slice(0, 50)" :key="index">
                     <td class="px-4 py-2 text-sm text-gray-900 dark:text-slate-300">
                       {{ error.row }}
                     </td>
@@ -197,10 +176,7 @@
           </div>
         </div>
 
-        <div
-          v-if="validationResults.warnings.length > 0"
-          class="mb-6"
-        >
+        <div v-if="validationResults.warnings.length > 0" class="mb-6">
           <div
             class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4"
           >
@@ -292,9 +268,7 @@
               />
             </svg>
             <div>
-              <h4 class="font-semibold text-green-900 dark:text-green-100">
-                Ready to Import
-              </h4>
+              <h4 class="font-semibold text-green-900 dark:text-green-100">Ready to Import</h4>
               <p class="text-sm text-green-800 dark:text-green-200 mt-1">
                 {{ validationResults.validRows }} valid rows will be imported into the database.
                 Missing sensor values will be stored as NULL.
@@ -320,10 +294,7 @@
         </div>
       </div>
 
-      <div
-        v-if="importing"
-        class="space-y-4"
-      >
+      <div v-if="importing" class="space-y-4">
         <div
           v-if="totalChunks === 0"
           class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 text-center"
@@ -331,9 +302,7 @@
           <div
             class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"
           />
-          <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-            Importing Data...
-          </h3>
+          <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Importing Data...</h3>
           <p class="text-sm text-blue-700 dark:text-blue-300">
             Processing {{ csvData.data.length.toLocaleString() }} rows
           </p>
@@ -380,10 +349,7 @@
               class="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-300 flex items-center justify-end pr-2"
               :style="{ width: chunkedProgress + '%' }"
             >
-              <span
-                v-if="chunkedProgress > 10"
-                class="text-xs text-white font-medium"
-              >
+              <span v-if="chunkedProgress > 10" class="text-xs text-white font-medium">
                 {{ chunkedProgress.toFixed(0) }}%
               </span>
             </div>

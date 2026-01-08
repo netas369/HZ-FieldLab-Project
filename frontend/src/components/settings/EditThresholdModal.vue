@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="fixed inset-0 z-50 overflow-y-auto"
-    @click.self="$emit('close')"
-  >
+  <div class="fixed inset-0 z-50 overflow-y-auto" @click.self="$emit('close')">
     <div class="flex min-h-screen items-center justify-center p-4">
       <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
@@ -12,9 +9,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-              Edit Threshold
-            </h3>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Edit Threshold</h3>
             <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
               {{ formatComponentName(localThreshold.component_name) }} ({{ localThreshold.unit }})
             </p>
@@ -45,27 +40,29 @@
           <div
             class="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-lg border border-emerald-200 dark:border-emerald-800"
           >
-            <h4 class="font-semibold text-emerald-900 dark:text-emerald-300 mb-3">
-              Normal Range
-            </h4>
+            <h4 class="font-semibold text-emerald-900 dark:text-emerald-300 mb-3">Normal Range</h4>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Minimum</label
+                >
                 <input
                   v-model.number="localThreshold.normal_min"
                   type="number"
                   step="0.01"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent"
-                >
+                />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Maximum</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Maximum</label
+                >
                 <input
                   v-model.number="localThreshold.normal_max"
                   type="number"
                   step="0.01"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent"
-                >
+                />
               </div>
             </div>
           </div>
@@ -74,27 +71,29 @@
           <div
             class="p-4 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 rounded-lg border border-amber-200 dark:border-amber-800"
           >
-            <h4 class="font-semibold text-amber-900 dark:text-amber-300 mb-3">
-              Warning Range
-            </h4>
+            <h4 class="font-semibold text-amber-900 dark:text-amber-300 mb-3">Warning Range</h4>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Minimum</label
+                >
                 <input
                   v-model.number="localThreshold.warning_min"
                   type="number"
                   step="0.01"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 focus:border-transparent"
-                >
+                />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Maximum</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Maximum</label
+                >
                 <input
                   v-model.number="localThreshold.warning_max"
                   type="number"
                   step="0.01"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 focus:border-transparent"
-                >
+                />
               </div>
             </div>
           </div>
@@ -103,27 +102,29 @@
           <div
             class="p-4 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 rounded-lg border border-orange-200 dark:border-orange-800"
           >
-            <h4 class="font-semibold text-orange-900 dark:text-orange-300 mb-3">
-              Critical Range
-            </h4>
+            <h4 class="font-semibold text-orange-900 dark:text-orange-300 mb-3">Critical Range</h4>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Minimum</label
+                >
                 <input
                   v-model.number="localThreshold.critical_min"
                   type="number"
                   step="0.01"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent"
-                >
+                />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Maximum</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Maximum</label
+                >
                 <input
                   v-model.number="localThreshold.critical_max"
                   type="number"
                   step="0.01"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent"
-                >
+                />
               </div>
             </div>
           </div>
@@ -132,27 +133,29 @@
           <div
             class="p-4 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/10 rounded-lg border border-red-200 dark:border-red-800"
           >
-            <h4 class="font-semibold text-red-900 dark:text-red-300 mb-3">
-              Failed Range
-            </h4>
+            <h4 class="font-semibold text-red-900 dark:text-red-300 mb-3">Failed Range</h4>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Minimum</label
+                >
                 <input
                   v-model.number="localThreshold.failed_min"
                   type="number"
                   step="0.01"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400 focus:border-transparent"
-                >
+                />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Maximum</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Maximum</label
+                >
                 <input
                   v-model.number="localThreshold.failed_max"
                   type="number"
                   step="0.01"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400 focus:border-transparent"
-                >
+                />
               </div>
             </div>
           </div>

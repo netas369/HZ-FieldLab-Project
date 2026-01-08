@@ -98,10 +98,7 @@
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
               </span>
             </div>
-            <span
-              v-else
-              class="text-xs text-slate-400 italic"
-            >--</span>
+            <span v-else class="text-xs text-slate-400 italic">--</span>
           </td>
 
           <td class="py-3 px-4 text-right font-semibold text-slate-900 dark:text-white">
@@ -123,11 +120,9 @@
             <span
               v-if="turbine.alarmSummary?.total > 0"
               class="inline-flex items-center justify-center w-6 h-6 bg-red-600 text-white text-xs font-bold rounded-full shadow-sm"
-            >{{ turbine.alarmSummary.total }}</span>
-            <span
-              v-else
-              class="text-slate-400"
-            >—</span>
+              >{{ turbine.alarmSummary.total }}</span
+            >
+            <span v-else class="text-slate-400">—</span>
           </td>
 
           <td class="py-3 px-4">
@@ -149,10 +144,7 @@
       </tbody>
     </table>
 
-    <div
-      v-if="turbines.length === 0"
-      class="text-center py-12"
-    >
+    <div v-if="turbines.length === 0" class="text-center py-12">
       <svg
         class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3"
         fill="none"
@@ -166,9 +158,7 @@
           d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
         />
       </svg>
-      <p class="text-sm text-slate-600 dark:text-slate-400">
-        No turbines to display
-      </p>
+      <p class="text-sm text-slate-600 dark:text-slate-400">No turbines to display</p>
     </div>
   </div>
 </template>

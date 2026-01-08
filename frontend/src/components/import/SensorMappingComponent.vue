@@ -1,8 +1,6 @@
 <template>
   <div class="transition-colors duration-200">
-    <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-      Step 3: Map Sensor Columns
-    </h2>
+    <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Step 3: Map Sensor Columns</h2>
 
     <div class="space-y-6">
       <div
@@ -21,9 +19,7 @@
             />
           </svg>
           <div>
-            <h4 class="font-semibold text-blue-900 dark:text-blue-100">
-              Map Your Sensor Columns
-            </h4>
+            <h4 class="font-semibold text-blue-900 dark:text-blue-100">Map Your Sensor Columns</h4>
             <p class="text-sm text-blue-800 dark:text-blue-200 mt-2">
               Map your CSV columns to sensor readings. The system auto-detected
               {{ totalDetected }} columns. All categories are optional - map only what you have.
@@ -135,10 +131,7 @@
           </div>
         </div>
 
-        <div
-          v-show="expandedCategories[category.id]"
-          class="p-6 bg-white dark:bg-slate-900"
-        >
+        <div v-show="expandedCategories[category.id]" class="p-6 bg-white dark:bg-slate-900">
           <div class="space-y-4">
             <div
               v-for="field in category.fields"
@@ -160,27 +153,16 @@
                   v-model="sensorMapping[field.name]"
                   class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm transition-colors border-gray-300 bg-white text-gray-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400"
                 >
-                  <option value="">
-                    -- Skip (NULL) --
-                  </option>
-                  <option
-                    v-for="header in availableColumns"
-                    :key="header"
-                    :value="header"
-                  >
+                  <option value="">-- Skip (NULL) --</option>
+                  <option v-for="header in availableColumns" :key="header" :value="header">
                     {{ header }}
                   </option>
                 </select>
               </div>
 
               <div>
-                <div
-                  v-if="sensorMapping[field.name]"
-                  class="text-sm"
-                >
-                  <p class="text-xs text-gray-500 dark:text-slate-500 mb-1">
-                    Sample values:
-                  </p>
+                <div v-if="sensorMapping[field.name]" class="text-sm">
+                  <p class="text-xs text-gray-500 dark:text-slate-500 mb-1">Sample values:</p>
                   <div class="space-y-1">
                     <p
                       v-for="(sample, idx) in getSampleData(sensorMapping[field.name])"
@@ -191,12 +173,7 @@
                     </p>
                   </div>
                 </div>
-                <p
-                  v-else
-                  class="text-xs text-gray-400 dark:text-slate-600 italic"
-                >
-                  No mapping
-                </p>
+                <p v-else class="text-xs text-gray-400 dark:text-slate-600 italic">No mapping</p>
               </div>
             </div>
           </div>

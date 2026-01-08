@@ -2,12 +2,7 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-        <svg
-          class="w-5 h-5 text-indigo-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -72,17 +67,13 @@
 
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <p class="text-xs text-slate-500 mb-1">
-              Axial
-            </p>
+            <p class="text-xs text-slate-500 mb-1">Axial</p>
             <p class="text-xl font-bold text-slate-900 dark:text-white">
               {{ formatNumber(turbine.gearbox_vibration_axial, 2) }}
             </p>
           </div>
           <div>
-            <p class="text-xs text-slate-500 mb-1">
-              Radial
-            </p>
+            <p class="text-xs text-slate-500 mb-1">Radial</p>
             <p class="text-xl font-bold text-slate-900 dark:text-white">
               {{ formatNumber(turbine.gearbox_vibration_radial, 2) }}
             </p>
@@ -139,17 +130,13 @@
             <p class="text-lg font-bold text-slate-900 dark:text-white">
               {{ formatNumber(turbine.tower_vibration_fa, 2) }}
             </p>
-            <p class="text-xs text-slate-500">
-              Fore-Aft
-            </p>
+            <p class="text-xs text-slate-500">Fore-Aft</p>
           </div>
           <div class="bg-slate-50 dark:bg-slate-900 p-2 rounded-lg text-center">
             <p class="text-lg font-bold text-slate-900 dark:text-white">
               {{ formatNumber(turbine.tower_vibration_ss, 2) }}
             </p>
-            <p class="text-xs text-slate-500">
-              Side-Side
-            </p>
+            <p class="text-xs text-slate-500">Side-Side</p>
           </div>
         </div>
       </MetricCard>
@@ -173,9 +160,7 @@
             <p class="text-3xl font-bold text-slate-900 dark:text-white">
               {{ formatNumber(turbine.acoustic_level_db, 1) }}
             </p>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
-              Decibels (dB)
-            </p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Decibels (dB)</p>
           </div>
 
           <div class="flex items-end gap-1 h-12">
@@ -200,12 +185,8 @@
         <div class="flex-1 w-full">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h3 class="text-lg font-bold text-slate-900 dark:text-white">
-                Blade Vibration
-              </h3>
-              <p class="text-sm text-slate-600 dark:text-slate-400">
-                Individual blade analysis
-              </p>
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white">Blade Vibration</h3>
+              <p class="text-sm text-slate-600 dark:text-slate-400">Individual blade analysis</p>
             </div>
             <span
               :class="[
@@ -229,7 +210,9 @@
                 >
                   {{ i }}
                 </span>
-                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Blade {{ i }}</span>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >Blade {{ i }}</span
+                >
               </div>
               <div class="flex items-center gap-4">
                 <span class="font-mono font-bold text-slate-900 dark:text-white">
@@ -249,10 +232,7 @@
         <div
           class="flex-shrink-0 p-4 bg-slate-50 dark:bg-slate-900 rounded-full border border-slate-100 dark:border-slate-800"
         >
-          <svg
-            class="w-48 h-48 animate-[spin_10s_linear_infinite]"
-            viewBox="-50 -50 100 100"
-          >
+          <svg class="w-48 h-48 animate-[spin_10s_linear_infinite]" viewBox="-50 -50 100 100">
             <circle
               cx="0"
               cy="0"
@@ -269,11 +249,7 @@
               stroke-width="0.6"
             />
 
-            <g
-              v-for="i in 3"
-              :key="i"
-              :transform="`rotate(${134 * i - 2 * i})`"
-            >
+            <g v-for="i in 3" :key="i" :transform="`rotate(${134 * i - 2 * i})`">
               <path
                 d="M4 1 L45 -6 L20 5 Z"
                 class="stroke-slate-600 dark:stroke-slate-400 transition-colors duration-300"
@@ -281,12 +257,7 @@
               />
             </g>
 
-            <circle
-              cx="0"
-              cy="0"
-              r="4"
-              class="fill-slate-800 dark:fill-slate-200"
-            />
+            <circle cx="0" cy="0" r="4" class="fill-slate-800 dark:fill-slate-200" />
           </svg>
         </div>
       </div>

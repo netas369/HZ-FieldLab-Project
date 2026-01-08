@@ -39,12 +39,7 @@
           <div class="flex items-start justify-between mb-4">
             <div>
               <h4 class="font-semibold text-red-900 dark:text-red-300 mb-2 flex items-center gap-2">
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -78,10 +73,7 @@
             </div>
           </div>
 
-          <div
-            v-if="!showConfirmation"
-            class="mt-4"
-          >
+          <div v-if="!showConfirmation" class="mt-4">
             <button
               class="px-5 py-2.5 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-lg font-medium transition-colors shadow-sm"
               @click="showConfirmation = true"
@@ -103,7 +95,7 @@
               type="text"
               placeholder="DELETE"
               class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg font-mono mb-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400 focus:border-transparent"
-            >
+            />
             <div class="flex gap-3">
               <button
                 :disabled="confirmText !== 'DELETE' || isResetting"

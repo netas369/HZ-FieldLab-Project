@@ -36,12 +36,7 @@
               v-if="overallHealth.critical_components?.length > 0"
               class="text-xs text-red-500 font-medium flex items-center gap-1"
             >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -55,12 +50,7 @@
               v-if="overallHealth.soonest_critical_days"
               class="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1"
             >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -81,10 +71,7 @@
         </div>
         <!-- Circular Score -->
         <div class="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
-          <svg
-            class="w-full h-full -rotate-90"
-            viewBox="0 0 36 36"
-          >
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
             <path
               class="text-slate-200 dark:text-slate-700"
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -149,12 +136,7 @@
     <!-- Component Health Cards -->
     <div>
       <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-        <svg
-          class="w-5 h-5 text-indigo-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
+        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -193,10 +175,7 @@
                 >
                   {{ comp.health_score?.toFixed(0) }}
                 </span>
-                <span
-                  v-else
-                  class="text-slate-400 text-xs"
-                >N/A</span>
+                <span v-else class="text-slate-400 text-xs">N/A</span>
               </div>
               <div>
                 <h4 class="font-semibold text-slate-900 dark:text-white capitalize text-sm">
@@ -265,9 +244,7 @@
               </div>
               <div class="grid grid-cols-3 gap-2 text-center">
                 <div class="p-2 bg-slate-50 dark:bg-slate-900/50 rounded">
-                  <div class="text-[10px] text-slate-400 uppercase">
-                    To Warning
-                  </div>
+                  <div class="text-[10px] text-slate-400 uppercase">To Warning</div>
                   <div
                     class="font-mono font-bold text-sm"
                     :class="
@@ -278,9 +255,7 @@
                   </div>
                 </div>
                 <div class="p-2 bg-slate-50 dark:bg-slate-900/50 rounded">
-                  <div class="text-[10px] text-slate-400 uppercase">
-                    To Critical
-                  </div>
+                  <div class="text-[10px] text-slate-400 uppercase">To Critical</div>
                   <div
                     class="font-mono font-bold text-sm"
                     :class="
@@ -291,9 +266,7 @@
                   </div>
                 </div>
                 <div class="p-2 bg-slate-50 dark:bg-slate-900/50 rounded">
-                  <div class="text-[10px] text-slate-400 uppercase">
-                    To Failed
-                  </div>
+                  <div class="text-[10px] text-slate-400 uppercase">To Failed</div>
                   <div
                     class="font-mono font-bold text-sm"
                     :class="
@@ -374,10 +347,7 @@
                       </span>
                     </div>
                   </div>
-                  <div
-                    v-if="trend.has_sufficient_data"
-                    class="grid grid-cols-4 gap-1 text-[10px]"
-                  >
+                  <div v-if="trend.has_sufficient_data" class="grid grid-cols-4 gap-1 text-[10px]">
                     <div>
                       <span class="text-slate-400">Current:</span>
                       <span class="ml-1 font-mono text-slate-700 dark:text-slate-300">{{
@@ -416,10 +386,7 @@
                       </span>
                     </div>
                   </div>
-                  <div
-                    v-else
-                    class="text-[10px] text-slate-400 italic"
-                  >
+                  <div v-else class="text-[10px] text-slate-400 italic">
                     {{ trend.message || 'Insufficient data for trend analysis' }}
                   </div>
                 </div>
@@ -427,10 +394,7 @@
             </div>
 
             <!-- Legacy Trend Analysis (for backward compatibility) -->
-            <div
-              v-else-if="comp.trend_analysis"
-              class="grid grid-cols-2 gap-4 mb-4"
-            >
+            <div v-else-if="comp.trend_analysis" class="grid grid-cols-2 gap-4 mb-4">
               <div
                 class="bg-white dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700"
               >
@@ -440,17 +404,15 @@
                 <div class="font-mono font-medium text-slate-700 dark:text-slate-300">
                   {{
                     comp.trend_analysis[`health_${healthData.period_days || 365}_days_ago`] ??
-                      comp.trend_analysis.health_365_days_ago ??
-                      '—'
+                    comp.trend_analysis.health_365_days_ago ??
+                    '—'
                   }}
                 </div>
               </div>
               <div
                 class="bg-white dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700"
               >
-                <div class="text-[10px] text-slate-400 uppercase">
-                  Trend
-                </div>
+                <div class="text-[10px] text-slate-400 uppercase">Trend</div>
                 <div
                   class="font-mono font-medium"
                   :class="
@@ -482,14 +444,18 @@
                     <span class="text-slate-600 dark:text-slate-300 capitalize">{{
                       formatSensorName(pKey)
                     }}</span>
-                    <span class="text-red-500 font-mono font-medium">-{{ typeof val === 'number' ? val.toFixed(1) : val }}</span>
+                    <span class="text-red-500 font-mono font-medium"
+                      >-{{ typeof val === 'number' ? val.toFixed(1) : val }}</span
+                    >
                   </li>
                 </ul>
                 <div
                   class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-between text-xs font-semibold"
                 >
                   <span class="text-slate-700 dark:text-slate-300">Total Penalty</span>
-                  <span class="text-red-600 font-mono">-{{ comp.penalties.total?.toFixed(1) }}</span>
+                  <span class="text-red-600 font-mono"
+                    >-{{ comp.penalties.total?.toFixed(1) }}</span
+                  >
                 </div>
               </div>
             </div>

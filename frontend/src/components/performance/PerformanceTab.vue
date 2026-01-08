@@ -1,8 +1,6 @@
 <template>
   <div class="space-y-6">
-    <h2 class="text-xl font-semibold mb-4">
-      Performance Metrics Dashboard
-    </h2>
+    <h2 class="text-xl font-semibold mb-4">Performance Metrics Dashboard</h2>
 
     <!-- KPI Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -26,15 +24,8 @@
     </div>
 
     <!-- Placeholder for Charts -->
-    <div
-      v-if="charts && charts.length"
-      class="mt-6 space-y-4"
-    >
-      <div
-        v-for="chart in charts"
-        :key="chart.id"
-        class="bg-white/80 p-4 rounded-xl shadow"
-      >
+    <div v-if="charts && charts.length" class="mt-6 space-y-4">
+      <div v-for="chart in charts" :key="chart.id" class="bg-white/80 p-4 rounded-xl shadow">
         <h3 class="font-semibold mb-2">
           {{ chart.title }}
         </h3>
@@ -47,12 +38,7 @@
       </div>
     </div>
 
-    <div
-      v-else
-      class="text-gray-500"
-    >
-      No charts available. Add chart data via props.
-    </div>
+    <div v-else class="text-gray-500">No charts available. Add chart data via props.</div>
   </div>
 </template>
 

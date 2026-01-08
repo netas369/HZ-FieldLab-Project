@@ -23,11 +23,7 @@
             v-if="isOverdue"
             class="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400"
           >
-            <svg
-              class="w-4 h-4"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fill-rule="evenodd"
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -40,10 +36,7 @@
         <h4 class="text-base font-semibold text-slate-900 dark:text-white mb-1">
           {{ task.title }}
         </h4>
-        <p
-          v-if="task.description"
-          class="text-sm text-slate-600 dark:text-slate-400"
-        >
+        <p v-if="task.description" class="text-sm text-slate-600 dark:text-slate-400">
           {{ task.description }}
         </p>
       </div>
@@ -52,16 +45,8 @@
     <!-- Meta info -->
     <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
       <div class="flex items-center gap-4 flex-wrap">
-        <span
-          v-if="task.scheduled_date"
-          class="flex items-center gap-1"
-        >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+        <span v-if="task.scheduled_date" class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -71,16 +56,8 @@
           </svg>
           Scheduled: {{ formatDate(task.scheduled_date) }}
         </span>
-        <span
-          v-if="task.due_date"
-          class="flex items-center gap-1"
-        >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+        <span v-if="task.due_date" class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -90,16 +67,8 @@
           </svg>
           Due: {{ formatDate(task.due_date) }}
         </span>
-        <span
-          v-if="task.assignee"
-          class="flex items-center gap-1"
-        >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+        <span v-if="task.assignee" class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -109,16 +78,8 @@
           </svg>
           {{ task.assignee.name }}
         </span>
-        <span
-          v-if="task.estimated_duration_minutes"
-          class="flex items-center gap-1"
-        >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+        <span v-if="task.estimated_duration_minutes" class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -191,19 +152,13 @@
           Duration: {{ task.actual_duration_minutes }}min
         </span>
       </div>
-      <p
-        v-if="task.notes"
-        class="mt-2 text-sm text-slate-600 dark:text-slate-400 italic"
-      >
+      <p v-if="task.notes" class="mt-2 text-sm text-slate-600 dark:text-slate-400 italic">
         {{ task.notes }}
       </p>
     </div>
 
     <!-- Alarm link -->
-    <div
-      v-if="task.alarm"
-      class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700"
-    >
+    <div v-if="task.alarm" class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
       <div class="flex items-center gap-2 text-xs">
         <span class="text-slate-500 dark:text-slate-400">Linked alarm:</span>
         <span :class="['px-2 py-0.5 rounded-full font-medium', alarmSeverityClass]">

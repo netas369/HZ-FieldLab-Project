@@ -4,15 +4,9 @@
   >
     <div class="flex flex-col h-full overflow-hidden">
       <!-- Navigation -->
-      <nav
-        class="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin"
-        aria-label="Main navigation"
-      >
+      <nav class="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin" aria-label="Main navigation">
         <ul class="space-y-1">
-          <li
-            v-for="tab in visibleTabs"
-            :key="tab.id"
-          >
+          <li v-for="tab in visibleTabs" :key="tab.id">
             <button
               type="button"
               :class="[
@@ -33,10 +27,7 @@
                     : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400',
                 ]"
               >
-                <component
-                  :is="getIcon(tab.icon)"
-                  class="w-5 h-5"
-                />
+                <component :is="getIcon(tab.icon)" class="w-5 h-5" />
               </div>
 
               <!-- Label -->

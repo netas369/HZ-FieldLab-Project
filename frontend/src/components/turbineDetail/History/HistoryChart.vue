@@ -4,27 +4,19 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <!-- Metric Selector -->
       <div>
-        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Metric</label>
+        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1"
+          >Metric</label
+        >
         <select
           :value="metric"
           class="w-full md:w-64 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
           @input="$emit('update:metric', $event.target.value)"
         >
-          <option value="performance">
-            Performance (Power vs Wind)
-          </option>
-          <option value="temperatures">
-            Component Temperatures
-          </option>
-          <option value="vibration_bearings">
-            Bearing Vibrations
-          </option>
-          <option value="hydraulics">
-            Hydraulic Pressures
-          </option>
-          <option value="alarms">
-            Alarm Analysis
-          </option>
+          <option value="performance">Performance (Power vs Wind)</option>
+          <option value="temperatures">Component Temperatures</option>
+          <option value="vibration_bearings">Bearing Vibrations</option>
+          <option value="hydraulics">Hydraulic Pressures</option>
+          <option value="alarms">Alarm Analysis</option>
         </select>
       </div>
 
@@ -39,28 +31,12 @@
           <div
             class="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-700"
           >
-            <button
-              :class="getResClass(50)"
-              @click="$emit('update:resolution', 50)"
-            >
-              Low
-            </button>
-            <button
-              :class="getResClass(200)"
-              @click="$emit('update:resolution', 200)"
-            >
-              Med
-            </button>
-            <button
-              :class="getResClass(1000)"
-              @click="$emit('update:resolution', 1000)"
-            >
+            <button :class="getResClass(50)" @click="$emit('update:resolution', 50)">Low</button>
+            <button :class="getResClass(200)" @click="$emit('update:resolution', 200)">Med</button>
+            <button :class="getResClass(1000)" @click="$emit('update:resolution', 1000)">
               High
             </button>
-            <button
-              :class="getResClass(99999)"
-              @click="$emit('update:resolution', 99999)"
-            >
+            <button :class="getResClass(99999)" @click="$emit('update:resolution', 99999)">
               Full
             </button>
           </div>
@@ -71,12 +47,7 @@
           class="h-[38px] px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border border-slate-200 dark:border-slate-600"
           @click="handleResetZoom"
         >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -101,11 +72,7 @@
       </div>
 
       <!-- Vue ChartJS Component -->
-      <Line
-        ref="chartRef"
-        :data="chartData"
-        :options="chartOptions"
-      />
+      <Line ref="chartRef" :data="chartData" :options="chartOptions" />
     </div>
   </div>
 </template>

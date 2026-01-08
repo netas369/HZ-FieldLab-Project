@@ -3,9 +3,7 @@
     <!-- Header with Actions -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-          Maintenance Management
-        </h2>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Maintenance Management</h2>
         <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
           Track and schedule turbine maintenance activities
         </p>
@@ -15,12 +13,7 @@
         class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-indigo-500/30"
         @click="showCreateModal = true"
       >
-        <svg
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -40,12 +33,7 @@
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-blue-900 dark:text-blue-300">Total Tasks</span>
           <div class="p-2 bg-blue-500 rounded-lg">
-            <svg
-              class="w-4 h-4 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -66,12 +54,7 @@
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-slate-900 dark:text-slate-300">Scheduled</span>
           <div class="p-2 bg-slate-500 rounded-lg">
-            <svg
-              class="w-4 h-4 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -92,12 +75,7 @@
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-amber-900 dark:text-amber-300">In Progress</span>
           <div class="p-2 bg-amber-500 rounded-lg">
-            <svg
-              class="w-4 h-4 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -118,12 +96,7 @@
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-emerald-900 dark:text-emerald-300">Completed</span>
           <div class="p-2 bg-emerald-500 rounded-lg">
-            <svg
-              class="w-4 h-4 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -144,12 +117,7 @@
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-red-900 dark:text-red-300">Overdue</span>
           <div class="p-2 bg-red-500 rounded-lg">
-            <svg
-              class="w-4 h-4 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -197,33 +165,18 @@
       </div>
 
       <!-- Loading State -->
-      <div
-        v-if="maintenanceStore.loading"
-        class="p-12 text-center"
-      >
+      <div v-if="maintenanceStore.loading" class="p-12 text-center">
         <div
           class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"
         />
-        <p class="mt-4 text-slate-600 dark:text-slate-400">
-          Loading maintenance tasks...
-        </p>
+        <p class="mt-4 text-slate-600 dark:text-slate-400">Loading maintenance tasks...</p>
       </div>
 
       <!-- Tab Content -->
-      <div
-        v-else
-        class="p-6"
-      >
-        <transition
-          name="fade"
-          mode="out-in"
-        >
+      <div v-else class="p-6">
+        <transition name="fade" mode="out-in">
           <!-- All Tasks -->
-          <div
-            v-if="activeTab === 'all'"
-            key="all"
-            class="space-y-3"
-          >
+          <div v-if="activeTab === 'all'" key="all" class="space-y-3">
             <MaintenanceTaskCard
               v-for="task in allTasks"
               :key="task.id"
@@ -243,11 +196,7 @@
           </div>
 
           <!-- Scheduled Tasks -->
-          <div
-            v-else-if="activeTab === 'scheduled'"
-            key="scheduled"
-            class="space-y-3"
-          >
+          <div v-else-if="activeTab === 'scheduled'" key="scheduled" class="space-y-3">
             <MaintenanceTaskCard
               v-for="task in scheduledTasks"
               :key="task.id"
@@ -267,11 +216,7 @@
           </div>
 
           <!-- In Progress Tasks -->
-          <div
-            v-else-if="activeTab === 'in_progress'"
-            key="in_progress"
-            class="space-y-3"
-          >
+          <div v-else-if="activeTab === 'in_progress'" key="in_progress" class="space-y-3">
             <MaintenanceTaskCard
               v-for="task in inProgressTasks"
               :key="task.id"
@@ -291,11 +236,7 @@
           </div>
 
           <!-- Completed Tasks -->
-          <div
-            v-else-if="activeTab === 'completed'"
-            key="completed"
-            class="space-y-3"
-          >
+          <div v-else-if="activeTab === 'completed'" key="completed" class="space-y-3">
             <MaintenanceTaskCard
               v-for="task in completedTasks"
               :key="task.id"
@@ -311,11 +252,7 @@
           </div>
 
           <!-- Overdue Tasks -->
-          <div
-            v-else-if="activeTab === 'overdue'"
-            key="overdue"
-            class="space-y-3"
-          >
+          <div v-else-if="activeTab === 'overdue'" key="overdue" class="space-y-3">
             <MaintenanceTaskCard
               v-for="task in overdueTasks"
               :key="task.id"
@@ -327,10 +264,7 @@
               @edit="handleEditTask"
               @delete="handleDeleteTask"
             />
-            <div
-              v-if="overdueTasks.length === 0"
-              class="text-center py-12"
-            >
+            <div v-if="overdueTasks.length === 0" class="text-center py-12">
               <div
                 class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-4"
               >
@@ -348,9 +282,7 @@
                   />
                 </svg>
               </div>
-              <p class="text-slate-600 dark:text-slate-400">
-                No overdue tasks
-              </p>
+              <p class="text-slate-600 dark:text-slate-400">No overdue tasks</p>
               <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">
                 All tasks are on schedule
               </p>
@@ -375,22 +307,14 @@
               Create Maintenance Task
             </h3>
           </div>
-          <form
-            class="p-6 space-y-4"
-            @submit.prevent="handleCreateTask"
-          >
+          <form class="p-6 space-y-4" @submit.prevent="handleCreateTask">
             <!-- Linked Alarm Notice -->
             <div
               v-if="newTask.alarm_id"
               class="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
             >
               <div class="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -404,55 +328,51 @@
 
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Turbine *</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Turbine *</label
+                >
                 <select
                   v-model="newTask.turbine_id"
                   required
                   class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 >
-                  <option value="">
-                    Select turbine
-                  </option>
-                  <option
-                    v-for="t in turbines"
-                    :key="t._api_id"
-                    :value="t._api_id"
-                  >
+                  <option value="">Select turbine</option>
+                  <option v-for="t in turbines" :key="t._api_id" :value="t._api_id">
                     {{ t.id }}
                   </option>
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Assign To</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Assign To</label
+                >
                 <select
                   v-model="newTask.assigned_to"
                   class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 >
-                  <option value="">
-                    Unassigned
-                  </option>
-                  <option
-                    v-for="user in users"
-                    :key="user.id"
-                    :value="user.id"
-                  >
+                  <option value="">Unassigned</option>
+                  <option v-for="user in users" :key="user.id" :value="user.id">
                     {{ user.name }} ({{ user.role }})
                   </option>
                 </select>
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title *</label>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Title *</label
+              >
               <input
                 v-model="newTask.title"
                 required
                 type="text"
                 class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 placeholder="e.g., Gearbox inspection"
-              >
+              />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Description</label
+              >
               <textarea
                 v-model="newTask.description"
                 rows="3"
@@ -462,67 +382,65 @@
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Priority</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Priority</label
+                >
                 <select
                   v-model="newTask.priority"
                   class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 >
-                  <option value="low">
-                    Low
-                  </option>
-                  <option value="medium">
-                    Medium
-                  </option>
-                  <option value="high">
-                    High
-                  </option>
-                  <option value="urgent">
-                    Urgent
-                  </option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Status</label
+                >
                 <select
                   v-model="newTask.status"
                   class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 >
-                  <option value="scheduled">
-                    Scheduled
-                  </option>
-                  <option value="in_progress">
-                    In Progress
-                  </option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="in_progress">In Progress</option>
                 </select>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Scheduled Date</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Scheduled Date</label
+                >
                 <input
                   v-model="newTask.scheduled_date"
                   type="datetime-local"
                   class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                >
+                />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                  >Due Date</label
+                >
                 <input
                   v-model="newTask.due_date"
                   type="datetime-local"
                   class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                >
+                />
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Duration (minutes)</label>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                >Estimated Duration (minutes)</label
+              >
               <input
                 v-model.number="newTask.estimated_duration_minutes"
                 type="number"
                 min="1"
                 class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 placeholder="e.g., 120"
-              >
+              />
             </div>
             <div class="flex justify-end gap-3 pt-4">
               <button

@@ -11,44 +11,15 @@
       @click="$emit('select', turbine)"
     >
       <div class="relative w-14 h-14 flex-shrink-0">
-        <svg
-          viewBox="0 0 100 100"
-          :class="['w-full h-full', getIconColor(turbine.status)]"
-        >
-          <rect
-            x="47"
-            y="45"
-            width="6"
-            height="40"
-            fill="currentColor"
-            opacity="0.3"
-          />
-          <ellipse
-            cx="50"
-            cy="42"
-            rx="7"
-            ry="5"
-            fill="currentColor"
-            opacity="0.4"
-          />
-          <circle
-            cx="50"
-            cy="42"
-            r="3"
-            fill="currentColor"
-          />
+        <svg viewBox="0 0 100 100" :class="['w-full h-full', getIconColor(turbine.status)]">
+          <rect x="47" y="45" width="6" height="40" fill="currentColor" opacity="0.3" />
+          <ellipse cx="50" cy="42" rx="7" ry="5" fill="currentColor" opacity="0.4" />
+          <circle cx="50" cy="42" r="3" fill="currentColor" />
           <g
             :class="{ 'animate-spin-slow': turbine.status === 'running' }"
             style="transform-origin: 50px 42px"
           >
-            <ellipse
-              cx="50"
-              cy="22"
-              rx="2.5"
-              ry="16"
-              fill="currentColor"
-              opacity="0.9"
-            />
+            <ellipse cx="50" cy="22" rx="2.5" ry="16" fill="currentColor" opacity="0.9" />
             <ellipse
               cx="50"
               cy="22"
@@ -68,15 +39,7 @@
               transform="rotate(240 50 42)"
             />
           </g>
-          <rect
-            x="45"
-            y="84"
-            width="10"
-            height="2"
-            fill="currentColor"
-            opacity="0.3"
-            rx="1"
-          />
+          <rect x="45" y="84" width="10" height="2" fill="currentColor" opacity="0.3" rx="1" />
         </svg>
         <div
           :class="[
@@ -107,12 +70,7 @@
           </span>
         </div>
         <p class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1">
-          <svg
-            class="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -127,10 +85,7 @@
       <div
         class="hidden sm:flex flex-col items-end mr-4 min-w-[80px] border-r border-slate-200 dark:border-slate-700 pr-6"
       >
-        <div
-          v-if="turbine.healthData"
-          class="flex flex-col items-end"
-        >
+        <div v-if="turbine.healthData" class="flex flex-col items-end">
           <span
             class="text-2xl font-bold"
             :class="getHealthTextColor(turbine.healthData.overall_health.overall_health_score)"
@@ -155,47 +110,32 @@
             </span>
           </div>
         </div>
-        <div
-          v-else
-          class="text-xs text-slate-400 font-medium uppercase tracking-wide"
-        >
+        <div v-else class="text-xs text-slate-400 font-medium uppercase tracking-wide">
           No Health Data
         </div>
       </div>
 
       <div class="hidden lg:flex items-center gap-6">
         <div class="text-center">
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">
-            Power
-          </p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Power</p>
           <p class="text-lg font-bold text-slate-900 dark:text-white">
             {{ turbine.metrics?.power_mw?.toFixed(1) || '0.0' }}
           </p>
-          <p class="text-xs text-slate-500">
-            MW
-          </p>
+          <p class="text-xs text-slate-500">MW</p>
         </div>
         <div class="text-center">
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">
-            Wind
-          </p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Wind</p>
           <p class="text-lg font-bold text-slate-900 dark:text-white">
             {{ turbine.metrics?.wind_ms?.toFixed(1) || '-' }}
           </p>
-          <p class="text-xs text-slate-500">
-            m/s
-          </p>
+          <p class="text-xs text-slate-500">m/s</p>
         </div>
         <div class="text-center">
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">
-            Rotor
-          </p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Rotor</p>
           <p class="text-lg font-bold text-slate-900 dark:text-white">
             {{ turbine.metrics?.rotor_rpm?.toFixed(0) || '-' }}
           </p>
-          <p class="text-xs text-slate-500">
-            RPM
-          </p>
+          <p class="text-xs text-slate-500">RPM</p>
         </div>
       </div>
 
@@ -205,12 +145,7 @@
         stroke="currentColor"
         viewBox="0 0 24 24"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M9 5l7 7-7 7"
-        />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
     </div>
   </div>

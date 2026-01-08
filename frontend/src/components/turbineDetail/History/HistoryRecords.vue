@@ -8,12 +8,7 @@
         class="text-[10px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition-colors uppercase tracking-tight bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded"
         @click="showClearConfirm = true"
       >
-        <svg
-          class="w-3 h-3"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -30,12 +25,7 @@
         class="absolute left-0 top-1/2 -translate-y-1/2 z-30 bg-white/90 dark:bg-slate-700/90 shadow-lg rounded-full p-1.5 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-white transition-all opacity-0 group-hover:opacity-100"
         @click="scrollHistory(-300)"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             d="M15 19l-7-7 7-7"
             stroke-width="2"
@@ -45,10 +35,7 @@
         </svg>
       </button>
 
-      <div
-        ref="scrollContainer"
-        class="flex overflow-x-auto gap-3 pb-4 no-scrollbar scroll-smooth"
-      >
+      <div ref="scrollContainer" class="flex overflow-x-auto gap-3 pb-4 no-scrollbar scroll-smooth">
         <div
           v-for="entry in records"
           :key="entry.id"
@@ -59,12 +46,7 @@
             title="Remove from history"
             @click.stop="$emit('remove', entry.id)"
           >
-            <svg
-              class="w-2.5 h-2.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -90,7 +72,9 @@
                 class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"
               />
             </div>
-            <span class="text-[10px] leading-tight font-medium">{{ entry.startDate }} to<br>{{ entry.endDate }}</span>
+            <span class="text-[10px] leading-tight font-medium"
+              >{{ entry.startDate }} to<br />{{ entry.endDate }}</span
+            >
           </button>
         </div>
       </div>
@@ -99,18 +83,8 @@
         class="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-white/90 dark:bg-slate-700/90 shadow-lg rounded-full p-1.5 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-white transition-all opacity-0 group-hover:opacity-100"
         @click="scrollHistory(300)"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M9 5l7 7-7 7"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
     </div>
@@ -130,12 +104,7 @@
         >
           <div class="flex items-center gap-4 mb-4 text-red-500">
             <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -144,9 +113,7 @@
                 />
               </svg>
             </div>
-            <h4 class="text-lg font-bold text-slate-900 dark:text-white">
-              Clear History?
-            </h4>
+            <h4 class="text-lg font-bold text-slate-900 dark:text-white">Clear History?</h4>
           </div>
 
           <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">

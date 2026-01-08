@@ -9,28 +9,11 @@
     @click="$emit('select', turbine)"
   >
     <div class="absolute inset-0 opacity-5">
-      <svg
-        class="w-full h-full"
-        viewBox="0 0 100 100"
-      >
-        <pattern
-          id="grid"
-          width="10"
-          height="10"
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d="M 10 0 L 0 0 0 10"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
+      <svg class="w-full h-full" viewBox="0 0 100 100">
+        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" stroke-width="0.5" />
         </pattern>
-        <rect
-          width="100"
-          height="100"
-          fill="url(#grid)"
-        />
+        <rect width="100" height="100" fill="url(#grid)" />
       </svg>
     </div>
 
@@ -43,12 +26,7 @@
                 {{ turbine.id }}
               </h3>
               <p class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -66,10 +44,7 @@
               </p>
             </div>
 
-            <div
-              v-if="turbine.healthData"
-              class="flex flex-col items-end"
-            >
+            <div v-if="turbine.healthData" class="flex flex-col items-end">
               <div
                 class="flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700 backdrop-blur-sm"
               >
@@ -92,50 +67,23 @@
                   <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
                 </span>
               </div>
-              <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 mt-1">Health</span>
+              <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 mt-1"
+                >Health</span
+              >
             </div>
           </div>
         </div>
 
         <div class="relative w-16 h-16 flex-shrink-0">
-          <svg
-            viewBox="0 0 100 100"
-            :class="['w-full h-full', iconColor]"
-          >
-            <rect
-              x="47"
-              y="45"
-              width="6"
-              height="45"
-              fill="currentColor"
-              opacity="0.3"
-            />
-            <ellipse
-              cx="50"
-              cy="42"
-              rx="8"
-              ry="6"
-              fill="currentColor"
-              opacity="0.4"
-            />
-            <circle
-              cx="50"
-              cy="42"
-              r="3.5"
-              fill="currentColor"
-            />
+          <svg viewBox="0 0 100 100" :class="['w-full h-full', iconColor]">
+            <rect x="47" y="45" width="6" height="45" fill="currentColor" opacity="0.3" />
+            <ellipse cx="50" cy="42" rx="8" ry="6" fill="currentColor" opacity="0.4" />
+            <circle cx="50" cy="42" r="3.5" fill="currentColor" />
             <g
               :class="{ 'animate-spin-slow': turbine.status === 'running' }"
               style="transform-origin: 50px 42px"
             >
-              <ellipse
-                cx="50"
-                cy="20"
-                rx="3"
-                ry="18"
-                fill="currentColor"
-                opacity="0.9"
-              />
+              <ellipse cx="50" cy="20" rx="3" ry="18" fill="currentColor" opacity="0.9" />
               <ellipse
                 cx="50"
                 cy="20"
@@ -155,15 +103,7 @@
                 transform="rotate(240 50 42)"
               />
             </g>
-            <rect
-              x="44"
-              y="88"
-              width="12"
-              height="3"
-              fill="currentColor"
-              opacity="0.3"
-              rx="1"
-            />
+            <rect x="44" y="88" width="12" height="3" fill="currentColor" opacity="0.3" rx="1" />
           </svg>
 
           <div
@@ -201,18 +141,14 @@
 
       <div class="grid grid-cols-2 gap-3 mb-4">
         <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 backdrop-blur-sm">
-          <p class="text-xs text-slate-600 dark:text-slate-400 mb-1">
-            Power
-          </p>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mb-1">Power</p>
           <p class="text-lg font-bold text-slate-900 dark:text-white">
             {{ turbine.metrics?.power_mw?.toFixed(1) || '0.0' }}
             <span class="text-sm font-normal text-slate-500">MW</span>
           </p>
         </div>
         <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3 backdrop-blur-sm">
-          <p class="text-xs text-slate-600 dark:text-slate-400 mb-1">
-            Wind
-          </p>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mb-1">Wind</p>
           <p class="text-lg font-bold text-slate-900 dark:text-white">
             {{ turbine.metrics?.wind_ms?.toFixed(1) || '-' }}
             <span class="text-sm font-normal text-slate-500">m/s</span>
@@ -222,12 +158,7 @@
 
       <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
         <span class="flex items-center gap-1">
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"

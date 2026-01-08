@@ -2,9 +2,7 @@
   <div class="min-h-screen bg-gray-50 dark:bg-slate-900 p-6 transition-colors duration-200">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-          Data Import
-        </h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Data Import</h1>
         <p class="text-gray-600 dark:text-slate-400 mt-2">
           Import sensor data for wind turbine monitoring - all turbines and sensor types at once
         </p>
@@ -180,13 +178,8 @@
               <p>
                 <strong>{{ importResult.turbines_count }}</strong> turbines affected
               </p>
-              <div
-                v-if="importResult.table_counts"
-                class="mt-3 text-sm"
-              >
-                <p class="font-semibold">
-                  Data distribution:
-                </p>
+              <div v-if="importResult.table_counts" class="mt-3 text-sm">
+                <p class="font-semibold">Data distribution:</p>
                 <ul class="ml-4 mt-1 space-y-1">
                   <li v-if="importResult.table_counts.vibration">
                     Vibration: {{ importResult.table_counts.vibration }} records

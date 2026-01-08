@@ -1,17 +1,12 @@
 <template>
   <div class="space-y-6">
     <!-- Loading State -->
-    <div
-      v-if="loading"
-      class="flex items-center justify-center py-20"
-    >
+    <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center">
         <div
           class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"
         />
-        <p class="text-slate-600 dark:text-slate-400">
-          Loading fleet data...
-        </p>
+        <p class="text-slate-600 dark:text-slate-400">Loading fleet data...</p>
       </div>
     </div>
 
@@ -35,9 +30,7 @@
           />
         </svg>
         <div>
-          <h3 class="font-semibold text-red-900 dark:text-red-300">
-            Failed to load data
-          </h3>
+          <h3 class="font-semibold text-red-900 dark:text-red-300">Failed to load data</h3>
           <p class="text-sm text-red-700 dark:text-red-400 mt-1">
             {{ error }}
           </p>
@@ -71,9 +64,7 @@
               />
             </svg>
             <div>
-              <h4 class="font-semibold text-red-900 dark:text-red-300">
-                Active Alarms Detected
-              </h4>
+              <h4 class="font-semibold text-red-900 dark:text-red-300">Active Alarms Detected</h4>
               <p class="text-sm text-red-700 dark:text-red-400">
                 {{ turbinesWithAlarms }} turbine{{ turbinesWithAlarms > 1 ? 's' : '' }} with
                 {{ totalAlarms }} total alarm{{ totalAlarms > 1 ? 's' : '' }}
@@ -91,17 +82,14 @@
         <div class="p-6 border-b border-slate-200 dark:border-slate-700">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-xl font-bold text-slate-900 dark:text-white">
-                Turbine Fleet
-              </h2>
+              <h2 class="text-xl font-bold text-slate-900 dark:text-white">Turbine Fleet</h2>
               <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 {{ filteredAndSortedTurbines.length }} of {{ turbines.length }} turbine{{
                   turbines.length > 1 ? 's' : ''
                 }}
-                <span
-                  v-if="hasActiveFilters"
-                  class="text-indigo-600 dark:text-indigo-400"
-                >• Filtered</span>
+                <span v-if="hasActiveFilters" class="text-indigo-600 dark:text-indigo-400"
+                  >• Filtered</span
+                >
               </p>
             </div>
 
@@ -120,12 +108,7 @@
                   :title="view.label"
                   @click="viewMode = view.value"
                 >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -152,10 +135,7 @@
         <!-- Turbines Display Area -->
         <div class="p-6">
           <!-- Empty State -->
-          <div
-            v-if="filteredAndSortedTurbines.length === 0"
-            class="text-center py-16"
-          >
+          <div v-if="filteredAndSortedTurbines.length === 0" class="text-center py-16">
             <div
               class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 mb-4"
             >

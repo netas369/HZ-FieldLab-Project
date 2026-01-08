@@ -19,12 +19,7 @@
         class="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/30"
       >
         <div class="flex items-center gap-2 mb-1">
-          <svg
-            class="w-4 h-4 text-red-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -45,12 +40,7 @@
         class="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-900/30"
       >
         <div class="flex items-center gap-2 mb-1">
-          <svg
-            class="w-4 h-4 text-amber-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"

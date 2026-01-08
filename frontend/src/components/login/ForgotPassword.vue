@@ -3,26 +3,15 @@
     <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
       <!-- Logo/Header -->
       <div class="mb-6 text-center">
-        <h1 class="text-2xl font-bold text-gray-800">
-          Password Reset
-        </h1>
-        <p class="text-sm text-gray-600 mt-1">
-          Enter your email to reset your password
-        </p>
+        <h1 class="text-2xl font-bold text-gray-800">Password Reset</h1>
+        <p class="text-sm text-gray-600 mt-1">Enter your email to reset your password</p>
       </div>
 
       <!-- Success State -->
-      <div
-        v-if="resetToken"
-        class="space-y-4"
-      >
+      <div v-if="resetToken" class="space-y-4">
         <div class="p-4 bg-green-50 border border-green-200 rounded-md">
-          <p class="text-sm text-green-800 font-medium mb-2">
-            Password reset token generated!
-          </p>
-          <p class="text-sm text-green-700">
-            Use this token to reset your password:
-          </p>
+          <p class="text-sm text-green-800 font-medium mb-2">Password reset token generated!</p>
+          <p class="text-sm text-green-700">Use this token to reset your password:</p>
         </div>
 
         <div class="bg-gray-50 border border-gray-300 rounded-md p-4">
@@ -61,16 +50,10 @@
       </div>
 
       <!-- Request Form -->
-      <form
-        v-else
-        @submit.prevent="handleSubmit"
-      >
+      <form v-else @submit.prevent="handleSubmit">
         <!-- Email Input -->
         <div class="mb-4">
-          <label
-            for="email"
-            class="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
             Email Address
           </label>
           <input
@@ -81,20 +64,14 @@
             :class="{ 'border-red-500': errors.email }"
             required
             autofocus
-          >
-          <p
-            v-if="errors.email"
-            class="mt-1 text-sm text-red-600"
-          >
+          />
+          <p v-if="errors.email" class="mt-1 text-sm text-red-600">
             {{ errors.email }}
           </p>
         </div>
 
         <!-- Error Message -->
-        <div
-          v-if="errors.general"
-          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md"
-        >
+        <div v-if="errors.general" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p class="text-sm text-red-600">
             {{ errors.general }}
           </p>
@@ -107,10 +84,7 @@
             :disabled="loading"
             class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span
-              v-if="loading"
-              class="mr-2"
-            >
+            <span v-if="loading" class="mr-2">
               <svg
                 class="animate-spin h-4 w-4 text-white"
                 xmlns="http://www.w3.org/2000/svg"

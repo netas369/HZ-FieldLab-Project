@@ -6,12 +6,7 @@
       class="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
     >
       <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-        <svg
-          class="w-4 h-4 text-indigo-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
+        <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -80,7 +75,7 @@
             type="text"
             placeholder="Search logs..."
             class="pl-9 pr-4 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none w-48 transition-all focus:w-64 placeholder:text-slate-400"
-          >
+          />
         </div>
       </div>
     </div>
@@ -194,21 +189,20 @@
                 <span
                   v-if="alarm.data?.value"
                   class="inline-block ml-2 font-mono text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                >val: {{ alarm.data.value }}</span>
+                  >val: {{ alarm.data.value }}</span
+                >
               </div>
             </td>
             <td class="px-6 py-4 text-right">
               <span
                 class="font-mono text-slate-600 dark:text-slate-400 text-sm"
                 :class="{ 'text-slate-400 dark:text-slate-600': alarm.duration_minutes === 0 }"
-              >{{ alarm.duration_minutes }}m</span>
+                >{{ alarm.duration_minutes }}m</span
+              >
             </td>
           </tr>
           <tr v-if="paginatedAlarms.length === 0">
-            <td
-              colspan="5"
-              class="px-6 py-12 text-center text-slate-400"
-            >
+            <td colspan="5" class="px-6 py-12 text-center text-slate-400">
               <div class="flex flex-col items-center justify-center gap-2">
                 <svg
                   class="w-8 h-8 text-slate-300 dark:text-slate-600"
@@ -241,7 +235,8 @@
       class="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-4"
     >
       <div class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
-        <span>Showing
+        <span
+          >Showing
           <span class="font-semibold text-slate-700 dark:text-slate-200">{{
             filteredCount > 0 ? startIndex + 1 : 0
           }}</span>
@@ -251,28 +246,23 @@
           }}</span>
           of
           <span class="font-semibold text-slate-700 dark:text-slate-200">{{ filteredCount }}</span>
-          results</span>
+          results</span
+        >
       </div>
 
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">
-          <label class="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">Rows per page:</label>
+          <label class="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline"
+            >Rows per page:</label
+          >
           <select
             v-model="pageSize"
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           >
-            <option :value="10">
-              10
-            </option>
-            <option :value="25">
-              25
-            </option>
-            <option :value="50">
-              50
-            </option>
-            <option :value="100">
-              100
-            </option>
+            <option :value="10">10</option>
+            <option :value="25">25</option>
+            <option :value="50">50</option>
+            <option :value="100">100</option>
           </select>
         </div>
 
@@ -284,12 +274,7 @@
             class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             @click="prevPage"
           >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -300,18 +285,14 @@
           </button>
           <span
             class="text-xs font-medium text-slate-600 dark:text-slate-400 min-w-[3rem] text-center"
-          >Page {{ currentPage }} / {{ totalPages || 1 }}</span>
+            >Page {{ currentPage }} / {{ totalPages || 1 }}</span
+          >
           <button
             :disabled="currentPage === totalPages || totalPages === 0"
             class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             @click="nextPage"
           >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"

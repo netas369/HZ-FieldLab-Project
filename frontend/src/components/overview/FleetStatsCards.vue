@@ -7,10 +7,7 @@
     >
       <div class="flex items-start justify-between mb-3">
         <div :class="['p-3 rounded-lg', stat.bgColor]">
-          <component
-            :is="stat.icon"
-            class="w-6 h-6 text-white"
-          />
+          <component :is="stat.icon" class="w-6 h-6 text-white" />
         </div>
         <span :class="['text-xs font-semibold px-2.5 py-1 rounded-full', stat.badgeColor]">
           {{ stat.badge }}

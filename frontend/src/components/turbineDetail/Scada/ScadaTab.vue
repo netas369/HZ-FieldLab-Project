@@ -7,9 +7,7 @@
         class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
       >
         <div class="flex items-center justify-between mb-3">
-          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Power Output
-          </p>
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Power Output</p>
           <div class="p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
             <svg
               class="w-5 h-5 text-violet-600 dark:text-violet-400"
@@ -40,9 +38,7 @@
         class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
       >
         <div class="flex items-center justify-between mb-3">
-          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Wind Speed
-          </p>
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Wind Speed</p>
           <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
             <svg
               class="w-5 h-5 text-blue-600 dark:text-blue-400"
@@ -73,9 +69,7 @@
         class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
       >
         <div class="flex items-center justify-between mb-3">
-          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Rotor Speed
-          </p>
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Rotor Speed</p>
           <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
             <svg
               class="w-5 h-5 text-green-600 dark:text-green-400"
@@ -103,9 +97,7 @@
         class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
       >
         <div class="flex items-center justify-between mb-3">
-          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Generator Speed
-          </p>
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Generator Speed</p>
           <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
             <svg
               class="w-5 h-5 text-emerald-600 dark:text-emerald-400"
@@ -133,9 +125,7 @@
         class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
       >
         <div class="flex items-center justify-between mb-3">
-          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Pitch Angle
-          </p>
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Pitch Angle</p>
           <div class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
             <svg
               class="w-5 h-5 text-amber-600 dark:text-amber-400"
@@ -166,9 +156,7 @@
         class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
       >
         <div class="flex items-center justify-between mb-3">
-          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Ambient Temp
-          </p>
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Ambient Temp</p>
           <div class="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
             <svg
               class="w-5 h-5 text-orange-600 dark:text-orange-400"
@@ -197,12 +185,7 @@
       class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
     >
       <h4 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-        <svg
-          class="w-5 h-5 text-indigo-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -216,16 +199,11 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Yaw Angle -->
         <div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-          <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
-            Yaw Angle
-          </p>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Yaw Angle</p>
           <div class="flex items-center gap-3">
             <div class="relative w-16 h-16">
               <!-- Compass circle -->
-              <svg
-                class="w-16 h-16 transform -rotate-90"
-                viewBox="0 0 100 100"
-              >
+              <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
@@ -260,15 +238,10 @@
 
         <!-- Nacelle Direction -->
         <div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-          <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
-            Nacelle Direction
-          </p>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Nacelle Direction</p>
           <div class="flex items-center gap-3">
             <div class="relative w-16 h-16">
-              <svg
-                class="w-16 h-16 transform -rotate-90"
-                viewBox="0 0 100 100"
-              >
+              <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
@@ -302,15 +275,10 @@
 
         <!-- Wind Direction -->
         <div class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-          <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
-            Wind Direction
-          </p>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Wind Direction</p>
           <div class="flex items-center gap-3">
             <div class="relative w-16 h-16">
-              <svg
-                class="w-16 h-16 transform -rotate-90"
-                viewBox="0 0 100 100"
-              >
+              <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"

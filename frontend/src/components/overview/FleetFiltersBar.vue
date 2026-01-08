@@ -5,12 +5,7 @@
       <!-- Search Input -->
       <div class="relative flex-1">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg
-            class="w-5 h-5 text-slate-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -25,18 +20,13 @@
           placeholder="Search turbines by ID or location..."
           class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
           @input="$emit('update:searchQuery', $event.target.value)"
-        >
+        />
         <button
           v-if="searchQuery"
           class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
           @click="$emit('update:searchQuery', '')"
         >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -48,10 +38,7 @@
       </div>
 
       <!-- Status Filter Dropdown -->
-      <div
-        ref="statusDropdown"
-        class="relative"
-      >
+      <div ref="statusDropdown" class="relative">
         <button
           :class="[
             'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border',
@@ -61,12 +48,7 @@
           ]"
           @click="toggleStatusFilter"
         >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -81,12 +63,7 @@
           >
             {{ statusFilters.length }}
           </span>
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -112,7 +89,7 @@
               :checked="statusFilters.includes(option.value)"
               class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
               @change="toggleStatusOption(option.value)"
-            >
+            />
             <div class="flex items-center gap-2 flex-1">
               <div :class="['w-3 h-3 rounded-full', option.color]" />
               <span class="text-sm text-slate-700 dark:text-slate-300">{{ option.label }}</span>
@@ -134,12 +111,7 @@
         ]"
         @click="$emit('update:showOnlyWithAlarms', !showOnlyWithAlarms)"
       >
-        <svg
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -156,18 +128,10 @@
         class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
         @change="$emit('update:sortBy', $event.target.value)"
       >
-        <option value="id">
-          Sort by ID
-        </option>
-        <option value="power">
-          Sort by Power
-        </option>
-        <option value="alarms">
-          Sort by Alarms
-        </option>
-        <option value="status">
-          Sort by Status
-        </option>
+        <option value="id">Sort by ID</option>
+        <option value="power">Sort by Power</option>
+        <option value="alarms">Sort by Alarms</option>
+        <option value="status">Sort by Status</option>
       </select>
 
       <!-- Clear Filters -->
@@ -177,12 +141,7 @@
         title="Clear all filters"
         @click="$emit('clear-filters')"
       >
-        <svg
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -194,10 +153,7 @@
     </div>
 
     <!-- Active Filters Tags -->
-    <div
-      v-if="hasActiveFilters"
-      class="flex flex-wrap gap-2"
-    >
+    <div v-if="hasActiveFilters" class="flex flex-wrap gap-2">
       <span
         v-for="status in statusFilters"
         :key="status"
@@ -208,12 +164,7 @@
           class="hover:bg-indigo-200 dark:hover:bg-indigo-800 rounded-full p-0.5"
           @click="removeStatusFilter(status)"
         >
-          <svg
-            class="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -232,12 +183,7 @@
           class="hover:bg-red-200 dark:hover:bg-red-800 rounded-full p-0.5"
           @click="$emit('update:showOnlyWithAlarms', false)"
         >
-          <svg
-            class="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"

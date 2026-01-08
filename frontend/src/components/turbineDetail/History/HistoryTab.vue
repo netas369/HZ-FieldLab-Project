@@ -4,12 +4,7 @@
   >
     <div class="mb-6 border-b border-slate-200 dark:border-slate-700 pb-6">
       <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-        <svg
-          class="w-6 h-6 text-indigo-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -22,21 +17,25 @@
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Start Date</label>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1"
+            >Start Date</label
+          >
           <input
             v-model="form.start_date"
             type="date"
             class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
-          >
+          />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">End Date</label>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1"
+            >End Date</label
+          >
           <input
             v-model="form.end_date"
             type="date"
             class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
-          >
+          />
         </div>
 
         <button
@@ -89,10 +88,7 @@
       :progress="progressPercentage"
     />
 
-    <div
-      v-else-if="activeTurbinePayload && chartData"
-      class="space-y-6"
-    >
+    <div v-else-if="activeTurbinePayload && chartData" class="space-y-6">
       <HistoryChart
         v-model:metric="selectedMetric"
         v-model:resolution="resolution"
@@ -105,19 +101,14 @@
         :displayed-points="displayedDataCount"
         :total-points="rawDataCount"
       />
-      <HistoryAlarms
-        v-else
-        :alarms="rawResponse.alarms"
-      />
+      <HistoryAlarms v-else :alarms="rawResponse.alarms" />
     </div>
 
     <div
       v-else-if="historyStore.error"
       class="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900 rounded-xl p-8 text-center"
     >
-      <h3 class="text-lg font-bold text-red-900 dark:text-red-300 mb-2">
-        Failed to load history
-      </h3>
+      <h3 class="text-lg font-bold text-red-900 dark:text-red-300 mb-2">Failed to load history</h3>
       <p class="text-red-600 dark:text-red-400 mb-4">
         {{ historyStore.error }}
       </p>
@@ -129,10 +120,7 @@
       </button>
     </div>
 
-    <div
-      v-else
-      class="flex flex-col items-center justify-center py-16 text-center"
-    >
+    <div v-else class="flex flex-col items-center justify-center py-16 text-center">
       <div
         class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-full mb-4 border border-slate-100 dark:border-slate-700"
       >
@@ -150,9 +138,7 @@
           />
         </svg>
       </div>
-      <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-1">
-        No Data Selected
-      </h3>
+      <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-1">No Data Selected</h3>
     </div>
   </div>
 </template>

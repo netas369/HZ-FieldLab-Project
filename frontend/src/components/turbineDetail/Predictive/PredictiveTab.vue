@@ -106,7 +106,7 @@
                 <svg
                   v-if="
                     fastestDeteriorating.days_to_critical &&
-                      fastestDeteriorating.days_to_critical < 90
+                    fastestDeteriorating.days_to_critical < 90
                   "
                   class="w-4 h-4 text-red-500"
                   fill="none"
@@ -124,7 +124,8 @@
                 <span
                   v-if="fastestDeteriorating.days_to_critical"
                   class="text-slate-400 text-sm font-normal"
-                >days</span>
+                  >days</span
+                >
               </span>
             </div>
 
@@ -193,9 +194,7 @@
         <div
           class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/20 flex items-center justify-between"
         >
-          <h4 class="font-semibold text-slate-800 dark:text-white text-sm">
-            Component Forecasts
-          </h4>
+          <h4 class="font-semibold text-slate-800 dark:text-white text-sm">Component Forecasts</h4>
           <span class="text-xs text-slate-400">{{ sortedTrends.length }} components</span>
         </div>
         <div class="overflow-x-auto flex-1">
@@ -204,24 +203,12 @@
               class="bg-slate-50 dark:bg-slate-900/50 text-xs text-slate-500 uppercase font-semibold sticky top-0"
             >
               <tr>
-                <th class="px-6 py-3">
-                  Component
-                </th>
-                <th class="px-6 py-3 text-right">
-                  Health
-                </th>
-                <th class="px-6 py-3 text-center">
-                  Status
-                </th>
-                <th class="px-6 py-3 text-center">
-                  Trend
-                </th>
-                <th class="px-6 py-3 text-center">
-                  Confidence
-                </th>
-                <th class="px-6 py-3 text-right">
-                  Days to Critical
-                </th>
+                <th class="px-6 py-3">Component</th>
+                <th class="px-6 py-3 text-right">Health</th>
+                <th class="px-6 py-3 text-center">Status</th>
+                <th class="px-6 py-3 text-center">Trend</th>
+                <th class="px-6 py-3 text-center">Confidence</th>
+                <th class="px-6 py-3 text-right">Days to Critical</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -236,10 +223,7 @@
               >
                 <td class="px-6 py-3 font-medium text-slate-900 dark:text-white capitalize">
                   <div class="flex items-center gap-2">
-                    <div
-                      class="w-2 h-2 rounded-full"
-                      :class="getHealthDot(trend.health_score)"
-                    />
+                    <div class="w-2 h-2 rounded-full" :class="getHealthDot(trend.health_score)" />
                     {{ formatComponentName(trend.component) }}
                   </div>
                 </td>
@@ -275,10 +259,7 @@
                   >
                     {{ trend.analysis_confidence }}
                   </span>
-                  <span
-                    v-else
-                    class="text-slate-400"
-                  >—</span>
+                  <span v-else class="text-slate-400">—</span>
                 </td>
                 <td class="px-6 py-3 text-right font-mono">
                   <div class="flex items-center justify-end gap-2">

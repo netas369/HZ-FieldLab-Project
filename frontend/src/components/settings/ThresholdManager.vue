@@ -18,10 +18,7 @@
     </div>
 
     <!-- Loading State -->
-    <div
-      v-if="loading"
-      class="flex justify-center py-12"
-    >
+    <div v-if="loading" class="flex justify-center py-12">
       <div
         class="animate-spin rounded-full h-12 w-12 border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400"
       />
@@ -38,10 +35,7 @@
     </div>
 
     <!-- Thresholds List -->
-    <div
-      v-else
-      class="grid gap-4"
-    >
+    <div v-else class="grid gap-4">
       <div
         v-for="threshold in filteredThresholds"
         :key="threshold.id"
@@ -52,9 +46,7 @@
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
               {{ formatComponentName(threshold.component_name) }}
             </h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400">
-              Unit: {{ threshold.unit }}
-            </p>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Unit: {{ threshold.unit }}</p>
           </div>
           <div class="flex gap-2">
             <button
@@ -77,9 +69,7 @@
           <div
             class="p-3 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 border border-emerald-200 dark:border-emerald-800 rounded-lg"
           >
-            <p class="text-xs font-medium text-emerald-700 dark:text-emerald-400 mb-2">
-              NORMAL
-            </p>
+            <p class="text-xs font-medium text-emerald-700 dark:text-emerald-400 mb-2">NORMAL</p>
             <div class="flex gap-2">
               <div class="flex-1">
                 <span class="text-xs text-slate-600 dark:text-slate-400">Min:</span>
@@ -98,9 +88,7 @@
           <div
             class="p-3 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 border border-amber-200 dark:border-amber-800 rounded-lg"
           >
-            <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-2">
-              WARNING
-            </p>
+            <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-2">WARNING</p>
             <div class="flex gap-2">
               <div class="flex-1">
                 <span class="text-xs text-slate-600 dark:text-slate-400">Min:</span>
@@ -119,9 +107,7 @@
           <div
             class="p-3 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 border border-orange-200 dark:border-orange-800 rounded-lg"
           >
-            <p class="text-xs font-medium text-orange-700 dark:text-orange-400 mb-2">
-              CRITICAL
-            </p>
+            <p class="text-xs font-medium text-orange-700 dark:text-orange-400 mb-2">CRITICAL</p>
             <div class="flex gap-2">
               <div class="flex-1">
                 <span class="text-xs text-slate-600 dark:text-slate-400">Min:</span>
@@ -140,9 +126,7 @@
           <div
             class="p-3 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/10 border border-red-200 dark:border-red-800 rounded-lg"
           >
-            <p class="text-xs font-medium text-red-700 dark:text-red-400 mb-2">
-              FAILED
-            </p>
+            <p class="text-xs font-medium text-red-700 dark:text-red-400 mb-2">FAILED</p>
             <div class="flex gap-2">
               <div class="flex-1">
                 <span class="text-xs text-slate-600 dark:text-slate-400">Min:</span>
