@@ -122,13 +122,32 @@ router.beforeEach((to, from, next) => {
   document.title = to.meta.title 
     ? `${to.meta.title} - ${baseTitle}` 
     : baseTitle
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const isAuthenticated = !!user
 
-  // You can add authentication checks here
-  if (to.meta.requiresAuth && !isAuthenticated()) {
-    return next('/login')
+  if (to.path === '/login') {
+    if (user) {
+      return next('/dashboard');
+    }
+    return next();
   }
 
-  next()
+  if (to.path === '/') {
+    if (user) {
+      return next('/dashboard');
+    }
+    return next('/login');
+  }
+
+  if (to.meta.requiresAuth && !user) {
+    return next('/login');
+  }
+
+  if (to.meta.roles && user && !to.meta.roles.includes(user.role)) {
+    return next('/dashboard');
+  }
+
+  next();
 })
 
 // After navigation hook (for analytics, etc.)
