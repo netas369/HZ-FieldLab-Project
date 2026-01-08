@@ -1,45 +1,46 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
+  <div class="min-h-screen bg-gray-50 dark:bg-slate-900 p-6 transition-colors duration-200">
     <div class="max-w-7xl mx-auto">
-      <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Data Import</h1>
-        <p class="text-gray-600 mt-2">Import sensor data for wind turbine monitoring - all turbines and sensor types at once</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Data Import</h1>
+        <p class="text-gray-600 dark:text-slate-400 mt-2">Import sensor data for wind turbine monitoring - all turbines and sensor types at once</p>
       </div>
 
-      <!-- Step Indicator -->
       <div class="mb-8">
         <div class="flex items-center justify-between">
-          <div class="flex items-center" :class="step >= 1 ? 'text-blue-600' : 'text-gray-400'">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
-                 :class="step >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'">
+          <div class="flex items-center transition-colors" :class="step >= 1 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-600'">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors"
+                 :class="step >= 1 ? 'border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500' : 'border-gray-400 dark:border-slate-600'">
               1
             </div>
             <span class="ml-2 font-medium">Upload CSV</span>
           </div>
-          <div class="flex-1 h-1 mx-4" :class="step >= 2 ? 'bg-blue-600' : 'bg-gray-300'"></div>
 
-          <div class="flex items-center" :class="step >= 2 ? 'text-blue-600' : 'text-gray-400'">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
-                 :class="step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'">
+          <div class="flex-1 h-1 mx-4 transition-colors" :class="step >= 2 ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
+
+          <div class="flex items-center transition-colors" :class="step >= 2 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-600'">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors"
+                 :class="step >= 2 ? 'border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500' : 'border-gray-400 dark:border-slate-600'">
               2
             </div>
             <span class="ml-2 font-medium">Identify Key Columns</span>
           </div>
-          <div class="flex-1 h-1 mx-4" :class="step >= 3 ? 'bg-blue-600' : 'bg-gray-300'"></div>
 
-          <div class="flex items-center" :class="step >= 3 ? 'text-blue-600' : 'text-gray-400'">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
-                 :class="step >= 3 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'">
+          <div class="flex-1 h-1 mx-4 transition-colors" :class="step >= 3 ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
+
+          <div class="flex items-center transition-colors" :class="step >= 3 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-600'">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors"
+                 :class="step >= 3 ? 'border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500' : 'border-gray-400 dark:border-slate-600'">
               3
             </div>
             <span class="ml-2 font-medium">Map Sensor Columns</span>
           </div>
-          <div class="flex-1 h-1 mx-4" :class="step >= 4 ? 'bg-blue-600' : 'bg-gray-300'"></div>
 
-          <div class="flex items-center" :class="step >= 4 ? 'text-blue-600' : 'text-gray-400'">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center border-2"
-                 :class="step >= 4 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-400'">
+          <div class="flex-1 h-1 mx-4 transition-colors" :class="step >= 4 ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
+
+          <div class="flex items-center transition-colors" :class="step >= 4 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-600'">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors"
+                 :class="step >= 4 ? 'border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500' : 'border-gray-400 dark:border-slate-600'">
               4
             </div>
             <span class="ml-2 font-medium">Validate & Import</span>
@@ -47,15 +48,13 @@
         </div>
       </div>
 
-      <!-- Step 1: Upload CSV -->
-      <div v-if="step === 1" class="bg-white rounded-lg shadow-md p-6">
+      <div v-if="step === 1" class="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-transparent dark:border-slate-700 p-6 transition-colors">
         <CsvUploadComponent
             @csv-parsed="handleCsvParsed"
         />
       </div>
 
-      <!-- Step 2: Identify Key Columns -->
-      <div v-if="step === 2" class="bg-white rounded-lg shadow-md p-6">
+      <div v-if="step === 2" class="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-transparent dark:border-slate-700 p-6 transition-colors">
         <KeyColumnsComponent
             :csv-data="csvData"
             @key-columns-identified="handleKeyColumnsIdentified"
@@ -63,8 +62,7 @@
         />
       </div>
 
-      <!-- Step 3: Map Sensor Columns -->
-      <div v-if="step === 3" class="bg-white rounded-lg shadow-md p-6">
+      <div v-if="step === 3" class="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-transparent dark:border-slate-700 p-6 transition-colors">
         <SensorMappingComponent
             :csv-data="csvData"
             :key-columns="keyColumns"
@@ -73,8 +71,7 @@
         />
       </div>
 
-      <!-- Step 4: Validate & Import -->
-      <div v-if="step === 4" class="bg-white rounded-lg shadow-md p-6">
+      <div v-if="step === 4" class="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-transparent dark:border-slate-700 p-6 transition-colors">
         <ValidationImportComponent
             :csv-data="csvData"
             :key-columns="keyColumns"
@@ -84,15 +81,14 @@
         />
       </div>
 
-      <!-- Success Message -->
-      <div v-if="importSuccess" class="mt-6 bg-green-50 border border-green-200 rounded-lg p-6">
+      <div v-if="importSuccess" class="mt-6 bg-green-50 dark:bg-emerald-900/20 border border-green-200 dark:border-emerald-800 rounded-lg p-6 transition-colors">
         <div class="flex items-start">
-          <svg class="w-8 h-8 text-green-600 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-8 h-8 text-green-600 dark:text-emerald-400 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
           </svg>
           <div class="flex-1">
-            <h3 class="font-bold text-green-900 text-lg">Import Successful!</h3>
-            <div class="mt-3 space-y-1 text-green-800">
+            <h3 class="font-bold text-green-900 dark:text-emerald-100 text-lg">Import Successful!</h3>
+            <div class="mt-3 space-y-1 text-green-800 dark:text-emerald-200">
               <p><strong>{{ importResult.total_rows }}</strong> rows processed</p>
               <p><strong>{{ importResult.imported_rows }}</strong> rows imported successfully</p>
               <p><strong>{{ importResult.turbines_count }}</strong> turbines affected</p>
@@ -109,11 +105,11 @@
             </div>
             <div class="mt-4 flex gap-3">
               <button @click="resetImport"
-                      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                      class="px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-lg transition-colors shadow-sm">
                 Import Another File
               </button>
               <router-link to="/dashboard"
-                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg transition-colors shadow-sm">
                 View Dashboard
               </router-link>
             </div>
@@ -125,6 +121,7 @@
 </template>
 
 <script>
+// Logic remains identical to your original component
 import { ref } from 'vue';
 import CsvUploadComponent from '../components/import/CsvUploadComponent.vue';
 import KeyColumnsComponent from '../components/import/KeyColumnsComponent.vue';

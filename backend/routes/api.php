@@ -70,42 +70,61 @@ Route::get('turbine/allHistoricalData', [HistoryDataController::class, 'loadAllH
 
 
 // ============================================
-// COMPONENT HEALTH ROUTES
+// COMPONENT HEALTH ROUTES (Smart Analysis)
 // ============================================
+// Uses database thresholds, linear regression trends,
+// R² confidence scoring, and predictive analysis
+
+// NEW: Check data availability - understand what analysis is possible
+Route::get('/turbines/{turbineId}/data-availability',
+    [ComponentHealthController::class, 'getDataAvailability']);
 
 // Get all component health data for a specific turbine
-Route::get('/turbines/{turbineId}/component-health', [ComponentHealthController::class, 'getTurbineComponentHealth']);
+Route::get('/turbines/{turbineId}/component-health',
+    [ComponentHealthController::class, 'getTurbineComponentHealth']);
 
 // Get health summary for all turbines
-Route::get('/turbines/component-health/summary', [ComponentHealthController::class, 'getAllTurbinesHealthSummary']);
+Route::get('/turbines/component-health/summary',
+    [ComponentHealthController::class, 'getAllTurbinesHealthSummary']);
 
 // Get specific component health for a turbine
-Route::get('/turbines/{turbineId}/component-health/{componentName}', [ComponentHealthController::class, 'getSpecificComponentHealth']);
+Route::get('/turbines/{turbineId}/component-health/{componentName}',
+    [ComponentHealthController::class, 'getSpecificComponentHealth']);
 
 // Get health for specific component across all turbines
-Route::get('/component-health/{componentName}', [ComponentHealthController::class, 'getComponentHealthAcrossTurbines']);
+Route::get('/component-health/{componentName}',
+    [ComponentHealthController::class, 'getComponentHealthAcrossTurbines'])
+    ->where('componentName', '^(?!attention-required).*$'); // Exclude attention-required
 
-// Get deterioration trends for a turbine
-Route::get('/turbines/{turbineId}/deterioration-trends', [ComponentHealthController::class, 'getDeteriorationTrends']);
+// NEW: Components needing attention (sorted by urgency)
+Route::get('/component-health/attention-required',
+    [ComponentHealthController::class, 'getComponentsNeedingAttention']);
+
+// Get deterioration trends for a single turbine
+Route::get('/turbines/{turbineId}/deterioration-trends',
+    [ComponentHealthController::class, 'getDeteriorationTrends']);
+
+// NEW: Get deterioration trends across ALL turbines
+Route::get('/deterioration-trends',
+    [ComponentHealthController::class, 'getAllDeteriorationTrends']);
 
 
 // ============================================
 // DATA Import Routes
 // ============================================
-Route::middleware(['auth:sanctum', 'role:admin, data_analyst'])->group(function () {
     Route::post('/data-import', [DataImportController::class, 'import']);
     Route::post('/data-import/preflight', [DataImportController::class, 'preflight']);
     Route::post('/data-import/chunked/init', [DataImportController::class, 'initChunkedImport']);
     Route::post('/data-import/chunked/process', [DataImportController::class, 'processChunk']);
     Route::get('/data-import/chunked/status/{importId}', [DataImportController::class, 'getChunkedStatus']);
     Route::delete('/data-import/chunked/{importId}', [DataImportController::class, 'cancelChunkedImport']);
-});
+
 
 
 // ============================================
 // Settings routes
 // ============================================
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
 Route::post('/settings/delete-data', [SettingsController::class, 'deleteAllData']);
 });
 

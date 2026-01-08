@@ -1,17 +1,16 @@
 <template>
-  <div>
-    <h2 class="text-xl font-bold mb-4">Step 3: Map Sensor Columns</h2>
+  <div class="transition-colors duration-200">
+    <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Step 3: Map Sensor Columns</h2>
 
     <div class="space-y-6">
-      <!-- Instructions -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div class="flex items-start">
-          <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
           </svg>
           <div>
-            <h4 class="font-semibold text-blue-900">Map Your Sensor Columns</h4>
-            <p class="text-sm text-blue-800 mt-2">
+            <h4 class="font-semibold text-blue-900 dark:text-blue-100">Map Your Sensor Columns</h4>
+            <p class="text-sm text-blue-800 dark:text-blue-200 mt-2">
               Map your CSV columns to sensor readings. The system auto-detected {{ totalDetected }} columns.
               All categories are optional - map only what you have. Missing data will be stored as NULL.
             </p>
@@ -19,42 +18,52 @@
         </div>
       </div>
 
-      <!-- Mapping Summary -->
-      <div class="grid grid-cols-5 gap-4">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div v-for="category in categories" :key="category.id"
-             class="p-4 border-2 rounded-lg"
-             :class="getMappedCount(category.id) > 0 ? 'border-green-300 bg-green-50' : 'border-gray-300 bg-gray-50'">
+             class="p-4 border-2 rounded-lg transition-colors"
+             :class="getMappedCount(category.id) > 0
+                ? 'border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-800'
+                : 'border-gray-300 bg-gray-50 dark:bg-slate-800 dark:border-slate-700'">
           <div class="flex items-center justify-between">
             <span class="text-2xl">{{ category.icon }}</span>
-            <span class="text-xs font-semibold px-2 py-1 rounded"
-                  :class="getMappedCount(category.id) > 0 ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600'">
+            <span class="text-xs font-semibold px-2 py-1 rounded transition-colors"
+                  :class="getMappedCount(category.id) > 0
+                    ? 'bg-green-200 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                    : 'bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-slate-400'">
               {{ getMappedCount(category.id) }}/{{ category.fields.length }}
             </span>
           </div>
-          <h4 class="font-semibold text-gray-900 mt-2 text-sm">{{ category.name }}</h4>
-          <p class="text-xs text-gray-600 mt-1">{{ category.fields.length }} fields</p>
+          <h4 class="font-semibold mt-2 text-sm transition-colors"
+              :class="getMappedCount(category.id) > 0 ? 'text-green-900 dark:text-green-100' : 'text-gray-900 dark:text-slate-300'">
+            {{ category.name }}
+          </h4>
+          <p class="text-xs mt-1 transition-colors"
+             :class="getMappedCount(category.id) > 0 ? 'text-green-800 dark:text-green-300' : 'text-gray-600 dark:text-slate-500'">
+            {{ category.fields.length }} fields
+          </p>
         </div>
       </div>
 
-      <!-- Sensor Categories -->
-      <div v-for="category in categories" :key="category.id" class="border border-gray-300 rounded-lg">
-        <!-- Category Header -->
-        <div class="bg-gray-50 px-6 py-4 border-b border-gray-300 cursor-pointer hover:bg-gray-100"
+      <div v-for="category in categories" :key="category.id" class="border border-gray-300 dark:border-slate-700 rounded-lg overflow-hidden transition-colors">
+        <div class="px-6 py-4 border-b border-gray-300 dark:border-slate-700 cursor-pointer transition-colors"
+             :class="expandedCategories[category.id] ? 'bg-gray-50 dark:bg-slate-800' : 'bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800'"
              @click="toggleCategory(category.id)">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
               <span class="text-2xl">{{ category.icon }}</span>
               <div>
-                <h3 class="text-lg font-semibold text-gray-900">{{ category.name }}</h3>
-                <p class="text-sm text-gray-600">{{ category.description }}</p>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ category.name }}</h3>
+                <p class="text-sm text-gray-600 dark:text-slate-400">{{ category.description }}</p>
               </div>
             </div>
             <div class="flex items-center space-x-4">
-              <span class="text-sm font-medium px-3 py-1 rounded"
-                    :class="getMappedCount(category.id) > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'">
+              <span class="text-sm font-medium px-3 py-1 rounded transition-colors"
+                    :class="getMappedCount(category.id) > 0
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                      : 'bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-slate-400'">
                 {{ getMappedCount(category.id) }} mapped
               </span>
-              <svg class="w-5 h-5 text-gray-400 transition-transform"
+              <svg class="w-5 h-5 text-gray-400 dark:text-slate-500 transition-transform"
                    :class="expandedCategories[category.id] ? 'transform rotate-180' : ''"
                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -63,22 +72,21 @@
           </div>
         </div>
 
-        <!-- Category Fields -->
-        <div v-show="expandedCategories[category.id]" class="p-6">
+        <div v-show="expandedCategories[category.id]" class="p-6 bg-white dark:bg-slate-900">
           <div class="space-y-4">
             <div v-for="field in category.fields" :key="field.name"
-                 class="grid grid-cols-3 gap-4 items-start">
-              <!-- Field Info -->
+                 class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start border-b border-gray-100 dark:border-slate-800 pb-4 last:border-0 last:pb-0">
               <div>
-                <h4 class="font-medium text-gray-900">{{ field.label }}</h4>
-                <p class="text-xs text-gray-500 mt-1">{{ field.description }}</p>
-                <span class="text-xs text-gray-400">{{ field.unit }}</span>
+                <h4 class="font-medium text-gray-900 dark:text-slate-200">{{ field.label }}</h4>
+                <p class="text-xs text-gray-500 dark:text-slate-500 mt-1">{{ field.description }}</p>
+                <span class="text-xs text-gray-400 dark:text-slate-600">{{ field.unit }}</span>
               </div>
 
-              <!-- Column Mapping -->
               <div>
                 <select v-model="sensorMapping[field.name]"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm transition-colors
+                               border-gray-300 bg-white text-gray-900
+                               dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400">
                   <option value="">-- Skip (NULL) --</option>
                   <option v-for="header in availableColumns" :key="header" :value="header">
                     {{ header }}
@@ -86,36 +94,34 @@
                 </select>
               </div>
 
-              <!-- Sample Data -->
               <div>
                 <div v-if="sensorMapping[field.name]" class="text-sm">
-                  <p class="text-xs text-gray-500 mb-1">Sample values:</p>
+                  <p class="text-xs text-gray-500 dark:text-slate-500 mb-1">Sample values:</p>
                   <div class="space-y-1">
                     <p v-for="(sample, idx) in getSampleData(sensorMapping[field.name])" :key="idx"
-                       class="font-mono text-xs text-gray-700 truncate">
+                       class="font-mono text-xs text-gray-700 dark:text-slate-300 truncate">
                       {{ sample }}
                     </p>
                   </div>
                 </div>
-                <p v-else class="text-xs text-gray-400 italic">No mapping</p>
+                <p v-else class="text-xs text-gray-400 dark:text-slate-600 italic">No mapping</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Unmapped Columns Warning -->
-      <div v-if="unmappedColumns.length > 0" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div v-if="unmappedColumns.length > 0" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
         <div class="flex items-start">
-          <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
           </svg>
           <div class="flex-1">
-            <h4 class="font-semibold text-yellow-900">Unmapped Columns ({{ unmappedColumns.length }})</h4>
-            <p class="text-sm text-yellow-800 mt-1">These CSV columns were not mapped and will be ignored:</p>
+            <h4 class="font-semibold text-yellow-900 dark:text-yellow-100">Unmapped Columns ({{ unmappedColumns.length }})</h4>
+            <p class="text-sm text-yellow-800 dark:text-yellow-200 mt-1">These CSV columns were not mapped and will be ignored:</p>
             <div class="flex flex-wrap gap-2 mt-2">
               <span v-for="col in unmappedColumns" :key="col"
-                    class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-mono">
+                    class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 rounded text-xs font-mono border border-transparent dark:border-yellow-800">
                 {{ col }}
               </span>
             </div>
@@ -123,14 +129,13 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
       <div class="flex justify-between pt-4">
         <button @click="$emit('back')"
-                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                class="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
           Back
         </button>
         <button @click="proceedToValidation"
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg transition-colors shadow-sm">
           Next: Validate & Import
         </button>
       </div>
@@ -139,6 +144,7 @@
 </template>
 
 <script>
+// The logic remains identical to your original component
 import { ref, computed, onMounted } from 'vue';
 
 export default {
@@ -158,6 +164,7 @@ export default {
     const sensorMapping = ref({});
     const expandedCategories = ref({});
 
+    // Same category definitions as your original code
     const categories = [
       {
         id: 'scada',

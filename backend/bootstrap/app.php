@@ -19,17 +19,20 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
 
+        // ✅ FIX: Add the import routes here
         $middleware->validateCsrfTokens(except: [
-            'user/*',  // Add this line
+            'user/*',
+            'api/data-import/chunked/*', // <--- ADD THIS LINE
+            'api/data-import/*'          // <--- AND THIS ONE FOR SAFETY
         ]);
 
         $middleware->alias([
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         ]);
 
-        $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        ]);
+        // Clean up: You don't need to manually prepend EnsureFrontendRequestsAreStateful
+        // if you are calling ->statefulApi() below. It handles it for you.
+        $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -419,22 +419,36 @@ async function fetchHealthSummary() {
     }
 }
 
-async function fetchTurbineHealth(displayId) {
-    const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
-    if (!turbine) return;
+const fetchTurbineHealth = async (turbineId, daysBack = null) => {
     try {
-        const response = await apiClient.get(`/turbines/${turbine._api_id}/component-health`);
-        turbine.healthData = response.data;
-    } catch (err) { console.error(err); }
+        const params = daysBack ? { days_back: daysBack } : {}
+        const response = await apiClient.get(`/turbines/${turbineId}/component-health`, { params })
+
+        const turbine = turbineStore.turbines.find(t => t._api_id == turbineId)
+        if (turbine) {
+            turbine.healthData = response.data
+        }
+        return response.data
+    } catch (err) {
+        console.error('❌ Failed to fetch turbine health:', err)
+        throw err
+    }
 }
 
-async function fetchDeteriorationTrends(displayId) {
-    const turbine = turbineStore.turbines.find(t => t._api_id == displayId);
-    if (!turbine) return;
+const fetchDeteriorationTrends = async (turbineId, daysBack = null) => {
     try {
-        const response = await apiClient.get(`/turbines/${turbine._api_id}/deterioration-trends`);
-        turbine.deteriorationData = response.data;
-    } catch (err) { console.error(err); }
+        const params = daysBack ? { days_back: daysBack } : {}
+        const response = await apiClient.get(`/turbines/${turbineId}/deterioration-trends`, { params })
+
+        const turbine = turbineStore.turbines.find(t => t._api_id == turbineId)
+        if (turbine) {
+            turbine.deteriorationData = response.data
+        }
+        return response.data
+    } catch (err) {
+        console.error('❌ Failed to fetch deterioration trends:', err)
+        throw err
+    }
 }
 
 async function fetchMaintenance(filters = {}) {
@@ -447,6 +461,8 @@ const fetchMaintenanceLogs = fetchMaintenance;
 async function fetchUsers() {
     return usersStore.fetchUsers();
 }
+
+
 
 export function useScadaService() {
     return {
