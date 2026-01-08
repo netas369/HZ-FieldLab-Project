@@ -8,13 +8,12 @@ import OverviewPage from '@/views/OverviewPage.vue'
 import AlarmsPage from '@/views/AlarmsPage.vue'
 import MaintenancePage from '@/views/MaintenancePage.vue'
 import AnalyticsPage from '@/views/AnalyticsPage.vue'
-import ReportsPage from '@/views/ReportsPage.vue'
 import SettingsPage from '@/views/SettingsPage.vue'
 import TurbineDetailPage from '@/views/TurbineDetailPage.vue'
 import LoginPage from '@/views/LoginPage.vue'
-import DataImportPage from "@/views/DataImportPage.vue";
-import ForgotPasswordPage from "@/components/login/ForgotPassword.vue";
-import ResetPasswordPage from "@/components/login/ResetPassword.vue";
+import DataImportPage from '@/views/DataImportPage.vue'
+import ForgotPasswordPage from '@/components/login/ForgotPassword.vue'
+import ResetPasswordPage from '@/components/login/ResetPassword.vue'
 
 const routes = [
   {
@@ -24,8 +23,8 @@ const routes = [
     meta: {
       title: 'login',
       icon: 'dashboard',
-      requiresAuth: false
-    }
+      requiresAuth: false,
+    },
   },
   {
     path: '/forgot-password',
@@ -33,8 +32,8 @@ const routes = [
     component: ForgotPasswordPage,
     meta: {
       title: 'Forgot Password',
-      requiresAuth: false
-    }
+      requiresAuth: false,
+    },
   },
   {
     path: '/reset-password',
@@ -42,39 +41,39 @@ const routes = [
     component: ResetPasswordPage,
     meta: {
       title: 'Reset Password',
-      requiresAuth: false
-    }
+      requiresAuth: false,
+    },
   },
   {
     path: '/',
     component: AppLayout,
     meta: {
-      requiresAuth: true 
+      requiresAuth: true,
     },
     children: [
       {
         path: '',
-        redirect: '/login'
+        redirect: '/login',
       },
       {
         path: 'overview',
         name: 'Overview',
         component: OverviewPage,
-        meta: { 
+        meta: {
           title: 'Overview',
           icon: 'dashboard',
-      requiresAuth: true
-        }
+          requiresAuth: true,
+        },
       },
       {
         path: 'alarms',
         name: 'Alarms',
         component: AlarmsPage,
-        meta: { 
+        meta: {
           title: 'Alarms',
           icon: 'alert',
-          requiresAuth: true 
-        }
+          requiresAuth: true,
+        },
       },
       {
         path: 'import',
@@ -84,28 +83,28 @@ const routes = [
           title: 'Import',
           icon: 'import',
           requiresAuth: true,
-          roles: ['admin', 'data_analyst']
-        }
+          roles: ['admin', 'data_analyst'],
+        },
       },
       {
         path: 'maintenance',
         name: 'Maintenance',
         component: MaintenancePage,
-        meta: { 
+        meta: {
           title: 'Maintenance',
           icon: 'wrench',
-          requiresAuth: true 
-        }
+          requiresAuth: true,
+        },
       },
       {
         path: 'analytics',
         name: 'Analytics',
         component: AnalyticsPage,
-        meta: { 
+        meta: {
           title: 'Analytics',
           icon: 'chart',
-          requiresAuth: true 
-        }
+          requiresAuth: true,
+        },
       },
       // {
       //   path: 'reports',
@@ -125,26 +124,26 @@ const routes = [
           title: 'Settings',
           icon: 'settings',
           requiresAuth: true,
-          roles: ['admin']
-        }
+          roles: ['admin'],
+        },
       },
       {
         path: 'turbine/:id',
         name: 'TurbineDetail',
         component: TurbineDetailPage,
-        meta: { 
+        meta: {
           title: 'Turbine Details',
-          requiresAuth: true
+          requiresAuth: true,
         },
         props: true,
-      }
-    ]
+      },
+    ],
   },
   // 404 redirect
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/overview'
-  }
+    redirect: '/overview',
+  },
 ]
 
 const router = createRouter({
@@ -156,47 +155,44 @@ const router = createRouter({
       return savedPosition
     }
     return { top: 0, behavior: 'smooth' }
-  }
+  },
 })
 
 router.beforeEach((to, from, next) => {
   const baseTitle = 'WindFlow SCADA'
-  document.title = to.meta.title
-    ? `${to.meta.title} - ${baseTitle}`
-    : baseTitle
+  document.title = to.meta.title ? `${to.meta.title} - ${baseTitle}` : baseTitle
   const user = JSON.parse(localStorage.getItem('user') || 'null')
-  const isAuthenticated = !!user
 
   if (to.path === '/login') {
     if (user) {
-      return next('/dashboard');
+      return next('/dashboard')
     }
-    return next();
+    return next()
   }
 
   if (to.path === '/') {
     if (user) {
-      return next('/dashboard');
+      return next('/dashboard')
     }
-    return next('/login');
+    return next('/login')
   }
 
   if (to.meta.requiresAuth && !user) {
-    return next('/login');
+    return next('/login')
   }
 
   if (to.meta.roles && user && !to.meta.roles.includes(user.role)) {
-    return next('/dashboard');
+    return next('/dashboard')
   }
 
-  next();
+  next()
 })
 
 // After navigation hook (for analytics, etc.)
 router.afterEach((to, from) => {
   // Log route changes
   console.log(`Navigation: ${from.path} → ${to.path}`)
-  
+
   // You can send analytics here
   // analytics.track('page_view', { path: to.path })
 })

@@ -5,12 +5,20 @@
     </h1>
 
     <!-- Loading State -->
-    <div v-if="loading" class="text-center py-20">
-      <div class="text-blue-500 text-xl">Loading turbines...</div>
+    <div
+      v-if="loading"
+      class="text-center py-20"
+    >
+      <div class="text-blue-500 text-xl">
+        Loading turbines...
+      </div>
     </div>
 
     <!-- Error State -->
-    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center">
+    <div
+      v-if="error"
+      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center"
+    >
       {{ error }}
     </div>
 
@@ -22,11 +30,15 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
         <div
-            v-for="turbine in turbines"
-            :key="turbine.id"
-            @click="selectTurbine(turbine)"
-            class="bg-white border-2 rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-lg"
-            :class="selectedTurbine && selectedTurbine.id === turbine.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'"
+          v-for="turbine in turbines"
+          :key="turbine.id"
+          class="bg-white border-2 rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-lg"
+          :class="
+            selectedTurbine && selectedTurbine.id === turbine.id
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-200 hover:border-blue-300'
+          "
+          @click="selectTurbine(turbine)"
         >
           <h3 class="text-xl font-bold text-gray-800 mb-2">
             {{ turbine.turbine_id }}
@@ -42,22 +54,22 @@
 
       <!-- Use the separate detail component -->
       <TurbineHistoryDetails
-          v-if="selectedTurbine"
-          :turbine="selectedTurbine"
-          @close="clearSelection"
+        v-if="selectedTurbine"
+        :turbine="selectedTurbine"
+        @close="clearSelection"
       />
     </div>
   </div>
 </template>
 
 <script>
-import TurbineHistoryDetails from './TurbineHistoryDetails.vue';
+import TurbineHistoryDetails from './TurbineHistoryDetails.vue'
 
 export default {
   name: 'HistoryPage',
 
   components: {
-    TurbineHistoryDetails  // Register the child component
+    TurbineHistoryDetails, // Register the child component
   },
 
   data() {
@@ -65,57 +77,57 @@ export default {
       turbines: [],
       selectedTurbine: null,
       loading: false,
-      error: null
+      error: null,
     }
   },
 
   created() {
-    this.fetchTurbines();
+    this.fetchTurbines()
   },
 
   methods: {
     async fetchTurbines() {
-      this.loading = true;
-      this.error = null;
+      this.loading = true
+      this.error = null
 
       try {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL;
-        const response = await fetch(`${apiUrl}/turbines/`);
+        const apiUrl = import.meta.env.VITE_API_BASE_URL
+        const response = await fetch(`${apiUrl}/turbines/`)
 
         if (!response.ok) {
-          throw new Error('Failed to fetch turbines');
+          throw new Error('Failed to fetch turbines')
         }
 
-        const data = await response.json();
-        this.turbines = data;
+        const data = await response.json()
+        this.turbines = data
       } catch (err) {
-        this.error = err.message;
-        console.error('Error:', err);
+        this.error = err.message
+        console.error('Error:', err)
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
 
     formatDate(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+      const date = new Date(dateString)
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
     },
 
     selectTurbine(turbine) {
-      this.selectedTurbine = turbine;
+      this.selectedTurbine = turbine
 
       // Smooth scroll to details
       this.$nextTick(() => {
-        const element = document.querySelector('.border-blue-500');
+        const element = document.querySelector('.border-blue-500')
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          element.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
         }
-      });
+      })
     },
 
     clearSelection() {
-      this.selectedTurbine = null;
-    }
-  }
+      this.selectedTurbine = null
+    },
+  },
 }
 </script>

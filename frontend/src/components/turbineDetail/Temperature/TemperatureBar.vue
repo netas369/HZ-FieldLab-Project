@@ -6,20 +6,15 @@
         <span class="font-bold text-slate-900 dark:text-white">
           {{ formatTemperature(value) }}°C
         </span>
-        <span
-            :class="[
-            'w-2 h-2 rounded-full',
-            getStatusDotColor()
-          ]"
-        ></span>
+        <span :class="['w-2 h-2 rounded-full', getStatusDotColor()]" />
       </div>
     </div>
 
     <div class="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
       <div
-          :class="['h-full rounded-full transition-all duration-500', getBarColor()]"
-          :style="{ width: `${getPercentage()}%` }"
-      ></div>
+        :class="['h-full rounded-full transition-all duration-500', getBarColor()]"
+        :style="{ width: `${getPercentage()}%` }"
+      />
     </div>
   </div>
 </template>
@@ -28,16 +23,16 @@
 const props = defineProps({
   label: {
     type: String,
-    required: true
+    required: true,
   },
   value: {
     type: [Number, String],
-    required: true
+    required: true,
   },
   status: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 })
 
 const formatTemperature = (temp) => {
@@ -63,7 +58,7 @@ const getBarColor = () => {
     green: 'bg-green-500',
     yellow: 'bg-yellow-500',
     orange: 'bg-orange-500',
-    red: 'bg-red-500'
+    red: 'bg-red-500',
   }
   return colors[color] || 'bg-slate-500'
 }
@@ -74,7 +69,7 @@ const getStatusDotColor = () => {
     green: 'bg-green-500',
     yellow: 'bg-yellow-500',
     orange: 'bg-orange-500',
-    red: 'bg-red-500'
+    red: 'bg-red-500',
   }
   return colors[color] || 'bg-slate-400'
 }

@@ -6,8 +6,8 @@
         Selected Turbine: {{ turbine.turbine_id }}
       </h2>
       <button
-          @click="$emit('close')"
-          class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        @click="$emit('close')"
       >
         Close
       </button>
@@ -16,18 +16,30 @@
     <!-- Turbine Basic Info -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
       <div class="bg-gray-50 p-4 rounded-lg">
-        <p class="text-gray-600 text-sm">Database ID</p>
-        <p class="text-xl font-bold text-gray-800">{{ turbine.id }}</p>
+        <p class="text-gray-600 text-sm">
+          Database ID
+        </p>
+        <p class="text-xl font-bold text-gray-800">
+          {{ turbine.id }}
+        </p>
       </div>
 
       <div class="bg-gray-50 p-4 rounded-lg">
-        <p class="text-gray-600 text-sm">Created</p>
-        <p class="text-xl font-bold text-gray-800">{{ formatDate(turbine.created_at) }}</p>
+        <p class="text-gray-600 text-sm">
+          Created
+        </p>
+        <p class="text-xl font-bold text-gray-800">
+          {{ formatDate(turbine.created_at) }}
+        </p>
       </div>
 
       <div class="bg-gray-50 p-4 rounded-lg">
-        <p class="text-gray-600 text-sm">Last Updated</p>
-        <p class="text-xl font-bold text-gray-800">{{ formatDate(turbine.updated_at) }}</p>
+        <p class="text-gray-600 text-sm">
+          Last Updated
+        </p>
+        <p class="text-xl font-bold text-gray-800">
+          {{ formatDate(turbine.updated_at) }}
+        </p>
       </div>
     </div>
 
@@ -74,15 +86,17 @@ export default {
   props: {
     turbine: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
+
+  emits: ['close'],
 
   methods: {
     formatDate(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-    }
-  }
+      const date = new Date(dateString)
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+    },
+  },
 }
 </script>

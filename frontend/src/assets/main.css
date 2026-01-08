@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @import './base.css';
 
 @plugin "@tailwindcss/forms";
@@ -6,10 +6,10 @@
 @variant dark (&:where(.dark, .dark *));
 
 :root {
-    color-scheme: light; /* Default to light */
+  color-scheme: light; /* Default to light */
 }
 
 /* 2. Switch OS controls to dark when the .dark class is present */
 :root:has(.dark) {
-    color-scheme: dark;
+  color-scheme: dark;
 }

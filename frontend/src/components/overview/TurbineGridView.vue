@@ -16,8 +16,8 @@ defineProps({
   turbines: {
     type: Array,
     required: true,
-    default: () => []
-  }
+    default: () => [],
+  },
 })
 
 defineEmits(['select'])
