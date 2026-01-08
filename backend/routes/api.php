@@ -57,6 +57,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 Route::get('dashboard/all', [LiveDataController::class, 'getAllTurbinesData']);
+Route::get('analytics', [LiveDataController::class, 'getAnalyticsData']);
 
 // ============================================
 // HISTORY DATA

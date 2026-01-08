@@ -1,5 +1,7 @@
 <template>
-  <div class="space-y-6">
+  <div class="flex gap-6">
+    <!-- Main Content -->
+    <div class="flex-1 space-y-6">
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center">
@@ -25,9 +27,32 @@
     <template v-else>
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Analytics Dashboard</h2>
-          <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Real-time performance metrics and insights</p>
+        <div class="flex-1">
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Analytics Dashboard</h2>
+            <button
+                v-if="selectedTimeRange !== 'custom'"
+                @click="refreshData"
+                :disabled="loading"
+                class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh data"
+            >
+              <svg :class="['w-5 h-5', loading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+          <div class="flex items-center gap-2 mt-1">
+            <p class="text-sm text-slate-600 dark:text-slate-400">{{ dateRangeDisplay }}</p>
+            <template v-if="selectedTimeRange !== 'custom'">
+              <span v-if="lastFetchTime" class="text-xs text-slate-500 dark:text-slate-500">
+                • Updated {{ lastFetchTime }}
+              </span>
+              <span v-if="isDataStale" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                Data may be outdated
+              </span>
+            </template>
+          </div>
         </div>
 
         <!-- Time Range Selector -->
@@ -35,7 +60,7 @@
           <button
               v-for="range in timeRanges"
               :key="range"
-              @click="selectedTimeRange = range"
+              @click="selectTimeRange(range)"
               :class="[
             'px-4 py-2 rounded-md text-sm font-medium transition-all',
             selectedTimeRange === range
@@ -45,6 +70,81 @@
           >
             {{ range }}
           </button>
+          <button
+              @click="showCustomRangePicker = true"
+              :class="[
+            'px-4 py-2 rounded-md text-sm font-medium transition-all',
+            selectedTimeRange === 'custom'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          ]"
+          >
+            Other
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Date Range Picker Modal -->
+      <div
+          v-if="showCustomRangePicker"
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          @click.self="showCustomRangePicker = false"
+      >
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6 w-full max-w-md border border-slate-200 dark:border-slate-700">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Custom Date Range</h3>
+            <button
+                @click="showCustomRangePicker = false"
+                class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Start Date
+              </label>
+              <input
+                  v-model="customStartDate"
+                  type="date"
+                  class="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                End Date
+              </label>
+              <input
+                  v-model="customEndDate"
+                  type="date"
+                  class="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div v-if="dateRangeError" class="text-sm text-red-600 dark:text-red-400">
+              {{ dateRangeError }}
+            </div>
+
+            <div class="flex gap-3 pt-2">
+              <button
+                  @click="applyCustomRange"
+                  class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Apply
+              </button>
+              <button
+                  @click="showCustomRangePicker = false"
+                  class="flex-1 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -58,10 +158,6 @@
           <div class="flex items-start justify-between mb-4">
             <div :class="['p-3 rounded-lg group-hover:scale-110 transition-transform', getKpiColorClass(kpi.color)]">
               <component :is="getIcon(kpi.icon)" class="w-6 h-6" />
-            </div>
-            <div :class="['flex items-center gap-1 text-sm font-medium', getTrendColor(kpi.change)]">
-              <component :is="getTrendIcon(kpi.change)" class="w-4 h-4" />
-              <span>{{ kpi.trend }}</span>
             </div>
           </div>
           <div>
@@ -259,91 +355,433 @@
         </div>
       </div>
     </template>
+    </div>
+
+    <!-- History Sidebar -->
+    <div class="w-80 flex-shrink-0">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 sticky top-6">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <h3 class="font-semibold text-slate-900 dark:text-white">Recent Fetches</h3>
+              <button
+                  @click="showCustomRangePicker = true"
+                  class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  title="Add custom date range"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
+            <button
+                v-if="customFetches.length > 0"
+                @click="clearHistory"
+                class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+            >
+              Clear All
+            </button>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Custom date range fetches</p>
+        </div>
+
+        <div class="max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div v-if="customFetches.length === 0" class="p-6 text-center">
+            <svg class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p class="text-sm text-slate-600 dark:text-slate-400">No custom fetches</p>
+            <p class="text-xs text-slate-500 dark:text-slate-500 mt-1">Use "Other" to create custom date ranges</p>
+          </div>
+
+          <div
+              v-for="entry in customFetches"
+              :key="entry.id"
+              @click="loadHistoryEntry(entry)"
+              :class="[
+                'p-4 border-b border-slate-100 dark:border-slate-700 cursor-pointer transition-colors',
+                isActiveEntry(entry)
+                  ? 'bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-l-indigo-500'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              ]"
+          >
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                    Custom
+                  </span>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">{{ entry.timestamp }}</span>
+                </div>
+                <p class="text-xs text-slate-600 dark:text-slate-400 truncate">
+                  {{ formatHistoryDate(entry.startDate) }} - {{ formatHistoryDate(entry.endDate) }}
+                </p>
+              </div>
+              <button
+                  @click.stop="removeHistoryEntry(entry.id)"
+                  class="text-slate-400 hover:text-red-600 dark:hover:text-red-400 flex-shrink-0"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useScadaService } from '@/composables/api.js'
 
-const props = defineProps({
-  turbines: {
-    type: Array,
-    default: () => []
-  },
-  alarms: {
-    type: Array,
-    default: () => []
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  },
-  error: {
-    type: String,
-    default: null
+const { analyticsStore } = useScadaService()
+
+// State
+const selectedTimeRange = ref('24h')
+const timeRanges = ['24h', '7d', '30d', '90d']
+const showCustomRangePicker = ref(false)
+const customStartDate = ref('')
+const customEndDate = ref('')
+const dateRangeError = ref('')
+
+// Computed properties for transformed data
+const turbines = computed(() => {
+  if (!analyticsStore.data?.turbines) return []
+
+  return analyticsStore.data.turbines.map(t => ({
+    id: t.turbine_id,
+    _api_id: t.id,
+    status: getStatusFromCode(t.status),
+    metrics: {
+      power_mw: (t.aggregated_metrics.avg_power_kw / 1000) || 0,
+      wind_speed_ms: t.aggregated_metrics.avg_wind_speed_ms || 0,
+      rotor_rpm: t.current_readings.scada?.rotor_speed_rpm || 0,
+      generator_rpm: t.current_readings.scada?.generator_speed_rpm || 0,
+      pitch_deg: t.current_readings.scada?.pitch_angle_deg || 0,
+      ambient_temp_c: t.current_readings.scada?.ambient_temp_c || 0,
+    },
+    location: t.location || 'Unknown',
+  }))
+})
+
+const alarms = computed(() => {
+  if (!analyticsStore.data?.turbines) return []
+
+  const priorityMap = { 'failed': 'Critical', 'critical': 'Major', 'warning': 'Warning' }
+  const allAlarms = []
+
+  analyticsStore.data.turbines.forEach(turbine => {
+    turbine.alarms.forEach(alarm => {
+      allAlarms.push({
+        id: alarm.id,
+        turbineId: turbine.id,
+        turbine: turbine.turbine_id,
+        title: alarm.message,
+        priority: priorityMap[alarm.severity] || 'Warning',
+        severity: alarm.severity,
+        description: alarm.message,
+        component: alarm.component,
+        time: new Date(alarm.detected_at).toLocaleString(),
+        detectedAt: alarm.detected_at,
+        status: alarm.status,
+        acknowledged: alarm.status === 'acknowledged' || alarm.status === 'resolved',
+        resolved: alarm.status === 'resolved'
+      })
+    })
+  })
+
+  return allAlarms
+})
+
+const loading = computed(() => analyticsStore.loading)
+const error = computed(() => analyticsStore.error)
+
+// Filter to only show custom fetches in history
+const customFetches = computed(() => {
+  return analyticsStore.recentFetches.filter(fetch => fetch.timeRange === 'custom')
+})
+
+// Display the selected date range
+const dateRangeDisplay = computed(() => {
+  if (!analyticsStore.data) {
+    return 'Loading data...'
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  if (selectedTimeRange.value === 'custom' && customStartDate.value && customEndDate.value) {
+    const start = new Date(customStartDate.value)
+    const end = new Date(customEndDate.value)
+    return `Custom Range: ${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+  }
+
+  if (analyticsStore.data.start_date && analyticsStore.data.end_date) {
+    return `${formatDate(analyticsStore.data.start_date)} - ${formatDate(analyticsStore.data.end_date)}`
+  }
+
+  return 'Real-time performance metrics and insights'
+})
+
+// Force update every minute to keep relative timestamps fresh
+const now = ref(new Date())
+
+// Display last fetch time in relative format
+const lastFetchTime = computed(() => {
+  if (!analyticsStore.currentFetch?.fullTimestamp) return null
+
+  // Reference now.value to make this reactive to time updates
+  const currentTime = now.value
+  const fetchTime = new Date(analyticsStore.currentFetch.fullTimestamp)
+  const diffMs = currentTime - fetchTime
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'just now'
+  if (diffMins < 60) return `${diffMins} min ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  return `${diffDays}d ago`
+})
+
+// Check if data is stale (older than 5 minutes)
+const isDataStale = computed(() => {
+  if (!analyticsStore.currentFetch?.fullTimestamp) return false
+
+  // Reference now.value to make this reactive to time updates
+  const currentTime = now.value
+  const fetchTime = new Date(analyticsStore.currentFetch.fullTimestamp)
+  const diffMs = currentTime - fetchTime
+  const diffMins = Math.floor(diffMs / 60000)
+
+  return diffMins >= 5
+})
+
+// Helper function to map status codes to names
+const getStatusFromCode = (statusCode) => {
+  const statusMap = { 100: 'running', 200: 'idle', 300: 'maintenance', 400: 'stopped', 500: 'stopped' }
+  return statusMap[statusCode] || 'error'
+}
+
+// Handle predefined time range selection
+const selectTimeRange = (range) => {
+  selectedTimeRange.value = range
+  customStartDate.value = ''
+  customEndDate.value = ''
+}
+
+// Refresh data - force fetch with current time range
+const refreshData = () => {
+  fetchAnalytics()
+}
+
+// Validate and apply custom date range
+const applyCustomRange = () => {
+  dateRangeError.value = ''
+
+  if (!customStartDate.value || !customEndDate.value) {
+    dateRangeError.value = 'Please select both start and end dates'
+    return
+  }
+
+  const start = new Date(customStartDate.value)
+  const end = new Date(customEndDate.value)
+
+  if (start > end) {
+    dateRangeError.value = 'Start date must be before end date'
+    return
+  }
+
+  if (end > new Date()) {
+    dateRangeError.value = 'End date cannot be in the future'
+    return
+  }
+
+  selectedTimeRange.value = 'custom'
+  showCustomRangePicker.value = false
+  fetchAnalytics()
+}
+
+// Fetch analytics data
+const fetchAnalytics = async () => {
+  try {
+    if (selectedTimeRange.value === 'custom' && customStartDate.value && customEndDate.value) {
+      await analyticsStore.fetchAnalytics('custom', customStartDate.value, customEndDate.value)
+    } else {
+      await analyticsStore.fetchAnalytics(selectedTimeRange.value)
+    }
+  } catch (err) {
+    console.error('Failed to fetch analytics:', err)
+  }
+}
+
+// Track if we're loading from cache to avoid auto-fetch
+const isLoadingFromCache = ref(false)
+
+// Watch for time range changes and refetch
+watch(selectedTimeRange, (newVal) => {
+  // Skip auto-fetch if we're loading from cache or switching to custom
+  if (isLoadingFromCache.value || newVal === 'custom') {
+    isLoadingFromCache.value = false
+    return
+  }
+
+  // Auto-fetch for predefined ranges when user clicks the button
+  if (newVal !== 'custom') {
+    fetchAnalytics()
   }
 })
 
-// State
-const selectedTimeRange = ref('7d')
-const timeRanges = ['24h', '7d', '30d', '90d']
+// History management
+const loadHistoryEntry = (entry) => {
+  analyticsStore.loadFromHistory(entry)
+
+  // Set flag to prevent auto-fetch when updating selectedTimeRange
+  isLoadingFromCache.value = true
+
+  // Update UI state to match the loaded entry
+  selectedTimeRange.value = entry.timeRange
+  if (entry.timeRange === 'custom') {
+    // Extract date portion (YYYY-MM-DD) from ISO string or date string
+    customStartDate.value = entry.startDate.includes('T')
+      ? entry.startDate.split('T')[0]
+      : entry.startDate
+    customEndDate.value = entry.endDate.includes('T')
+      ? entry.endDate.split('T')[0]
+      : entry.endDate
+  }
+}
+
+const removeHistoryEntry = (entryId) => {
+  analyticsStore.removeFromHistory(entryId)
+
+  // If we deleted the current entry, fetch fresh data
+  if (!analyticsStore.currentFetch) {
+    fetchAnalytics()
+  }
+}
+
+const clearHistory = () => {
+  if (confirm('Are you sure you want to clear all custom date range history?')) {
+    // Remove only custom fetches from history
+    const customIds = customFetches.value.map(f => f.id)
+    customIds.forEach(id => analyticsStore.removeFromHistory(id))
+
+    // If current fetch was a custom one, fetch fresh data
+    if (analyticsStore.currentFetch?.timeRange === 'custom') {
+      fetchAnalytics()
+    }
+  }
+}
+
+const isActiveEntry = (entry) => {
+  return analyticsStore.currentFetch?.id === entry.id
+}
+
+const formatHistoryDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// Setup interval for timestamp updates
+let intervalId = null
+
+// Fetch initial data
+onMounted(() => {
+  // If we have a saved fetch, load it from cache
+  if (analyticsStore.currentFetch && analyticsStore.currentFetch.payload) {
+    analyticsStore.data = analyticsStore.currentFetch.payload
+
+    // Set flag to prevent auto-fetch when updating selectedTimeRange
+    isLoadingFromCache.value = true
+    selectedTimeRange.value = analyticsStore.currentFetch.timeRange
+
+    if (analyticsStore.currentFetch.timeRange === 'custom') {
+      // Extract date portion (YYYY-MM-DD) from ISO string or date string
+      customStartDate.value = analyticsStore.currentFetch.startDate.includes('T')
+        ? analyticsStore.currentFetch.startDate.split('T')[0]
+        : analyticsStore.currentFetch.startDate
+      customEndDate.value = analyticsStore.currentFetch.endDate.includes('T')
+        ? analyticsStore.currentFetch.endDate.split('T')[0]
+        : analyticsStore.currentFetch.endDate
+    }
+  } else {
+    // No cache - fetch fresh data with default time range
+    fetchAnalytics()
+  }
+
+  // Update time every minute to keep relative timestamps accurate
+  intervalId = setInterval(() => {
+    now.value = new Date()
+  }, 60000)
+})
+
+// Cleanup interval on unmount
+onUnmounted(() => {
+  if (intervalId) {
+    clearInterval(intervalId)
+  }
+})
 
 // Computed - Real KPIs from Data
 const totalEnergyOutput = computed(() => {
-  const total = props.turbines.reduce((sum, t) => sum + (t.metrics?.power_mw || 0), 0)
+  const total = turbines.value.reduce((sum, t) => sum + (t.metrics?.power_mw || 0), 0)
   return `${total.toFixed(1)} MW`
 })
 
 const averageWindSpeed = computed(() => {
-  if (props.turbines.length === 0) return 0
-  const total = props.turbines.reduce((sum, t) => sum + (t.metrics?.wind_speed_ms || 0), 0)
-  return total / props.turbines.length
+  if (turbines.value.length === 0) return 0
+  const total = turbines.value.reduce((sum, t) => sum + (t.metrics?.wind_speed_ms || 0), 0)
+  return total / turbines.value.length
 })
 
 const fleetAvailability = computed(() => {
-  if (props.turbines.length === 0) return 0
-  const running = props.turbines.filter(t => t.status === 'running').length
-  return (running / props.turbines.length) * 100
+  if (turbines.value.length === 0) return 0
+  const running = turbines.value.filter(t => t.status === 'running').length
+  return (running / turbines.value.length) * 100
 })
 
 const runningTurbines = computed(() => {
-  return props.turbines.filter(t => t.status === 'running').length
+  return turbines.value.filter(t => t.status === 'running').length
 })
 
 const activeAlarmsCount = computed(() => {
-  return props.alarms.filter(a => !a.acknowledged).length
+  return alarms.value.filter(a => !a.acknowledged).length
 })
 
 const kpiMetrics = computed(() => [
   {
     label: 'Total Power Output',
     value: totalEnergyOutput.value,
-    trend: '+12.5%',
-    change: 'up',
     icon: 'zap',
     color: 'emerald'
   },
   {
     label: 'Average Wind Speed',
     value: `${averageWindSpeed.value.toFixed(1)} m/s`,
-    trend: '+2.1%',
-    change: 'up',
     icon: 'wind',
     color: 'blue'
   },
   {
     label: 'Fleet Availability',
     value: `${fleetAvailability.value.toFixed(1)}%`,
-    trend: '-0.8%',
-    change: fleetAvailability.value >= 90 ? 'up' : 'down',
     icon: 'activity',
     color: 'violet'
   },
   {
     label: 'Active Alarms',
     value: activeAlarmsCount.value,
-    trend: activeAlarmsCount.value === 0 ? 'All Clear' : `${activeAlarmsCount.value} active`,
-    change: activeAlarmsCount.value === 0 ? 'up' : 'down',
     icon: 'alert',
     color: 'orange'
   }
@@ -351,7 +789,7 @@ const kpiMetrics = computed(() => [
 
 // Fleet Status Distribution
 const fleetStatusData = computed(() => {
-  const statusCounts = props.turbines.reduce((acc, t) => {
+  const statusCounts = turbines.value.reduce((acc, t) => {
     acc[t.status] = (acc[t.status] || 0) + 1
     return acc
   }, {})
@@ -359,7 +797,7 @@ const fleetStatusData = computed(() => {
   return Object.entries(statusCounts).map(([status, count]) => ({
     status,
     count,
-    percent: ((count / props.turbines.length) * 100).toFixed(0)
+    percent: ((count / turbines.value.length) * 100).toFixed(0)
   }))
 })
 
@@ -381,18 +819,18 @@ const fleetStatusSegments = computed(() => {
 
 // Sorted Turbines by Power
 const sortedTurbinesByPower = computed(() => {
-  return [...props.turbines].sort((a, b) => (b.metrics?.power_mw || 0) - (a.metrics?.power_mw || 0))
+  return [...turbines.value].sort((a, b) => (b.metrics?.power_mw || 0) - (a.metrics?.power_mw || 0))
 })
 
 // Max Power Stats
 const maxPowerOutput = computed(() => {
-  if (props.turbines.length === 0) return 0
-  return Math.max(...props.turbines.map(t => t.metrics?.power_mw || 0))
+  if (turbines.value.length === 0) return 0
+  return Math.max(...turbines.value.map(t => t.metrics?.power_mw || 0))
 })
 
 const maxPowerTurbine = computed(() => {
-  if (props.turbines.length === 0) return 'N/A'
-  const maxTurbine = props.turbines.reduce((max, t) => 
+  if (turbines.value.length === 0) return 'N/A'
+  const maxTurbine = turbines.value.reduce((max, t) =>
     (t.metrics?.power_mw || 0) > (max.metrics?.power_mw || 0) ? t : max
   )
   return maxTurbine.id
@@ -403,7 +841,7 @@ const alarmPriorityData = computed(() => {
   const priorities = ['Critical', 'Major', 'Warning', 'Minor']
   return priorities.map(level => ({
     level,
-    count: props.alarms.filter(a => a.priority === level).length
+    count: alarms.value.filter(a => a.priority === level).length
   }))
 })
 
@@ -418,14 +856,6 @@ const getIcon = (iconName) => {
   return icons[iconName] || icons.zap
 }
 
-const getTrendIcon = (change) => {
-  const icons = {
-    up: { template: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>' },
-    down: { template: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>' }
-  }
-  return icons[change] || icons.up
-}
-
 const getKpiColorClass = (color) => {
   const classes = {
     emerald: 'bg-emerald-500 text-emerald-50',
@@ -434,10 +864,6 @@ const getKpiColorClass = (color) => {
     orange: 'bg-orange-500 text-orange-50'
   }
   return classes[color] || 'bg-slate-500 text-slate-50'
-}
-
-const getTrendColor = (change) => {
-  return change === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
 }
 
 const getStatusColor = (status) => {

@@ -753,6 +753,22 @@ class AlarmService
     }
 
     /**
+     * Get all alarms for a turbine (including resolved and acknowledged)
+     */
+    public function getAllAlarms($turbineId, $severity = null)
+    {
+        $query = Alarm::where('turbine_id', $turbineId)
+            ->orderBy('severity', 'desc')
+            ->orderBy('detected_at', 'desc');
+
+        if ($severity) {
+            $query->where('severity', $severity);
+        }
+
+        return $query->get();
+    }
+
+    /**
      * Get alarm count by severity for a turbine
      */
     public function getAlarmCountsBySeverity($turbineId)
