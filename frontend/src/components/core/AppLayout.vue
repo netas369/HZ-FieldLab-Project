@@ -409,9 +409,9 @@ const navItems = computed(() => [
   { id: 'alarms', label: 'Alarms', icon: 'alert', badge: criticalAlarmsCount.value },
   { id: 'maintenance', label: 'Maintenance', icon: 'wrench', badge: null },
   { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
-  { id: 'import', label: 'Imports', icon: 'import', badge: null },
+  { id: 'import', label: 'Imports', icon: 'import', badge: null, roles: ['admin', 'data_analyst'] },
   // { id: 'reports', label: 'Reports', icon: 'file', badge: null },
-  { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
+  { id: 'settings', label: 'Settings', icon: 'settings', badge: null, roles: ['admin'] }
 ])
 
 const criticalAlarmsCount = computed(() => alarmStore.criticalCount)

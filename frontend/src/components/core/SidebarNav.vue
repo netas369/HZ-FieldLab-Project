@@ -4,7 +4,7 @@
       <!-- Navigation -->
       <nav class="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin" aria-label="Main navigation">
         <ul class="space-y-1">
-          <li v-for="tab in tabs" :key="tab.id">
+          <li v-for="tab in visibleTabs" :key="tab.id">
             <button
                 type="button"
                 @click="selectTab(tab.id)"
@@ -91,8 +91,8 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-
-
+import { useAuth } from '@/composables/useAuth';  
+const { hasRole } = useAuth();
 
 const props = defineProps({
   searchQuery: {
@@ -112,7 +112,7 @@ const props = defineProps({
       { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
       { id: 'import', label: 'Imports', icon: 'import', badge: null },
       // { id: 'reports', label: 'Reports', icon: 'file', badge: null },
-      // { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
+      { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
     ]
   }
 })
@@ -206,6 +206,14 @@ const getIcon = (iconName) => {
 
   return icons[iconName] || icons.dashboard
 }
+
+const visibleTabs = computed(() => {
+  return props.tabs.filter(item => {
+    if (!item.roles) return true;
+
+    return hasRole(item.roles);
+  });
+});
 </script>
 
 <style scoped>
