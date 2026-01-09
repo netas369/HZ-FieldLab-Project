@@ -216,7 +216,7 @@ const getInitials = (name) => {
 }
 
 const latestAlarms = computed(() => {
-  const alarms = alarmStore.alarms || [];
+  const alarms = alarmStore.activeAlarms || [];
   return [...alarms]
     .sort((a, b) => new Date(b.detectedAt) - new Date(a.detectedAt))
     .slice(0, 3);

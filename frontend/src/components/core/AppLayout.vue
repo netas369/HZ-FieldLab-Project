@@ -414,7 +414,7 @@ const navItems = computed(() => [
   { id: 'settings', label: 'Settings', icon: 'settings', badge: null, roles: ['admin'] }
 ])
 
-const criticalAlarmsCount = computed(() => alarmStore.criticalCount)
+const criticalAlarmsCount = computed(() => alarmStore.activeAlarms.length)
 
 // ============================================================================
 // METHODS
