@@ -571,7 +571,11 @@ class TurbineDataService
 
     private function getGearboxPressureStatusFallback($pressure)
     {
-        if ($pressure >= 2.3) {
+        if ($pressure >= 3.5) {
+            return ['status' => 'critical', 'label' => 'Very High Pressure', 'color' => 'orange', 'description' => 'Lubrication failure risk'];
+        } else if ($pressure >= 3.1) {
+            return ['status' => 'warning', 'label' => 'High Pressure', 'color' => 'yellow', 'description' => 'Monitor lubrication system'];
+        } else if ($pressure >= 2.3) {
             return ['status' => 'normal', 'label' => 'Normal', 'color' => 'green', 'description' => 'Adequate lubrication pressure'];
         } elseif ($pressure >= 2.0) {
             return ['status' => 'warning', 'label' => 'Low Pressure', 'color' => 'yellow', 'description' => 'Monitor lubrication system'];
@@ -584,14 +588,18 @@ class TurbineDataService
 
     private function getHydraulicPressureStatusFallback($pressure)
     {
-        if ($pressure >= 155) {
+        if ($pressure >= 175) {
+            return ['status' => 'critical', 'label' => 'Low Pressure', 'color' => 'orange', 'description' => 'Pitch system compromised'];
+        } elseif ($pressure >= 165) {
+            return ['status' => 'warning', 'label' => 'Above Normal', 'color' => 'yellow', 'description' => 'Pitch response may be slower'];
+        } elseif ($pressure >= 155) {
             return ['status' => 'normal', 'label' => 'Normal', 'color' => 'green', 'description' => 'Optimal pitch system pressure'];
         } elseif ($pressure >= 150) {
             return ['status' => 'warning', 'label' => 'Below Normal', 'color' => 'yellow', 'description' => 'Pitch response may be slower'];
         } elseif ($pressure >= 140) {
             return ['status' => 'critical', 'label' => 'Low Pressure', 'color' => 'orange', 'description' => 'Pitch system compromised'];
         } else {
-            return ['status' => 'failed', 'label' => 'Pressure Critical', 'color' => 'red', 'description' => 'Pitch system failure'];
+            return ['status' => 'failed', 'label' => '   Critical', 'color' => 'red', 'description' => 'Pitch system failure'];
         }
     }
 
