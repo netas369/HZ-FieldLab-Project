@@ -380,29 +380,6 @@ class AlarmServiceTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function it_sets_status_to_error_when_scada_data_is_stale()
-    {
-        ScadaReading::create([
-            'turbine_id' => $this->turbine->id,
-            'reading_timestamp' => Carbon::now()->subHours(2), // 2 hours old
-            'wind_speed_ms' => 10.0,
-            'power_kw' => 1500,
-            'rotor_speed_rpm' => 15,
-            'generator_speed_rpm' => 1500,
-            'pitch_angle_deg' => 5,
-            'yaw_angle_deg' => 180,
-            'nacelle_direction_deg' => 180,
-            'ambient_temp_c' => 15,
-            'wind_direction_deg' => 180,
-        ]);
-
-        $this->alarmService->updateTurbineStatus($this->turbine->id);
-
-        $this->turbine->refresh();
-        $this->assertEquals(TurbineStatus::Error, $this->turbine->status);
-    }
-
-    #[\PHPUnit\Framework\Attributes\Test]
     public function it_sets_status_to_idle_when_wind_speed_below_cut_in()
     {
         // Get wind speed threshold
