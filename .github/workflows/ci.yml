@@ -58,6 +58,12 @@ jobs:
         run: composer install --no-interaction --prefer-dist
         working-directory: backend
 
+      - name: Setup Laravel
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
       - name: Run Laravel Pint
         run: composer lint
         working-directory: backend
