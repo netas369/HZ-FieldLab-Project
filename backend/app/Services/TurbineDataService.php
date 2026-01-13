@@ -18,6 +18,7 @@ class TurbineDataService
 
     /**
      * Get gearbox oil pressure status
+     * ✅ FIXED: Now checks both too high AND too low
      */
     public function getGearboxPressureStatus($pressure, $turbineId)
     {
@@ -38,42 +39,63 @@ class TurbineDataService
         // ✅ USE MODEL METHOD - handles min/max correctly
         $status = $threshold->getStatus($pressure);
 
-        return match($status) {
-            'normal' => [
+        // ✅ CHECK DIRECTION: Is pressure too high or too low?
+        $tooHigh = false;
+        $tooLow = false;
+
+        if ($status !== 'normal' && $status !== 'unknown') {
+            // Check if value exceeds maximum thresholds (overpressure)
+            if ($threshold->warning_max !== null && $pressure > $threshold->warning_max) {
+                $tooHigh = true;
+            }
+            // Check if value is below minimum thresholds (insufficient pressure)
+            elseif ($threshold->warning_min !== null && $pressure <= $threshold->warning_min) {
+                $tooLow = true;
+            }
+        }
+
+        // Return appropriate label based on severity AND direction
+        if ($status === 'normal') {
+            return [
                 'status' => 'normal',
                 'label' => 'Normal',
                 'color' => 'green',
                 'description' => 'Adequate lubrication pressure'
-            ],
-            'warning' => [
+            ];
+        } elseif ($status === 'warning') {
+            return [
                 'status' => 'warning',
-                'label' => 'Low Pressure',
+                'label' => $tooHigh ? 'High Pressure' : 'Low Pressure',
                 'color' => 'yellow',
-                'description' => 'Monitor lubrication system'
-            ],
-            'critical' => [
+                'description' => $tooHigh ? 'Pressure above optimal - check relief valve' : 'Monitor lubrication system'
+            ];
+        } elseif ($status === 'critical') {
+            return [
                 'status' => 'critical',
-                'label' => 'Very Low Pressure',
+                'label' => $tooHigh ? 'Very High Pressure' : 'Very Low Pressure',
                 'color' => 'orange',
-                'description' => 'Lubrication failure risk'
-            ],
-            'failed' => [
+                'description' => $tooHigh ? 'Excessive pressure - component damage risk' : 'Lubrication failure risk'
+            ];
+        } elseif ($status === 'failed') {
+            return [
                 'status' => 'failed',
-                'label' => 'Critically Low',
+                'label' => $tooHigh ? 'Overpressure Critical' : 'Critically Low',
                 'color' => 'red',
-                'description' => 'Lubrication system failure'
-            ],
-            default => [
+                'description' => $tooHigh ? 'Dangerous overpressure - immediate shutdown' : 'Lubrication system failure'
+            ];
+        } else {
+            return [
                 'status' => 'unknown',
                 'label' => 'Unknown',
                 'color' => 'gray',
                 'description' => 'Unable to determine status'
-            ]
-        };
+            ];
+        }
     }
 
     /**
      * Get hydraulic pressure status
+     * ✅ FIXED: Now checks both too high AND too low
      */
     public function getHydraulicPressureStatus($pressure)
     {
@@ -86,38 +108,58 @@ class TurbineDataService
         // ✅ USE MODEL METHOD
         $status = $threshold->getStatus($pressure);
 
-        return match($status) {
-            'normal' => [
+        // ✅ CHECK DIRECTION: Is pressure too high or too low?
+        $tooHigh = false;
+        $tooLow = false;
+
+        if ($status !== 'normal' && $status !== 'unknown') {
+            // Check if value exceeds maximum thresholds (overpressure)
+            if ($threshold->warning_max !== null && $pressure > $threshold->warning_max) {
+                $tooHigh = true;
+            }
+            // Check if value is below minimum thresholds (insufficient pressure)
+            elseif ($threshold->warning_min !== null && $pressure <= $threshold->warning_min) {
+                $tooLow = true;
+            }
+        }
+
+        // Return appropriate label based on severity AND direction
+        if ($status === 'normal') {
+            return [
                 'status' => 'normal',
                 'label' => 'Normal',
                 'color' => 'green',
                 'description' => 'Optimal pitch system pressure'
-            ],
-            'warning' => [
+            ];
+        } elseif ($status === 'warning') {
+            return [
                 'status' => 'warning',
-                'label' => 'Below Normal',
+                'label' => $tooHigh ? 'Above Normal' : 'Below Normal',
                 'color' => 'yellow',
-                'description' => 'Pitch response may be slower'
-            ],
-            'critical' => [
+                'description' => $tooHigh ? 'Pressure higher than optimal' : 'Pitch response may be slower'
+            ];
+        } elseif ($status === 'critical') {
+            return [
                 'status' => 'critical',
-                'label' => 'Low Pressure',
+                'label' => $tooHigh ? 'High Pressure' : 'Low Pressure',
                 'color' => 'orange',
-                'description' => 'Pitch system compromised'
-            ],
-            'failed' => [
+                'description' => $tooHigh ? 'Excessive pressure - check relief valves' : 'Pitch system compromised'
+            ];
+        } elseif ($status === 'failed') {
+            return [
                 'status' => 'failed',
-                'label' => 'Pressure Critical',
+                'label' => $tooHigh ? 'Overpressure Critical' : 'Pressure Critical',
                 'color' => 'red',
-                'description' => 'Pitch system failure - emergency shutdown required'
-            ],
-            default => [
+                'description' => $tooHigh ? 'Dangerous overpressure - immediate shutdown' : 'Pitch system failure - emergency shutdown required'
+            ];
+        } else {
+            return [
                 'status' => 'unknown',
                 'label' => 'Unknown',
                 'color' => 'gray',
                 'description' => 'Unable to determine status'
-            ]
-        };
+            ];
+        }
     }
 
     /**
