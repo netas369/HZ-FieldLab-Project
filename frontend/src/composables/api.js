@@ -346,10 +346,11 @@ async function fetchDashboard() {
                 scadaData: apiTurbine.scada || null,
                 healthData: null,
                 deteriorationData: null,
-                alarmSummary: null,
+                alarmSummary: { total: 0, counts: {} }, // Default to 0
                 _api_id: apiTurbine.id
             };
 
+            // Metrics processing...
             turbineData.metrics.power_mw = turbineData.scadaData?.power_kw ? (turbineData.scadaData.power_kw / 1000) : 0;
             turbineData.metrics.wind_ms = turbineData.scadaData?.wind_speed_ms ? parseFloat(turbineData.scadaData.wind_speed_ms) : 0;
             turbineData.metrics.wind_speed_ms = turbineData.scadaData?.wind_speed_ms ? parseFloat(turbineData.scadaData.wind_speed_ms) : 0;
@@ -358,30 +359,40 @@ async function fetchDashboard() {
             turbineData.metrics.pitch_deg = turbineData.scadaData?.pitch_angle_deg ? parseFloat(turbineData.scadaData.pitch_angle_deg) : 0;
             turbineData.metrics.ambient_temp_c = turbineData.scadaData?.ambient_temp_c ? parseFloat(turbineData.scadaData.ambient_temp_c) : 0;
 
-            if (apiTurbine.alarms) {
+            // --- CHANGED SECTION STARTS HERE ---
+            if (apiTurbine.alarms && apiTurbine.alarms.alarms?.length > 0) {
+
+                // 1. Process the alarms array first
+                const turbineAlarms = apiTurbine.alarms.alarms.map(apiAlarm => ({
+                    id: apiAlarm.id,
+                    turbineId: apiTurbine.id,
+                    title: apiAlarm.message,
+                    priority: priorityMap[apiAlarm.severity] || 'Warning',
+                    severity: apiAlarm.severity,
+                    description: apiAlarm.message,
+                    component: apiAlarm.component,
+                    turbine: displayId,
+                    time: new Date(apiAlarm.detected_at).toLocaleString(),
+                    detectedAt: apiAlarm.detected_at,
+                    status: apiAlarm.status,
+                    acknowledged: apiAlarm.status === 'acknowledged' || apiAlarm.status === 'resolved',
+                    resolved: apiAlarm.status === 'resolved'
+                }));
+
+                // 2. Filter specifically for 'active' status to get the count
+                const activeCount = turbineAlarms.filter(a => a.status === 'active').length;
+
+                // 3. Assign the calculated active count
                 turbineData.alarmSummary = {
-                    total: apiTurbine.alarms.total_alarms,
+                    total: activeCount, // Now uses the filtered count
                     counts: apiTurbine.alarms.counts_by_severity
                 };
-                if (apiTurbine.alarms.alarms?.length > 0) {
-                    const turbineAlarms = apiTurbine.alarms.alarms.map(apiAlarm => ({
-                        id: apiAlarm.id,
-                        turbineId: apiTurbine.id,  // API turbine ID for API calls
-                        title: apiAlarm.message,
-                        priority: priorityMap[apiAlarm.severity] || 'Warning',
-                        severity: apiAlarm.severity,
-                        description: apiAlarm.message,
-                        component: apiAlarm.component,
-                        turbine: displayId,
-                        time: new Date(apiAlarm.detected_at).toLocaleString(),
-                        detectedAt: apiAlarm.detected_at,
-                        status: apiAlarm.status,
-                        acknowledged: apiAlarm.status === 'acknowledged' || apiAlarm.status === 'resolved',
-                        resolved: apiAlarm.status === 'resolved'
-                    }));
-                    allAlarms.push(...turbineAlarms);
-                }
+
+                // 4. Push to global store
+                allAlarms.push(...turbineAlarms);
             }
+            // --- CHANGED SECTION ENDS HERE ---
+
             turbines.push(turbineData);
         }
         turbineStore.turbines = turbines;
