@@ -58,6 +58,7 @@ Before starting, make sure you have these installed on your machine:
 | **Node.js** | 16+ | [Download](https://nodejs.org/) |
 | **Git** | Latest | [Download](https://git-scm.com/) |
 | **Database** | MySQL/PostgreSQL/SQLite | Optional for development |
+| **Docker Desktop** | v28.5.1+ | [Download](https://www.docker.com/products/docker-desktop/) |
 
 ### ✅ Verify Installation
 ```bash
