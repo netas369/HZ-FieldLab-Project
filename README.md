@@ -166,6 +166,12 @@ HZ-FieldLab-Project/
 ```
 </details>
 
+<details>
+  <summary><strong>How to import Training Data</strong></summary>
+Insert csv to storage/app/imports/wind_farm_training_data.csv Step 2 is to php artisan migrate
+Step 3 php artisan import:wind-farm-data storage/app/imports/wind_farm_training_data.csv
+</details>
+
 ## 🚨 Troubleshooting
 
 <details>
