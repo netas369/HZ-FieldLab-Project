@@ -11,15 +11,50 @@ import AnalyticsPage from '@/views/AnalyticsPage.vue'
 import ReportsPage from '@/views/ReportsPage.vue'
 import SettingsPage from '@/views/SettingsPage.vue'
 import TurbineDetailPage from '@/views/TurbineDetailPage.vue'
+import LoginPage from '@/views/LoginPage.vue'
+import DataImportPage from "@/views/DataImportPage.vue";
+import ForgotPasswordPage from "@/components/login/ForgotPassword.vue";
+import ResetPasswordPage from "@/components/login/ResetPassword.vue";
 
 const routes = [
   {
+    path: '/login',
+    name: 'login',
+    component: LoginPage,
+    meta: {
+      title: 'login',
+      icon: 'dashboard',
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPasswordPage,
+    meta: {
+      title: 'Forgot Password',
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPasswordPage,
+    meta: {
+      title: 'Reset Password',
+      requiresAuth: false
+    }
+  },
+  {
     path: '/',
     component: AppLayout,
+    meta: {
+      requiresAuth: true 
+    },
     children: [
       {
         path: '',
-        redirect: '/overview'
+        redirect: '/login'
       },
       {
         path: 'overview',
@@ -27,7 +62,8 @@ const routes = [
         component: OverviewPage,
         meta: { 
           title: 'Overview',
-          icon: 'dashboard'
+          icon: 'dashboard',
+      requiresAuth: true
         }
       },
       {
@@ -36,7 +72,19 @@ const routes = [
         component: AlarmsPage,
         meta: { 
           title: 'Alarms',
-          icon: 'alert'
+          icon: 'alert',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: 'import',
+        name: 'DataImport',
+        component: DataImportPage,
+        meta: {
+          title: 'Import',
+          icon: 'import',
+          requiresAuth: true,
+          roles: ['admin', 'data_analyst']
         }
       },
       {
@@ -45,7 +93,8 @@ const routes = [
         component: MaintenancePage,
         meta: { 
           title: 'Maintenance',
-          icon: 'wrench'
+          icon: 'wrench',
+          requiresAuth: true 
         }
       },
       {
@@ -54,25 +103,29 @@ const routes = [
         component: AnalyticsPage,
         meta: { 
           title: 'Analytics',
-          icon: 'chart'
+          icon: 'chart',
+          requiresAuth: true 
         }
       },
-      {
-        path: 'reports',
-        name: 'Reports',
-        component: ReportsPage,
-        meta: { 
-          title: 'Reports',
-          icon: 'file'
-        }
-      },
+      // {
+      //   path: 'reports',
+      //   name: 'Reports',
+      //   component: ReportsPage,
+      //   meta: {
+      //     title: 'Reports',
+      //     icon: 'file',
+      // requiresAuth: true
+      //   }
+      // },
       {
         path: 'settings',
         name: 'Settings',
         component: SettingsPage,
-        meta: { 
+        meta: {
           title: 'Settings',
-          icon: 'settings'
+          icon: 'settings',
+          requiresAuth: true,
+          roles: ['admin']
         }
       },
       {
@@ -80,9 +133,10 @@ const routes = [
         name: 'TurbineDetail',
         component: TurbineDetailPage,
         meta: { 
-          title: 'Turbine Details'
+          title: 'Turbine Details',
+          requiresAuth: true
         },
-        props: true // Pass route params as props
+        props: true,
       }
     ]
   },
@@ -105,20 +159,37 @@ const router = createRouter({
   }
 })
 
-// Global navigation guard
 router.beforeEach((to, from, next) => {
-  // Update document title
   const baseTitle = 'WindFlow SCADA'
-  document.title = to.meta.title 
-    ? `${to.meta.title} - ${baseTitle}` 
+  document.title = to.meta.title
+    ? `${to.meta.title} - ${baseTitle}`
     : baseTitle
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const isAuthenticated = !!user
 
-  // You can add authentication checks here
-  // if (to.meta.requiresAuth && !isAuthenticated()) {
-  //   return next('/login')
-  // }
+  if (to.path === '/login') {
+    if (user) {
+      return next('/dashboard');
+    }
+    return next();
+  }
 
-  next()
+  if (to.path === '/') {
+    if (user) {
+      return next('/dashboard');
+    }
+    return next('/login');
+  }
+
+  if (to.meta.requiresAuth && !user) {
+    return next('/login');
+  }
+
+  if (to.meta.roles && user && !to.meta.roles.includes(user.role)) {
+    return next('/dashboard');
+  }
+
+  next();
 })
 
 // After navigation hook (for analytics, etc.)

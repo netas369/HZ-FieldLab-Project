@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
@@ -8,7 +7,6 @@
       </div>
     </div>
 
-    <!-- Error State -->
     <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
       <div class="flex items-center gap-3">
         <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,7 +19,6 @@
       </div>
     </div>
 
-    <!-- Turbine Not Found -->
     <div v-else-if="!turbineData" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
       <div class="flex items-center gap-3">
         <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,14 +31,11 @@
       </div>
     </div>
 
-    <!-- Turbine Details -->
     <div v-else>
-      <!-- Header Card -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-        <div class="flex items-start justify-between">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div class="flex items-start gap-4">
-            <!-- Animated Turbine Icon -->
-            <div class="relative w-32 h-32 flex-shrink-0">
+            <div class="relative w-24 h-24 flex-shrink-0">
               <svg viewBox="0 0 100 100" :class="['w-full h-full', iconColor]">
                 <rect x="47" y="45" width="6" height="45" fill="currentColor" opacity="0.3"/>
                 <ellipse cx="50" cy="42" rx="6" ry="6" fill="currentColor" opacity="0.4"/>
@@ -69,141 +63,71 @@
                 </svg>
                 {{ turbineData.location }}
               </p>
-              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Last updated: {{ formatTime(turbineData.lastUpdate) }}
-              </p>
             </div>
           </div>
 
-          <div class="flex gap-2">
-            <button
-                @click="$emit('add-maintenance', turbineData)"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
+          <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+            <div class="bg-slate-100 dark:bg-slate-700 p-1 rounded-lg flex items-center">
+              <button @click="switchView('live')" :class="['px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200', viewMode === 'live' ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300']">Live Monitor</button>
+              <button @click="switchView('history')" :class="['px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200', viewMode === 'history' ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300']">History Analysis</button>
+            </div>
+            <button @click="$emit('add-maintenance', turbineData)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
               Log Maintenance
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Tabbed Sections with Anchors -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <!-- Tab Headers with Status Indicators -->
+      <div v-if="viewMode === 'live'" class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+
         <div class="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
-          <a
-              v-for="tab in tabs"
-              :key="tab.key"
-              :href="`#${tab.key}`"
-              @click.prevent="navigateToTab(tab.key)"
-              :class="[
-              'relative flex-shrink-0 px-6 py-4 font-medium text-sm transition-all',
-              currentTab === tab.key
-                ? 'text-indigo-600 dark:text-indigo-400 bg-slate-50 dark:bg-slate-700/50'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700/30'
-            ]"
-          >
-            <span class="flex items-center gap-2">
-              {{ tab.label }}
-              <!-- Status Indicator Dot -->
-              <span
-                  v-if="getTabStatus(tab.key)"
-                  :class="[
-                  'w-2 h-2 rounded-full',
-                  getTabStatus(tab.key) === 'green' ? 'bg-green-500' : '',
-                  getTabStatus(tab.key) === 'yellow' ? 'bg-yellow-500' : '',
-                  getTabStatus(tab.key) === 'red' ? 'bg-red-500 animate-pulse' : ''
-                ]"
-              ></span>
-            </span>
-            <!-- Active tab indicator -->
-            <div
-                v-if="currentTab === tab.key"
-                class="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400"
-            ></div>
+          <a v-for="tab in tabs" :key="tab.key" :href="`#${tab.key}`" @click.prevent="navigateToTab(tab.key)"
+             :class="['relative flex-shrink-0 px-6 py-4 font-medium text-sm transition-all', currentTab === tab.key ? 'text-indigo-600 dark:text-indigo-400 bg-slate-50 dark:bg-slate-700/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50']">
+            {{ tab.label }}
+            <div v-if="currentTab === tab.key" class="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400"></div>
           </a>
         </div>
 
-        <!-- Tab Content Sections -->
         <div class="p-6">
-          <!-- SCADA Section -->
-          <section :id="'scada'" v-show="currentTab === 'scada'" class="space-y-4">
+          <section v-show="currentTab === 'scada'" class="space-y-4">
             <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">SCADA Data</h3>
             <ScadaTab v-if="turbineData?.scadaData" :scada="turbineData.scadaData" />
-            <div v-else class="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 text-center text-slate-500">
-              No SCADA data available
-            </div>
+            <div v-else class="text-center py-8 text-slate-500">No SCADA data available</div>
           </section>
 
-          <!-- Hydraulic Section -->
-          <section :id="'hydraulic'" v-show="currentTab === 'hydraulic'" class="space-y-4">
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Hydraulic Data</h3>
-            <HydraulicTab v-if="turbineData?.hydraulicData" :hydraulic="turbineData.hydraulicData" />
-            <div v-else class="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 text-center text-slate-500">
-              No hydraulic data available
-            </div>
-          </section>
-
-          <!-- Vibration Section -->
-          <section :id="'vibration'" v-show="currentTab === 'vibration'" class="space-y-4">
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Vibration Data</h3>
-            <VibrationTab v-if="turbineData?.vibrationData" :turbine="turbineData.vibrationData" />
-            <div v-else class="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 text-center text-slate-500">
-              No vibration data available
-            </div>
-          </section>
-
-          <!-- Temperature Section -->
-          <section :id="'temperature'" v-show="currentTab === 'temperature'" class="space-y-4">
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Temperature Data</h3>
-            <TemparatureTab v-if="turbineData?.temperatureData" :temperature="turbineData.temperatureData" />
-            <div v-else class="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 text-center text-slate-500">
-              No temperature data available
-            </div>
-          </section>
-
-          <!-- Alarms Section -->
-          <section :id="'alarms'" v-show="currentTab === 'alarms'" class="space-y-4">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-xl font-bold text-slate-900 dark:text-white">Active Alarms</h3>
-            </div>
-
-            <div v-if="turbineAlarms.length > 0" class="space-y-3">
-              <div
-                  v-for="alarm in turbineAlarms"
-                  :key="alarm.id"
-                  class="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                  @click="$emit('show-alarm', alarm)"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-2">
-                      <span :class="['px-2 py-1 rounded text-xs font-bold', getPriorityClass(alarm.priority)]">
-                        {{ alarm.priority }}
-                      </span>
-                      <span class="text-xs text-slate-500 dark:text-slate-400">{{ alarm.time }}</span>
-                    </div>
-                    <h4 class="font-semibold text-slate-900 dark:text-white mb-1">{{ alarm.title }}</h4>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">{{ alarm.description }}</p>
-                  </div>
-                  <svg class="w-5 h-5 text-slate-400 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+          <section v-show="currentTab === 'health'" class="space-y-4">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Health Analysis</h3>
+            <HealthTab v-if="turbineData?.healthData" :health-data="turbineData.healthData" />
+            <div v-else class="text-center py-12 text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 border-dashed">
+              <div v-if="loadingHealth" class="flex flex-col items-center gap-3">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
+                <span class="text-sm">Analyzing health...</span>
               </div>
-            </div>
-
-            <div v-else class="text-center py-12">
-              <svg class="w-16 h-16 mx-auto text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p class="text-lg font-semibold text-slate-900 dark:text-white">No Active Alarms</p>
-              <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">All systems operating normally</p>
+              <span v-else>No health analysis available.</span>
             </div>
           </section>
+
+          <section v-show="currentTab === 'predictive'" class="space-y-4">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Predictive Forecast</h3>
+            <PredictiveTab v-if="turbineData?.deteriorationData" :deterioration-data="turbineData.deteriorationData" />
+            <div v-else class="text-center py-12 text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 border-dashed">
+              <div v-if="loadingHealth" class="flex flex-col items-center gap-3">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
+                <span class="text-sm">Calculating deterioration trends...</span>
+              </div>
+              <span v-else>No predictive data available.</span>
+            </div>
+          </section>
+
+          <section v-show="currentTab === 'hydraulic'"><HydraulicTab v-if="turbineData?.hydraulicData" :hydraulic="turbineData.hydraulicData" /></section>
+          <section v-show="currentTab === 'vibration'"><VibrationTab v-if="turbineData?.vibrationData" :turbine="turbineData.vibrationData" /></section>
+          <section v-show="currentTab === 'temperature'"><TemperatureTab v-if="turbineData?.temperatureData" :temperature="turbineData.temperatureData" /></section>
         </div>
+      </div>
+
+      <div v-else>
+        <HistoryTab :turbine-id="turbineId" />
       </div>
     </div>
   </div>
@@ -213,149 +137,79 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useScadaService } from '@/composables/api.js'
-import VibrationTab from "@/components/turbineDetail/Vibration/VibrationTab.vue";
-import ScadaTab from "@/components/turbineDetail/Scada/ScadaTab.vue";
-import HydraulicTab from "@/components/turbineDetail/Hydraulic/HydraulicTab.vue";
-import TemparatureTab from "@/components/turbineDetail/Temperature/TemparatureTab.vue";
+import ScadaTab from "@/components/turbineDetail/Scada/ScadaTab.vue"
+import HydraulicTab from "@/components/turbineDetail/Hydraulic/HydraulicTab.vue"
+import VibrationTab from "@/components/turbineDetail/Vibration/VibrationTab.vue"
+import TemperatureTab from "@/components/turbineDetail/Temperature/TemperatureTab.vue"
+import HistoryTab from "@/components/turbineDetail/History/HistoryTab.vue"
+import HealthTab from "@/components/turbineDetail/Health/HealthTab.vue"
+import PredictiveTab from "@/components/turbineDetail/Predictive/PredictiveTab.vue" // Import New Tab
 
-const props = defineProps({
-  turbineId: {
-    type: String,
-    required: true
-  }
-})
-
+const props = defineProps({ turbineId: { type: String, required: true } })
 const emit = defineEmits(['show-alarm', 'add-maintenance'])
-
 const route = useRoute()
 const router = useRouter()
-const { turbineStore, alarmStore } = useScadaService()
+const { turbineStore, fetchTurbineHealth, fetchDeteriorationTrends } = useScadaService()
 
-// Local state
 const currentTab = ref('scada')
+const viewMode = ref('live')
+const loadingHealth = ref(false)
 
 const tabs = [
   { key: 'scada', label: 'SCADA' },
   { key: 'hydraulic', label: 'Hydraulic' },
   { key: 'vibration', label: 'Vibration' },
   { key: 'temperature', label: 'Temperature' },
-  { key: 'alarms', label: 'Alarms' }
+  { key: 'health', label: 'Health' },
+  { key: 'predictive', label: 'Predictive' },
 ]
 
-// Computed
 const turbineData = computed(() =>
+    turbineStore.turbines.find(t => t.id == props.turbineId) ||
     turbineStore.turbines.find(t => t._api_id == props.turbineId)
 )
 
 const loading = computed(() => turbineStore.loading)
 const error = computed(() => turbineStore.error)
 
-const turbineAlarms = computed(() =>
-    alarmStore.alarms.filter(alarm => alarm.turbine === props.turbineId)
-)
-
 const iconColor = computed(() => {
-  const colors = {
-    running: 'text-green-600 dark:text-green-500',
-    idle: 'text-blue-600 dark:text-blue-500',
-    maintenance: 'text-amber-600 dark:text-amber-500',
-    stopped: 'text-red-600 dark:text-red-500',
-    error: 'text-red-600 dark:text-red-500',
-  }
+  const colors = { running: 'text-green-600 dark:text-green-500', idle: 'text-blue-600 dark:text-blue-500', maintenance: 'text-amber-600 dark:text-amber-500', stopped: 'text-red-600 dark:text-red-500', error: 'text-red-600 dark:text-red-500' }
   return colors[turbineData.value?.status] || 'text-slate-400'
 })
 
-const statusBadgeColor = computed(() => {
-  const colors = {
-    running: 'bg-green-500',
-    idle: 'bg-blue-500',
-    maintenance: 'bg-amber-500',
-    stopped: 'bg-red-500',
-    error: 'bg-red-500',
-  }
-  return colors[turbineData.value?.status] || 'bg-slate-400'
-})
-
-// Methods
-const navigateToTab = (tabKey) => {
-  currentTab.value = tabKey
-  // Update URL hash without scrolling
-  router.replace({ hash: `#${tabKey}` })
-}
-
-const formatNumber = (value, decimals = 2) => {
-  if (value === null || value === undefined) return 'N/A'
-  return parseFloat(value).toFixed(decimals)
-}
-
-const formatTime = (dateString) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleTimeString()
-}
-
 const getStatusClass = (status) => {
-  const classes = {
-    running: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    idle: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    maintenance: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    stopped: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    error: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-  }
+  const classes = { running: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', idle: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', maintenance: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', stopped: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', error: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }
   return classes[status] || 'bg-slate-100 text-slate-700'
 }
 
-const getPriorityClass = (priority) => {
-  const classes = {
-    Critical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    Major: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    Warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    Minor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+const navigateToTab = (tabKey) => { currentTab.value = tabKey; router.replace({ hash: `#${tabKey}` }) }
+const switchView = (mode) => { viewMode.value = mode; router.replace({ hash: mode === 'live' ? `#${currentTab.value}` : '' }) }
+
+const loadHealthData = async () => {
+  const apiId = turbineData.value?._api_id;
+  if (apiId) {
+    loadingHealth.value = true;
+    const promises = [];
+    if (!turbineData.value.healthData) promises.push(fetchTurbineHealth(apiId));
+    if (!turbineData.value.deteriorationData) promises.push(fetchDeteriorationTrends(apiId));
+    await Promise.all(promises);
+    loadingHealth.value = false;
   }
-  return classes[priority] || 'bg-slate-100 text-slate-700'
 }
 
-const getTabStatus = (tabKey) => {
-  // Placeholder - will implement logic based on actual data
-  // For now, return null or 'green'/'yellow'/'red' based on data
-  if (tabKey === 'alarms' && turbineAlarms.value.length > 0) {
-    const hasCritical = turbineAlarms.value.some(a => a.priority === 'Critical')
-    return hasCritical ? 'red' : 'yellow'
-  }
-  return 'green'
-}
-
-// Lifecycle
 onMounted(() => {
-  // Check URL hash and set initial tab
   if (route.hash) {
     const hash = route.hash.replace('#', '')
-    const validTab = tabs.find(t => t.key === hash)
-    if (validTab) {
-      currentTab.value = hash
-    }
+    if (tabs.find(t => t.key === hash)) { currentTab.value = hash; viewMode.value = 'live' }
   }
+  loadHealthData();
 })
 
-// Watch for hash changes
-watch(() => route.hash, (newHash) => {
-  if (newHash) {
-    const hash = newHash.replace('#', '')
-    const validTab = tabs.find(t => t.key === hash)
-    if (validTab) {
-      currentTab.value = hash
-    }
-  }
-})
+watch(() => props.turbineId, () => loadHealthData())
+watch(() => route.hash, (newHash) => { if (newHash) { const hash = newHash.replace('#', ''); if (tabs.find(t => t.key === hash)) { currentTab.value = hash; viewMode.value = 'live' } } })
 </script>
 
 <style scoped>
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.animate-spin-slow {
-  animation: spin 3s linear infinite;
-}
+.animate-spin-slow { animation: spin 3s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>

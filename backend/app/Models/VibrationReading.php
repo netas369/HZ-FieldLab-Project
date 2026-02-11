@@ -42,4 +42,8 @@ class VibrationReading extends Model
     public function turbine() {
         return $this->belongsTo(Turbine::class);
     }
+
+    public function treshold() {
+        return $this->hasOne(Treshold::class);
+    }
 }

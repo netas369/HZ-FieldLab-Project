@@ -19,24 +19,9 @@
 
           <div>
             <h1 class="text-xl font-bold text-slate-900 dark:text-white">
-              WindFlow
+              Zephyros Fieldlab
             </h1>
             <p class="text-xs text-slate-500 dark:text-slate-400">Turbine Monitoring System</p>
-          </div>
-        </div>
-
-        <!-- Center: Quick Stats (optional) -->
-        <div class="hidden lg:flex items-center gap-6">
-          <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-300">All Systems Online</span>
-          </div>
-
-          <div v-if="activeAlarmsCount > 0" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-            <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-            <span class="text-sm font-semibold text-red-700 dark:text-red-400">{{ activeAlarmsCount }} Active Alarm{{ activeAlarmsCount > 1 ? 's' : '' }}</span>
           </div>
         </div>
 
@@ -55,6 +40,41 @@
               {{ activeAlarmsCount > 9 ? '9+' : activeAlarmsCount }}
             </span>
           </button>
+          
+          <div v-if="showNotifications"
+           class="absolute right-0 top-full w-96 bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 z-50"
+            >
+          <button 
+            v-for="alarm in latestAlarms" :key="alarm.id"
+            @click="$router.push('/alarms')"
+            :class="[
+              'w-full p-4 transition-colors text-left group border-l-4',
+              getPriorityClasses(alarm.priority)
+            ]">
+               <div class="flex items-start gap-3">
+                <div class="flex-1 min-w-0">
+                  <!-- Turbine & Priority Row -->
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-xs font-semibold opacity-75">
+                      Turbine {{ alarm.turbineId }}
+                    </span>
+                    <span :class="[
+                      'px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider',
+                      getPriorityBadge(alarm.priority)
+                    ]">
+                      {{ alarm.priority }}
+                    </span>
+                  </div>
+
+                  <!-- Title -->
+                  <h4 class="font-semibold leading-snug">
+                    {{ alarm.title }}
+                  </h4>
+                </div>
+
+              </div>
+            </button>
+        </div>
 
           <!-- Theme Toggle -->
           <button
@@ -112,7 +132,7 @@
                   <p class="text-xs text-slate-500 dark:text-slate-400">{{ user.role }}</p>
                 </div>
 
-                <button
+                <!-- <button
                     v-for="item in userMenuItems"
                     :key="item.label"
                     @click="handleMenuAction(item.action)"
@@ -120,7 +140,7 @@
                 >
                   <component :is="item.icon" class="w-5 h-5" />
                   <span>{{ item.label }}</span>
-                </button>
+                </button> -->
 
                 <div class="border-t border-slate-200 dark:border-slate-700 my-2"></div>
 
@@ -143,18 +163,22 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
+import { useScadaService } from '@/composables/api.js'
+
 
 const props = defineProps({
   user: {
     type: Object,
-    default: () => ({ name: 'John Smith', role: 'Supervisor' })
+    default: () => ({ name: 'John Smith', role: 'user' })
   },
   activeAlarmsCount: {
     type: Number,
     default: 0
   }
 })
+
+const { alarmStore } = useScadaService()
 
 const emit = defineEmits(['open-maintenance-form', 'toggle-theme'])
 
@@ -191,32 +215,102 @@ const getInitials = (name) => {
       .slice(0, 2)
 }
 
+const latestAlarms = computed(() => {
+  const alarms = alarmStore.activeAlarms || [];
+  return [...alarms]
+    .sort((a, b) => new Date(b.detectedAt) - new Date(a.detectedAt))
+    .slice(0, 3);
+})
+
 const handleMenuAction = (action) => {
   showUserMenu.value = false
   console.log(`Menu action: ${action}`)
   // Implement navigation or actions here
 }
 
-const handleLogout = () => {
+const handleLogout = async () => {
   showUserMenu.value = false
-  console.log('Logging out...')
-  // Implement logout logic
+
+  try {
+    const csrfToken = getCsrfTokenFromCookie()
+
+    // Call Laravel logout endpoint
+    const response = await fetch('http://localhost:8000/user/logout', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'X-XSRF-TOKEN': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'include' // Important: sends cookies
+    })
+
+    if (response.ok) {
+      console.log('Logout successful')
+    }
+  } catch (error) {
+    console.error('Logout error:', error)
+  } finally {
+    localStorage.clear()
+    window.location.href = 'http://localhost:5173/login'
+  }
+}
+
+const getCsrfTokenFromCookie = () => {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; XSRF-TOKEN=`)
+  if (parts.length === 2) {
+    return decodeURIComponent(parts.pop().split(';').shift())
+  }
+  return ''
 }
 
 // Click outside directive (simple implementation)
 const vClickOutside = {
   mounted(el, binding) {
+    setTimeout(() => {
     el.clickOutsideEvent = (event) => {
       if (!(el === event.target || el.contains(event.target))) {
         binding.value()
       }
     }
     document.addEventListener('click', el.clickOutsideEvent)
+    }, 0)
   },
   unmounted(el) {
     document.removeEventListener('click', el.clickOutsideEvent)
   }
 }
+
+const getPriorityClasses = (priority) => {
+  switch (priority.toLowerCase()) {
+    case 'critical':
+      return 'bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-950/50 text-red-900 dark:text-red-100 border-red-500';
+    case 'major':
+      return 'bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-950/50 text-orange-900 dark:text-orange-100 border-orange-500';
+    case 'warning':
+      return 'bg-yellow-50 dark:bg-yellow-950/30 hover:bg-yellow-100 dark:hover:bg-yellow-950/50 text-yellow-900 dark:text-yellow-100 border-yellow-500';
+    case 'minor':
+      return 'bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50 text-blue-900 dark:text-blue-100 border-blue-500';
+    default:
+      return 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300';
+  }
+};
+
+const getPriorityBadge = (priority) => {
+  switch (priority.toLowerCase()) {
+    case 'critical':
+      return 'bg-red-500 text-white';
+    case 'major':
+      return 'bg-orange-500 text-white';
+    case 'warning':
+      return 'bg-yellow-500 text-yellow-900';
+    case 'minor':
+      return 'bg-blue-500 text-white';
+    default:
+      return 'bg-slate-500 text-white';
+  }
+};
 </script>
 
 <style scoped>

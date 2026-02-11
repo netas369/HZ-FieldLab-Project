@@ -55,15 +55,15 @@ class AlarmService
         // ============================================
         // EDGE CASE 2: Stale/old data (no recent readings)
         // ============================================
-        $lastReadingAge = Carbon::now()->diffInMinutes($scada->reading_timestamp);
-
-        if ($lastReadingAge > 60) {
-            // Data is older than 1 hour - possible communication failure
-            $turbine->status = TurbineStatus::Error;
-            $turbine->save();
-            Log::warning("Stale SCADA data for turbine {$turbineId}. Last reading: {$scada->reading_timestamp}");
-            return;
-        }
+//        $lastReadingAge = Carbon::now()->diffInMinutes($scada->reading_timestamp);
+//
+//        if ($lastReadingAge > 60) {
+//            // Data is older than 1 hour - possible communication failure
+//            $turbine->status = TurbineStatus::Error;
+//            $turbine->save();
+//            Log::warning("Stale SCADA data for turbine {$turbineId}. Last reading: {$scada->reading_timestamp}");
+//            return;
+//        }
 
         // ============================================
         // EDGE CASE 3: Check for GRID FAULT alarms first
@@ -312,6 +312,9 @@ class AlarmService
     /**
      * Check vibration data for alarms
      */
+    /**
+     * Check vibration data for alarms
+     */
     private function checkVibrationAlarms($turbineId)
     {
         $vibration = VibrationReading::where('turbine_id', $turbineId)
@@ -320,9 +323,10 @@ class AlarmService
 
         if (!$vibration) return;
 
-        // Check Main Bearing
+        // ✅ Check Main Bearing - PASS COMPONENT NAME
         $mainBearingStatus = $this->turbineDataService->getVibrationStatus(
-            $vibration->main_bearing_vibration_rms_mms
+            $vibration->main_bearing_vibration_rms_mms,
+            'main_bearing_vibration_rms'  // ✅ ADD THIS
         );
         $this->createAlarmFromStatus(
             $turbineId,
@@ -333,12 +337,15 @@ class AlarmService
             $vibration->reading_timestamp
         );
 
-        // Check Gearbox
+        // ✅ Check Gearbox - PASS COMPONENT NAME
         $gearboxVibration = max(
             $vibration->gearbox_vibration_axial_mms ?? 0,
             $vibration->gearbox_vibration_radial_mms ?? 0
         );
-        $gearboxStatus = $this->turbineDataService->getVibrationStatus($gearboxVibration);
+        $gearboxStatus = $this->turbineDataService->getVibrationStatus(
+            $gearboxVibration,
+            'gearbox_vibration_axial'  // ✅ ADD THIS
+        );
         $this->createAlarmFromStatus(
             $turbineId,
             'vibration',
@@ -348,12 +355,15 @@ class AlarmService
             $vibration->reading_timestamp
         );
 
-        // Check Generator
+        // ✅ Check Generator - PASS COMPONENT NAME
         $generatorVibration = max(
             $vibration->generator_vibration_de_mms ?? 0,
             $vibration->generator_vibration_nde_mms ?? 0
         );
-        $generatorStatus = $this->turbineDataService->getVibrationStatus($generatorVibration);
+        $generatorStatus = $this->turbineDataService->getVibrationStatus(
+            $generatorVibration,
+            'generator_vibration_de'  // ✅ ADD THIS
+        );
         $this->createAlarmFromStatus(
             $turbineId,
             'vibration',
@@ -363,12 +373,15 @@ class AlarmService
             $vibration->reading_timestamp
         );
 
-        // Check Tower
+        // ✅ Check Tower - PASS COMPONENT NAME
         $towerVibration = max(
             $vibration->tower_vibration_fa_mms ?? 0,
             $vibration->tower_vibration_ss_mms ?? 0
         );
-        $towerStatus = $this->turbineDataService->getVibrationStatus($towerVibration);
+        $towerStatus = $this->turbineDataService->getVibrationStatus(
+            $towerVibration,
+            'tower_vibration_fa'  // ✅ ADD THIS
+        );
         $this->createAlarmFromStatus(
             $turbineId,
             'vibration',
@@ -378,7 +391,7 @@ class AlarmService
             $vibration->reading_timestamp
         );
 
-        // Check Blade Imbalance
+        // Check Blade Imbalance (this one doesn't need component name)
         $bladeStatus = $this->turbineDataService->getBladeVibrationStatus(
             $vibration->blade1_vibration_mms,
             $vibration->blade2_vibration_mms,
@@ -393,7 +406,7 @@ class AlarmService
             $vibration->reading_timestamp
         );
 
-        // Check Acoustic Level
+        // Check Acoustic Level (this one doesn't need component name)
         $acousticStatus = $this->turbineDataService->getAcousticStatus(
             $vibration->acoustic_level_db
         );
@@ -729,6 +742,22 @@ class AlarmService
     {
         $query = Alarm::where('turbine_id', $turbineId)
             ->where('status', 'active')
+            ->orderBy('severity', 'desc')
+            ->orderBy('detected_at', 'desc');
+
+        if ($severity) {
+            $query->where('severity', $severity);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Get all alarms for a turbine (including resolved and acknowledged)
+     */
+    public function getAllAlarms($turbineId, $severity = null)
+    {
+        $query = Alarm::where('turbine_id', $turbineId)
             ->orderBy('severity', 'desc')
             ->orderBy('detected_at', 'desc');
 

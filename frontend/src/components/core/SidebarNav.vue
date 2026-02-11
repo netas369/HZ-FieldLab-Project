@@ -1,39 +1,10 @@
 <template>
   <aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full">
     <div class="flex flex-col h-full overflow-hidden">
-      <!-- Search Section -->
-      <div class="p-4 border-b border-slate-200 dark:border-slate-800">
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <input
-              id="search"
-              type="text"
-              v-model="localSearchQuery"
-              class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all"
-              placeholder="Search turbines..."
-              aria-label="Search turbines"
-          />
-          <button
-              v-if="localSearchQuery"
-              @click="localSearchQuery = ''"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              aria-label="Clear search"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
       <!-- Navigation -->
       <nav class="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin" aria-label="Main navigation">
         <ul class="space-y-1">
-          <li v-for="tab in tabs" :key="tab.id">
+          <li v-for="tab in visibleTabs" :key="tab.id">
             <button
                 type="button"
                 @click="selectTab(tab.id)"
@@ -82,28 +53,28 @@
         <div class="my-4 border-t border-slate-200 dark:border-slate-800"></div>
 
         <!-- Secondary Navigation -->
-        <div class="space-y-1">
-          <p class="px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-            Quick Links
-          </p>
+<!--        <div class="space-y-1">-->
+<!--          <p class="px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">-->
+<!--            Quick Links-->
+<!--          </p>-->
 
-          <button
-              v-for="link in quickLinks"
-              :key="link.id"
-              type="button"
-              @click="handleQuickLink(link.action)"
-              class="w-full group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"
-          >
-            <div class="text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400">
-              <component :is="getIcon(link.icon)" class="w-5 h-5" />
-            </div>
-            <span class="flex-1 text-left">{{ link.label }}</span>
-          </button>
-        </div>
+<!--          <button-->
+<!--              v-for="link in quickLinks"-->
+<!--              :key="link.id"-->
+<!--              type="button"-->
+<!--              @click="handleQuickLink(link.action)"-->
+<!--              class="w-full group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"-->
+<!--          >-->
+<!--            <div class="text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400">-->
+<!--              <component :is="getIcon(link.icon)" class="w-5 h-5" />-->
+<!--            </div>-->
+<!--            <span class="flex-1 text-left">{{ link.label }}</span>-->
+<!--          </button>-->
+<!--        </div>-->
       </nav>
 
       <!-- Footer Info -->
-      <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+      <!-- <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
         <div class="flex items-center gap-3 mb-3">
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
@@ -113,25 +84,15 @@
             <p class="text-xs text-slate-500 dark:text-slate-400">Updated just now</p>
           </div>
         </div>
-
-        <!-- System Health Mini-Widget -->
-        <div class="grid grid-cols-2 gap-2">
-          <div class="bg-white dark:bg-slate-900 rounded-lg p-2 text-center border border-slate-200 dark:border-slate-700">
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Active</p>
-            <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400">6</p>
-          </div>
-          <div class="bg-white dark:bg-slate-900 rounded-lg p-2 text-center border border-slate-200 dark:border-slate-700">
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Offline</p>
-            <p class="text-lg font-bold text-slate-400 dark:text-slate-500">0</p>
-          </div>
-        </div>
-      </div>
+      </div> -->
     </div>
   </aside>
 </template>
 
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { useAuth } from '@/composables/useAuth';  
+const { hasRole } = useAuth();
 
 const props = defineProps({
   searchQuery: {
@@ -149,7 +110,8 @@ const props = defineProps({
       { id: 'alarms', label: 'Alarms', icon: 'alert', badge: 3 },
       { id: 'maintenance', label: 'Maintenance', icon: 'wrench', badge: null },
       { id: 'analytics', label: 'Analytics', icon: 'chart', badge: null },
-      { id: 'reports', label: 'Reports', icon: 'file', badge: null },
+      { id: 'import', label: 'Imports', icon: 'import', badge: null },
+      // { id: 'reports', label: 'Reports', icon: 'file', badge: null },
       { id: 'settings', label: 'Settings', icon: 'settings', badge: null }
     ]
   }
@@ -244,9 +206,18 @@ const getIcon = (iconName) => {
 
   return icons[iconName] || icons.dashboard
 }
+
+const visibleTabs = computed(() => {
+  return props.tabs.filter(item => {
+    if (!item.roles) return true;
+
+    return hasRole(item.roles);
+  });
+});
 </script>
 
 <style scoped>
+@reference 'tailwindcss';
 /* Scrollbar styling */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;

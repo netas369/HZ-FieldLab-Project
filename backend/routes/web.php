@@ -13,3 +13,6 @@ Route::get('/test', function () {
         'route' => 'api/test'
     ]);
 });
+
+
+require __DIR__.'/auth.php';

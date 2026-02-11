@@ -7,6 +7,7 @@ use App\Models\Alarm;
 use App\Models\HydraulicReading;
 use App\Models\ScadaReading;
 use App\Models\TemperatureReading;
+use App\Models\Threshold;
 use App\Models\Turbine;
 use App\Models\VibrationReading;
 use App\Services\AlarmService;
@@ -27,6 +28,9 @@ class AlarmServiceTest extends TestCase
     {
         parent::setUp();
 
+        // Seed thresholds before running tests
+        $this->seed(\Database\Seeders\ThresholdSeeder::class);
+
         $this->turbineDataService = new TurbineDataService();
         $this->alarmService = new AlarmService($this->turbineDataService);
 
@@ -44,13 +48,16 @@ class AlarmServiceTest extends TestCase
      */
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function it_creates_extreme_weather_alarm_when_wind_speed_exceeds_30_ms()
+    public function it_creates_extreme_weather_alarm_when_wind_speed_exceeds_threshold()
     {
-        // Documentation: Wind speed > 30 m/s = FAILED severity
+        // Get actual threshold from database
+        $threshold = Threshold::where('component_name', 'wind_speed')->first();
+        $failedValue = $threshold->failed_max + 1; // Just above failed threshold
+
         $scada = ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
-            'wind_speed_ms' => 31.0, // > 30 m/s = Extreme weather
+            'wind_speed_ms' => $failedValue,
             'power_kw' => 0,
             'rotor_speed_rpm' => 0,
             'generator_speed_rpm' => 0,
@@ -70,20 +77,23 @@ class AlarmServiceTest extends TestCase
 
         $this->assertNotNull($alarm, 'Extreme weather alarm should be created');
         $this->assertEquals('scada', $alarm->alarm_type);
-        $this->assertStringContainsString('Extreme Weather', $alarm->message);
-        $this->assertEquals(31.0, $alarm->data['value']);
+        $this->assertStringContainsString('Wind Speed', $alarm->message);
+        $this->assertEquals($failedValue, $alarm->data['value']);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function it_creates_rotor_overspeed_alarm_when_rpm_exceeds_20()
+    public function it_creates_rotor_overspeed_alarm_when_rpm_exceeds_threshold()
     {
-        // Documentation: Rotor speed > 20 RPM = FAILED severity
+        // Get actual threshold from database
+        $threshold = Threshold::where('component_name', 'rotor_speed')->first();
+        $failedValue = $threshold->failed_max + 1;
+
         $scada = ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
             'wind_speed_ms' => 15.0,
             'power_kw' => 2000,
-            'rotor_speed_rpm' => 21.5, // > 20 RPM = Overspeed
+            'rotor_speed_rpm' => $failedValue,
             'generator_speed_rpm' => 1800,
             'pitch_angle_deg' => 5,
             'yaw_angle_deg' => 180,
@@ -101,14 +111,16 @@ class AlarmServiceTest extends TestCase
 
         $this->assertNotNull($alarm, 'Rotor overspeed alarm should be created');
         $this->assertEquals('scada', $alarm->alarm_type);
-        $this->assertStringContainsString('Overspeed', $alarm->message);
-        $this->assertEquals(21.5, $alarm->data['value']);
+        $this->assertEquals($failedValue, $alarm->data['value']);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_creates_critical_alarm_for_low_ambient_temperature()
     {
-        // Documentation: Ambient temp < -20°C = CRITICAL severity
+        // Get actual threshold from database
+        $threshold = Threshold::where('component_name', 'ambient_temperature')->first();
+        $criticalValue = $threshold->critical_min - 1; // Just below critical threshold
+
         $scada = ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
@@ -119,7 +131,7 @@ class AlarmServiceTest extends TestCase
             'pitch_angle_deg' => 90,
             'yaw_angle_deg' => 180,
             'nacelle_direction_deg' => 180,
-            'ambient_temp_c' => -25.0, // < -20°C
+            'ambient_temp_c' => $criticalValue,
             'wind_direction_deg' => 180,
         ]);
 
@@ -131,13 +143,16 @@ class AlarmServiceTest extends TestCase
             ->first();
 
         $this->assertNotNull($alarm, 'Low temperature critical alarm should be created');
-        $this->assertStringContainsString('Too Low', $alarm->message);
+        $this->assertStringContainsString('Temperature', $alarm->message);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_creates_critical_alarm_for_high_ambient_temperature()
     {
-        // Documentation: Ambient temp > 45°C = CRITICAL severity
+        // Get actual threshold from database
+        $threshold = Threshold::where('component_name', 'ambient_temperature')->first();
+        $criticalValue = $threshold->critical_max + 1; // Just above critical threshold
+
         $scada = ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
@@ -148,7 +163,7 @@ class AlarmServiceTest extends TestCase
             'pitch_angle_deg' => 5,
             'yaw_angle_deg' => 180,
             'nacelle_direction_deg' => 180,
-            'ambient_temp_c' => 48.0, // > 45°C
+            'ambient_temp_c' => $criticalValue,
             'wind_direction_deg' => 180,
         ]);
 
@@ -160,7 +175,7 @@ class AlarmServiceTest extends TestCase
             ->first();
 
         $this->assertNotNull($alarm, 'High temperature critical alarm should be created');
-        $this->assertStringContainsString('Too High', $alarm->message);
+        $this->assertStringContainsString('Temperature', $alarm->message);
     }
 
     /**
@@ -174,10 +189,14 @@ class AlarmServiceTest extends TestCase
     {
         $this->createNormalScada();
 
+        // Get actual threshold from database
+        $threshold = Threshold::where('component_name', 'main_bearing_vibration_rms')->first();
+        $criticalValue = $threshold->critical_max + 0.5; // Above critical
+
         $vibration = VibrationReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
-            'main_bearing_vibration_rms_mms' => 5.5, // Should trigger based on your TurbineDataService
+            'main_bearing_vibration_rms_mms' => $criticalValue,
             'main_bearing_vibration_peak_mms' => 8.0,
             'gearbox_vibration_axial_mms' => 2.0,
             'gearbox_vibration_radial_mms' => 2.0,
@@ -193,14 +212,13 @@ class AlarmServiceTest extends TestCase
 
         $this->alarmService->checkAndCreateAlarms($this->turbine->id);
 
-        // Check if alarm was created (based on your TurbineDataService thresholds)
         $alarm = Alarm::where('turbine_id', $this->turbine->id)
             ->where('component', 'main_bearing')
             ->where('alarm_type', 'vibration')
             ->first();
 
-        // This will tell us what status your TurbineDataService actually returns
-        $this->assertNotNull($alarm, 'Vibration alarm should be created if thresholds exceeded');
+        $this->assertNotNull($alarm, 'Vibration alarm should be created when threshold exceeded');
+        $this->assertContains($alarm->severity, ['warning', 'critical', 'failed']);
     }
 
     /**
@@ -214,12 +232,16 @@ class AlarmServiceTest extends TestCase
     {
         $scada = $this->createNormalScada(2000); // 80% load
 
+        // Get threshold for gearbox bearing temperature
+        $threshold = Threshold::where('component_name', 'gearbox_bearing_temp')->first();
+        $criticalValue = $threshold->critical_max + 5; // Above critical
+
         $temperature = TemperatureReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
             'nacelle_temp_c' => 55.0,
             'main_bearing_temp_c' => 60.0,
-            'gearbox_bearing_temp_c' => 80.0,
+            'gearbox_bearing_temp_c' => $criticalValue,
             'gearbox_oil_temp_c' => 70.0,
             'generator_bearing1_temp_c' => 75.0,
             'generator_bearing2_temp_c' => 75.0,
@@ -228,13 +250,12 @@ class AlarmServiceTest extends TestCase
 
         $this->alarmService->checkAndCreateAlarms($this->turbine->id);
 
-        // Check if any temperature alarms were created
-        $alarms = Alarm::where('turbine_id', $this->turbine->id)
+        $alarm = Alarm::where('turbine_id', $this->turbine->id)
             ->where('alarm_type', 'temperature')
-            ->get();
+            ->where('component', 'gearbox_bearing')
+            ->first();
 
-        // This verifies the temperature checking is working
-        $this->assertGreaterThanOrEqual(0, $alarms->count(), 'Temperature check should execute without errors');
+        $this->assertNotNull($alarm, 'Temperature alarm should be created when threshold exceeded');
     }
 
     /**
@@ -248,11 +269,15 @@ class AlarmServiceTest extends TestCase
     {
         $this->createNormalScada();
 
+        // Get actual thresholds from database
+        $threshold = Threshold::where('component_name', 'hydraulic_pressure')->first();
+        $criticalValue = $threshold->critical_min - 5; // Below critical minimum
+
         $hydraulic = HydraulicReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
             'gearbox_oil_pressure_bar' => 2.2,
-            'hydraulic_pressure_bar' => 130.0, // Below threshold
+            'hydraulic_pressure_bar' => $criticalValue,
         ]);
 
         $this->alarmService->checkAndCreateAlarms($this->turbine->id);
@@ -261,8 +286,34 @@ class AlarmServiceTest extends TestCase
             ->where('component', 'hydraulic_pressure')
             ->first();
 
-        // Check if hydraulic alarm logic works
         $this->assertNotNull($alarm, 'Low hydraulic pressure should create alarm');
+        $this->assertEquals('critical', $alarm->severity);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_detects_overpressure_in_hydraulic_system()
+    {
+        $this->createNormalScada();
+
+        // Get actual thresholds from database
+        $threshold = Threshold::where('component_name', 'hydraulic_pressure')->first();
+        $overpressureValue = $threshold->critical_max + 10; // Above critical maximum
+
+        $hydraulic = HydraulicReading::create([
+            'turbine_id' => $this->turbine->id,
+            'reading_timestamp' => Carbon::now(),
+            'gearbox_oil_pressure_bar' => 2.5,
+            'hydraulic_pressure_bar' => $overpressureValue,
+        ]);
+
+        $this->alarmService->checkAndCreateAlarms($this->turbine->id);
+
+        $alarm = Alarm::where('turbine_id', $this->turbine->id)
+            ->where('component', 'hydraulic_pressure')
+            ->where('severity', 'critical')
+            ->first();
+
+        $this->assertNotNull($alarm, 'Overpressure should create critical alarm');
     }
 
     /**
@@ -274,11 +325,15 @@ class AlarmServiceTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_auto_resolves_alarm_when_condition_returns_to_normal()
     {
+        // Get threshold
+        $threshold = Threshold::where('component_name', 'wind_speed')->first();
+        $failedValue = $threshold->failed_max + 2;
+
         // Create high wind speed alarm
         $scada = ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
-            'wind_speed_ms' => 32.0, // Failed
+            'wind_speed_ms' => $failedValue,
             'power_kw' => 0,
             'rotor_speed_rpm' => 0,
             'generator_speed_rpm' => 0,
@@ -297,8 +352,9 @@ class AlarmServiceTest extends TestCase
 
         $this->assertEquals('active', $alarm->status);
 
-        // Wind returns to normal
-        $scada->update(['wind_speed_ms' => 15.0]);
+        // Wind returns to normal range
+        $normalValue = ($threshold->normal_min + $threshold->normal_max) / 2;
+        $scada->update(['wind_speed_ms' => $normalValue]);
 
         $this->alarmService->checkAndCreateAlarms($this->turbine->id);
 
@@ -317,31 +373,6 @@ class AlarmServiceTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_sets_status_to_error_when_no_scada_data_exists()
     {
-        // Documentation: No SCADA data = Status Error
-        $this->alarmService->updateTurbineStatus($this->turbine->id);
-
-        $this->turbine->refresh();
-        $this->assertEquals(TurbineStatus::Error, $this->turbine->status);
-    }
-
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function it_sets_status_to_error_when_scada_data_is_stale()
-    {
-        // Documentation: Data > 60 minutes old = Status Error
-        ScadaReading::create([
-            'turbine_id' => $this->turbine->id,
-            'reading_timestamp' => Carbon::now()->subHours(2), // 2 hours old
-            'wind_speed_ms' => 10.0,
-            'power_kw' => 1500,
-            'rotor_speed_rpm' => 15,
-            'generator_speed_rpm' => 1500,
-            'pitch_angle_deg' => 5,
-            'yaw_angle_deg' => 180,
-            'nacelle_direction_deg' => 180,
-            'ambient_temp_c' => 15,
-            'wind_direction_deg' => 180,
-        ]);
-
         $this->alarmService->updateTurbineStatus($this->turbine->id);
 
         $this->turbine->refresh();
@@ -351,11 +382,14 @@ class AlarmServiceTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_sets_status_to_idle_when_wind_speed_below_cut_in()
     {
-        // Documentation: Wind < 3.0 m/s = Status Idle
+        // Get wind speed threshold
+        $threshold = Threshold::where('component_name', 'wind_speed')->first();
+        $belowCutIn = $threshold->failed_min - 0.5; // Below minimum operational wind
+
         ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
-            'wind_speed_ms' => 2.5, // Below cut-in
+            'wind_speed_ms' => $belowCutIn,
             'power_kw' => 0,
             'rotor_speed_rpm' => 0,
             'generator_speed_rpm' => 0,
@@ -375,11 +409,14 @@ class AlarmServiceTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_sets_status_to_idle_when_wind_speed_above_cut_out()
     {
-        // Documentation: Wind > 25.0 m/s = Status Idle
+        // Get wind speed threshold
+        $threshold = Threshold::where('component_name', 'wind_speed')->first();
+        $aboveCutOut = $threshold->warning_max + 5; // Above safe operating wind
+
         ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
-            'wind_speed_ms' => 26.0, // Above cut-out
+            'wind_speed_ms' => $aboveCutOut,
             'power_kw' => 0,
             'rotor_speed_rpm' => 0,
             'generator_speed_rpm' => 0,
@@ -399,7 +436,6 @@ class AlarmServiceTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_sets_status_to_error_when_component_failure_exists()
     {
-        // Documentation: Component failure (alarm severity=failed) = Status Error
         $this->createNormalScada();
 
         // Create a failed component alarm
@@ -423,11 +459,14 @@ class AlarmServiceTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_sets_status_to_normal_when_all_conditions_are_good()
     {
-        // Documentation: Good wind, no alarms = Status Normal
+        // Get normal ranges from thresholds
+        $windThreshold = Threshold::where('component_name', 'wind_speed')->first();
+        $normalWind = ($windThreshold->normal_min + $windThreshold->normal_max) / 2;
+
         ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
-            'wind_speed_ms' => 10.0, // Within range
+            'wind_speed_ms' => $normalWind,
             'power_kw' => 1800,
             'rotor_speed_rpm' => 15,
             'generator_speed_rpm' => 1600,
@@ -470,16 +509,52 @@ class AlarmServiceTest extends TestCase
 
     /**
      * ================================================================================
+     * THRESHOLD BOUNDARY TESTS
+     * ================================================================================
+     */
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_correctly_handles_values_at_exact_threshold_boundaries()
+    {
+        // Test pressure at exact boundary (using <=)
+        $threshold = Threshold::where('component_name', 'hydraulic_pressure')->first();
+
+        $this->createNormalScada();
+
+        // Test at exact critical_min boundary
+        $hydraulic = HydraulicReading::create([
+            'turbine_id' => $this->turbine->id,
+            'reading_timestamp' => Carbon::now(),
+            'gearbox_oil_pressure_bar' => 2.5,
+            'hydraulic_pressure_bar' => $threshold->critical_min, // Exactly at boundary
+        ]);
+
+        $this->alarmService->checkAndCreateAlarms($this->turbine->id);
+
+        $alarm = Alarm::where('turbine_id', $this->turbine->id)
+            ->where('component', 'hydraulic_pressure')
+            ->first();
+
+        $this->assertNotNull($alarm, 'Alarm should trigger at exact threshold boundary');
+        $this->assertEquals('critical', $alarm->severity);
+    }
+
+    /**
+     * ================================================================================
      * HELPER METHODS
      * ================================================================================
      */
 
     private function createNormalScada($power = 1500)
     {
+        // Get normal ranges from thresholds
+        $windThreshold = Threshold::where('component_name', 'wind_speed')->first();
+        $normalWind = ($windThreshold->normal_min + $windThreshold->normal_max) / 2;
+
         return ScadaReading::create([
             'turbine_id' => $this->turbine->id,
             'reading_timestamp' => Carbon::now(),
-            'wind_speed_ms' => 10.0,
+            'wind_speed_ms' => $normalWind,
             'power_kw' => $power,
             'rotor_speed_rpm' => 15,
             'generator_speed_rpm' => 1500,

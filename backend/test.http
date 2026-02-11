@@ -1,0 +1,11 @@
+### GET request to example server
+GET http://localhost:8000/api/turbine/historicalScadaData
+Content-Type: application/json
+
+{
+    "start_date": "2024-10-20",
+    "end_date": "2024-10-22",
+    "turbine_id": "WT001"
+}
+
+###
