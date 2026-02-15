@@ -161,9 +161,16 @@ export default {
     },
 
     async getCsrfToken() {
-      // Use the base URL from axios config, but hit sanctum endpoint (not /api)
-      const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000';
-      await fetch(`${baseUrl}/sanctum/csrf-cookie`, {
+      // Determine sanctum URL based on current hostname
+      let sanctumUrl;
+      if (window.location.hostname === 'zephyroscontrolroom.nl') {
+        sanctumUrl = 'https://api.zephyroscontrolroom.nl/sanctum/csrf-cookie';
+      } else {
+        sanctumUrl = 'http://localhost:8000/sanctum/csrf-cookie';
+      }
+
+      console.log('Fetching CSRF from:', sanctumUrl);
+      await fetch(sanctumUrl, {
         credentials: 'include'
       });
     },
