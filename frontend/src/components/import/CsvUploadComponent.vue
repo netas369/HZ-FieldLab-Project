@@ -22,7 +22,7 @@
             <input id="file-upload" name="file-upload" type="file" accept=".csv" class="sr-only" @change="handleFileSelect">
           </label>
         </div>
-        <p class="text-xs text-gray-500 dark:text-slate-500 mt-2">CSV files only, up to 10MB</p>
+        <p class="text-xs text-gray-500 dark:text-slate-500 mt-2">CSV files only</p>
       </div>
 
       <div v-if="processing" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
