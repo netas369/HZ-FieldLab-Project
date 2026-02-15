@@ -177,7 +177,7 @@ const fetchThresholds = async () => {
       return
     }
 
-    const response = await fetch('http://localhost:8000/api/thresholds', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/thresholds`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
@@ -225,7 +225,7 @@ const saveThreshold = async (updatedThreshold) => {
       return null
     }
 
-    const response = await fetch(`http://localhost:8000/api/thresholds/${updatedThreshold.id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/thresholds/${updatedThreshold.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -267,7 +267,7 @@ const resetThreshold = async (id) => {
       return null
     }
 
-    const response = await fetch(`http://localhost:8000/api/thresholds/${id}/reset`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/thresholds/${id}/reset`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

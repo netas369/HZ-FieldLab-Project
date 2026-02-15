@@ -76,6 +76,8 @@
 </template>
 
 <script>
+import api from '@/lib/axios';
+
 export default {
   name: 'LoginPage',
 
@@ -101,74 +103,67 @@ export default {
         await this.getCsrfToken();
         const csrfToken = this.getCsrfTokenFromCookie();
 
-        const response = await fetch('http://localhost:8000/user/login', {
-          method: 'POST',
+        const response = await api.post('/user/login', {
+          email: this.form.email,
+          password: this.form.password,
+          remember: this.form.remember
+        }, {
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-XSRF-TOKEN': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            email: this.form.email,
-            password: this.form.password,
-            remember: this.form.remember
-          })
+            'X-XSRF-TOKEN': csrfToken
+          }
         });
 
-        const data = await response.json();
+        const data = response.data;
 
         // Debug logging
         console.log('🔍 Login Response:', data);
         console.log('🔍 Response keys:', Object.keys(data));
+        console.log('✅ Login successful');
 
-        if (response.ok) {
-          console.log('✅ Login successful');
-
-          // Store user
-          if (data.user) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            console.log('✅ User stored:', data.user);
-          } else {
-            console.error('❌ No user in response');
-          }
-
-          // Store token - try multiple field names
-          const token = data.token || data.access_token || data.bearer_token;
-          if (token) {
-            localStorage.setItem('token', token);
-            console.log('✅ Token stored:', token.substring(0, 30) + '...');
-            console.log('✅ Token length:', token.length);
-          } else {
-            console.error('❌ No token found in response');
-            console.error('❌ Response data:', data);
-          }
-
-          // Verify storage
-          setTimeout(() => {
-            console.log('🔍 Verification - Token in localStorage:', localStorage.getItem('token'));
-            console.log('🔍 Verification - User in localStorage:', localStorage.getItem('user'));
-            this.$router.push('/overview');
-          }, 200);
-
+        // Store user
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+          console.log('✅ User stored:', data.user);
         } else {
-          if (data.errors) {
-            this.errors = data.errors;
-          } else {
-            this.errors.general = data.message || 'These credentials do not match our records.';
-          }
+          console.error('❌ No user in response');
         }
+
+        // Store token - try multiple field names
+        const token = data.token || data.access_token || data.bearer_token;
+        if (token) {
+          localStorage.setItem('token', token);
+          console.log('✅ Token stored:', token.substring(0, 30) + '...');
+          console.log('✅ Token length:', token.length);
+        } else {
+          console.error('❌ No token found in response');
+          console.error('❌ Response data:', data);
+        }
+
+        // Verify storage
+        setTimeout(() => {
+          console.log('🔍 Verification - Token in localStorage:', localStorage.getItem('token'));
+          console.log('🔍 Verification - User in localStorage:', localStorage.getItem('user'));
+          this.$router.push('/overview');
+        }, 200);
+
       } catch (error) {
         console.error('❌ Login error:', error);
-        this.errors.general = 'An error occurred. Please try again.';
+        if (error.response?.data?.errors) {
+          this.errors = error.response.data.errors;
+        } else if (error.response?.data?.message) {
+          this.errors.general = error.response.data.message;
+        } else {
+          this.errors.general = 'An error occurred. Please try again.';
+        }
       } finally {
         this.loading = false;
       }
     },
 
     async getCsrfToken() {
-      await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+      // Use the base URL from axios config, but hit sanctum endpoint (not /api)
+      const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000';
+      await fetch(`${baseUrl}/sanctum/csrf-cookie`, {
         credentials: 'include'
       });
     },
