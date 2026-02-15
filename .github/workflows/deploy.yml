@@ -1,0 +1,70 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [ "main" ] # Or 'master'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      # --- 1. DEPLOY BACKEND (LARAVEL) ---
+      - name: 📂 Sync Backend Files via SSH
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 65002  # Hostinger default SSH port
+          # source: Local folder to upload
+          source: "backend/*"
+          # target: Remote folder on Hostinger
+          target: "/home/${{ secrets.USERNAME }}/domains/zephyroscontrolroom.nl/laravel-core"
+          # Strip the 'backend/' prefix so files land directly in laravel-core
+          strip_components: 1
+          rm: false # Don't delete existing files like .env!
+
+      - name: ⚙️ Run Laravel Commands (Composer & Migrate)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 65002
+          script: |
+            cd domains/zephyroscontrolroom.nl/laravel-core
+            # Install dependencies
+            composer install --no-dev --optimize-autoloader
+            # Clear caches
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            # Migrate DB (force is needed in production)
+            php artisan migrate --force
+
+      # --- 2. BUILD & DEPLOY FRONTEND (VUE) ---
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 🔨 Build Vue Project
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: 📂 Upload Vue 'dist' to public_html
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 65002
+          source: "frontend/dist/*"
+          target: "/home/${{ secrets.USERNAME }}/domains/zephyroscontrolroom.nl/public_html"
+          strip_components: 2 # Removes 'frontend/dist' from path so files land in root

@@ -373,7 +373,7 @@ export default {
         })
 
         // Estimate file size
-        const estimatedSize = JSON.stringify(requestData.data).length
+        const estimatedSize = requestData.data.length * 1500
 
         // Use chunked import composable (automatically chooses chunked vs regular)
         const result = await startChunkedImport(
