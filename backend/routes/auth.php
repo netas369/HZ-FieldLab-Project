@@ -14,5 +14,5 @@ Route::post('/user/reset-password', [PasswordResetController::class, 'resetPassw
     ->middleware('guest');
 
 Route::post('/user/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth')
+    ->middleware('auth:sanctum')
     ->name('logout');
