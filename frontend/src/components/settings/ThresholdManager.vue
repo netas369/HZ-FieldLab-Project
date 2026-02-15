@@ -130,6 +130,32 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import EditThresholdModal from './EditThresholdModal.vue'
+import axios from 'axios'
+
+// Create API client with auth interceptor
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  withCredentials: true
+})
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  const xsrfToken = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('XSRF-TOKEN='))
+    ?.split('=')[1]
+  if (xsrfToken) {
+    config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken)
+  }
+  return config
+})
 
 const types = [
   { label: 'All', value: 'all' },
@@ -173,34 +199,19 @@ const fetchThresholds = async () => {
     const token = localStorage.getItem('token')
 
     if (!token) {
-      error.value = 'No authentication token found. Please log in.'
+      error.value = 'No authentication token found. Please log out and log back in.'
       return
     }
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/thresholds`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        error.value = 'Unauthorized. Please log in again.'
-      } else {
-        const errorText = await response.text()
-        console.error('API Error:', response.status, errorText)
-        error.value = `Failed to fetch thresholds (${response.status})`
-      }
-      return
-    }
-
-    const data = await response.json()
-    thresholds.value = data.thresholds || []
+    const response = await apiClient.get('/thresholds')
+    thresholds.value = response.data.thresholds || []
   } catch (err) {
     console.error('Failed to fetch thresholds:', err)
-    error.value = 'Network error. Please check your connection.'
+    if (err.response?.status === 401) {
+      error.value = 'Session expired. Please log out and log back in.'
+    } else {
+      error.value = err.response?.data?.message || 'Failed to fetch thresholds. Please try again.'
+    }
   } finally {
     loading.value = false
   }
@@ -213,41 +224,12 @@ const editThreshold = (threshold) => {
 
 const saveThreshold = async (updatedThreshold) => {
   try {
-    const token = localStorage.getItem('token')
-
-    // Get CSRF token from cookie
-    const getCsrfToken = () => {
-      const value = `; ${document.cookie}`
-      const parts = value.split(`; XSRF-TOKEN=`)
-      if (parts.length === 2) {
-        return decodeURIComponent(parts.pop().split(';').shift())
-      }
-      return null
-    }
-
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/thresholds/${updatedThreshold.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'X-XSRF-TOKEN': getCsrfToken()
-      },
-      credentials: 'include',
-      body: JSON.stringify(updatedThreshold)
-    })
-
-    if (response.ok) {
-      await fetchThresholds()
-      showEditModal.value = false
-    } else {
-      const errorText = await response.text()
-      console.error('Update failed:', errorText)
-      alert('Failed to update threshold')
-    }
+    await apiClient.put(`/thresholds/${updatedThreshold.id}`, updatedThreshold)
+    await fetchThresholds()
+    showEditModal.value = false
   } catch (err) {
     console.error('Failed to update threshold:', err)
-    alert('Network error')
+    alert(err.response?.data?.message || 'Failed to update threshold')
   }
 }
 
@@ -255,37 +237,11 @@ const resetThreshold = async (id) => {
   if (!confirm('Reset this threshold to default values?')) return
 
   try {
-    const token = localStorage.getItem('token')
-
-    // Get CSRF token from cookie
-    const getCsrfToken = () => {
-      const value = `; ${document.cookie}`
-      const parts = value.split(`; XSRF-TOKEN=`)
-      if (parts.length === 2) {
-        return decodeURIComponent(parts.pop().split(';').shift())
-      }
-      return null
-    }
-
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/thresholds/${id}/reset`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-XSRF-TOKEN': getCsrfToken()
-      },
-      credentials: 'include'
-    })
-
-    if (response.ok) {
-      await fetchThresholds()
-    } else {
-      alert('Failed to reset threshold')
-    }
+    await apiClient.post(`/thresholds/${id}/reset`)
+    await fetchThresholds()
   } catch (err) {
     console.error('Failed to reset threshold:', err)
-    alert('Network error')
+    alert(err.response?.data?.message || 'Failed to reset threshold')
   }
 }
 
