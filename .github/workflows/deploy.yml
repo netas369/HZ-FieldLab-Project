@@ -57,6 +57,8 @@ jobs:
           cd frontend
           npm install
           npm run build
+        env:
+          VITE_API_BASE_URL: https://api.zephyroscontrolroom.nl
 
       - name: 📂 Upload Vue 'dist' to public_html
         uses: appleboy/scp-action@master
