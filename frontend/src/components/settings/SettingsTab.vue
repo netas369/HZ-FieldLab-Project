@@ -141,7 +141,7 @@ const resetDatabase = async () => {
   isResetting.value = true
 
   try {
-    const response = await fetch('http://localhost:8000/api/settings/delete-data', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/settings/delete-data`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })

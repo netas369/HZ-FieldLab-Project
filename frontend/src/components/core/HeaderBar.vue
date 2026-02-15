@@ -235,7 +235,7 @@ const handleLogout = async () => {
     const csrfToken = getCsrfTokenFromCookie()
 
     // Call Laravel logout endpoint
-    const response = await fetch('http://localhost:8000/user/logout', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}/user/logout`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -252,7 +252,7 @@ const handleLogout = async () => {
     console.error('Logout error:', error)
   } finally {
     localStorage.clear()
-    window.location.href = 'http://localhost:5173/login'
+    window.location.href = '/login'
   }
 }
 

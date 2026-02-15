@@ -240,7 +240,7 @@ export default {
 
     const fetchExistingTurbines = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/turbines');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/turbines`);
         const data = await response.json();
         existingTurbines.value = data.data || data;
       } catch (error) {

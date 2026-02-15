@@ -115,7 +115,7 @@ const handleSubmit = async () => {
     loading.value = true
 
     try {
-        const response = await fetch('http://localhost:8000/user/forgot-password', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}/user/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
