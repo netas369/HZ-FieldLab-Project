@@ -158,3 +158,8 @@ Route::middleware('auth:sanctum')->get('/users', function () {
         \App\Models\User::select('id', 'name', 'email', 'role')->get()
     );
 });
+
+// ============================================
+// AUTH ROUTES (included here for /api prefix)
+// ============================================
+require __DIR__.'/auth.php';
