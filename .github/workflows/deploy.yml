@@ -53,12 +53,12 @@ jobs:
           node-version: '22'
 
       - name: 🔨 Build Vue Project
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: |
           cd frontend
           npm install
           npm run build
-        env:
-          VITE_API_BASE_URL: https://api.zephyroscontrolroom.nl
 
       - name: 📂 Upload Vue 'dist' to public_html
         uses: appleboy/scp-action@master
